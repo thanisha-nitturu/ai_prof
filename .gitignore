@@ -1,0 +1,43 @@
+### Moodle Core & Sensitive Config ###
+config.php
+config.php.save*
+*.log
+*.env           # Extra safeguard for environment secrets
+*.sql           # Extra safeguard for database dumps
+*.pem           # Extra safeguard for SSL/private keys
+*.key           # Extra safeguard for private keys
+auth.json       # Composer security
+/moodledata/
+
+### Developer / IDE Tools ###
+.vscode/
+.idea/
+.DS_Store
+.phpstorm.meta.php
+.eslintcache
+.phpunit.result.cache
+
+### Dependencies (Recursive) ###
+node_modules/
+**/node_modules/
+vendor/
+**/vendor/
+
+### Build Artifacts (Recursive) ###
+dist/
+**/dist/
+build/
+**/build/
+
+### Plugin Specific (Veda & Monitoring) ###
+local/veda/handler_debug.log
+local/veda/jmeter.log
+local/veda/veda_debug.jtl
+local/veda/jmeter_bin/
+local/veda/jmeter_dist/
+local/veda/runs_samples/
+
+### Temporary Files ###
+*.tmp
+*.bak
+*.swp
