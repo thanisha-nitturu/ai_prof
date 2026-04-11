@@ -1,0 +1,6 @@
+[submodule "mod/coursedashboard"]
+	path = mod/coursedashboard
+	url = git@github.com:hitloop-ai/analytics-dashboard.git
+[submodule "local/veda"]
+	path = local/veda
+	url = git@github.com:hitloop-ai/veda.git

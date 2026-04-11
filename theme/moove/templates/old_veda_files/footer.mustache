@@ -1,0 +1,835 @@
+{{!
+This file is part of Moodle - http://moodle.org/
+
+Moodle is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Moodle is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template theme_moove/footer
+
+    Page footer.
+
+    Example context (json):
+    {
+        "output": {
+            "page_doc_link": "Help and documentation",
+            "supportemail": "<a href=\"#\">Contact site support</a>",
+            "has_popover_links": true,
+            "services_support": "Services and support",
+            "login_info": "You are logged in as cute kitten",
+            "moodle_release": "90210"
+        }
+    }
+}}
+
+<footer id="page-footer">
+    <div class="moove-container-fluid footer-columns">
+        <div class="row">
+            <div class="col-md-4 column-left">
+                <div class="contact">
+                    <h3 class="footer-title">{{#str}}contactus, theme_moove{{/str}}</h3>
+
+                    <ul>
+                        {{#website}}
+                            <li>
+                                <a href="{{{website}}}" target="_blank" class="website btn btn-link">
+                                    <i class="fa fa-globe"></i>
+                                </a>
+                            </li>
+                        {{/website}}
+                        {{#mobile}}
+                            <li>
+                                <a href="tel:{{{mobile}}}" target="_blank" class="mobile btn btn-link">
+                                    <i class="fa fa-phone"></i>
+                                </a>
+                            </li>
+                        {{/mobile}}
+                        {{#mail}}
+                            <li>
+                                <a href="mailto:{{{mail}}}" target="_blank" class="mail btn btn-link">
+                                    <i class="fa fa-envelope"></i>
+                                </a>
+                            </li>
+                        {{/mail}}
+                    </ul>
+                </div>
+
+                <div class="socialnetworks">
+                    <h3 class="footer-title">{{#str}}followus, theme_moove{{/str}}</h3>
+
+                    <ul class="mb-0">
+                        {{#facebook}}
+                            <li>
+                                <a href="{{{facebook}}}" target="_blank" class="facebook btn btn-link btn-rounded">
+                                    <i class="fa fa-facebook"></i>
+                                </a>
+                            </li>
+                        {{/facebook}}
+
+                        {{#twitter}}
+                            <li>
+                                <a href="{{{twitter}}}" target="_blank" class="twitter btn btn-link btn-rounded">
+                                    <i class="fa fa-twitter"></i>
+                                </a>
+                            </li>
+                        {{/twitter}}
+
+                        {{#linkedin}}
+                            <li>
+                                <a href="{{{linkedin}}}" target="_blank" class="linkedin btn btn-link btn-rounded">
+                                    <i class="fa fa-linkedin"></i>
+                                </a>
+                            </li>
+                        {{/linkedin}}
+
+                        {{#youtube}}
+                            <li>
+                                <a href="{{{youtube}}}" target="_blank" class="youtube btn btn-link btn-rounded">
+                                    <i class="fa fa-youtube"></i>
+                                </a>
+                            </li>
+                        {{/youtube}}
+
+                        {{#instagram}}
+                            <li>
+                                <a href="{{{instagram}}}" target="_blank" class="instagram btn btn-link btn-rounded">
+                                    <i class="fa fa-instagram"></i>
+                                </a>
+                            </li>
+                        {{/instagram}}
+
+                        {{#whatsapp}}
+                            <li>
+                                <a href="https://api.whatsapp.com/send?phone={{{whatsapp}}}" target="_blank" class="whatsapp btn btn-link btn-rounded">
+                                <i class="fa fa-whatsapp"></i>
+                                </a>
+                            </li>
+                        {{/whatsapp}}
+
+                        {{#telegram}}
+                            <li>
+                                <a href="{{{telegram}}}" target="_blank" class="telegram btn btn-link btn-rounded">
+                                    <i class="fa fa-telegram"></i>
+                                </a>
+                            </li>
+                        {{/telegram}}
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-4 column-center">
+                {{# output.supportemail }}
+                    <div class="supportemail">{{{ output.supportemail }}}</div>
+                {{/ output.supportemail }}
+
+                {{{ output.login_info }}}
+
+
+                <div class="tool_usertours-resettourcontainer"></div>
+            </div>
+            
+        </div>
+    </div>
+
+    <div class="footer-content-debugging footer-dark bg-dark text-light">
+        <div class="moove-container-fluid footer-dark-inner">
+            {{{ output.debug_footer_html }}}
+        </div>
+    </div>
+
+    
+   
+
+<!-- Persistent Audio Player -->
+<div id="persistent-audio-player" style="display:none; position:fixed; bottom:0; left:0; right:0; background:#343a40; color:white; padding:10px; z-index:9999; border-top:2px solid #007bff;">
+  <div style="display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; max-width:1200px; margin:0 auto; gap:16px;">
+    
+    <!-- Podcast Title EXTREME LEFT -->
+    <div style="flex: 1; min-width: 200px; max-width: 350px;">
+    <div id="track-title" style="line-height:1.2;">
+        <span class="course-title">Ready to play podcast</span>
+      </div>
+    </div>
+
+    <!-- Rewind / Prev / Play / Next / Forward Controls -->
+    <div class="audio-controls-container" style="display:flex; align-items:center; gap:10px;">
+      <!-- Skip Backward 10s -->
+      <button id="skip-back" class="circle-btn">
+        <!-- Rewind SVG -->
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 36 36" fill="none">
+          <path d="M18 6V2L12 8l6 6V10c5 0 9 4 9 9s-4 9-9 9-9-4-9-9H6c0 6.63 5.37 12 12 12s12-5.37 12-12S24.63 6 18 6z" fill="white"/>
+          <text x="13" y="24" font-size="10" fill="white" font-family="Arial" font-weight="bold">10</text>
+        </svg>
+      </button>
+
+      <!-- Previous Podcast -->
+      <button id="prev-podcast" class="circle-btn" title="Previous Podcast">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="white" viewBox="0 0 24 24">
+          <path d="M6 12l8-6v12l-8-6zM4 6h2v12H4z"/>
+        </svg>
+      </button>
+
+      <!-- Play / Pause -->
+      <button id="play-pause-btn" style="width:48px; height:48px; border-radius:50%; background-color:#205eff; border:none; display:flex; align-items:center; justify-content:center; cursor:pointer;">
+        <div id="play-pause-icon" class="pause-icon"></div>
+      </button>
+
+      <!-- Next Podcast -->
+      <button id="next-podcast" class="circle-btn" title="Next Podcast">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="white" viewBox="0 0 24 24">
+          <path d="M18 12l-8-6v12l8-6zM18 6h2v12h-2z"/>
+        </svg>
+      </button>
+
+      <!-- Skip Forward 10s -->
+      <button id="skip-forward" class="circle-btn">
+        <!-- Forward SVG -->
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 36 36" fill="none">
+          <path d="M18 6V2l6 6-6 6V10c-5 0-9 4-9 9s4 9 9 9 9-4 9-9h3c0 6.63-5.37 12-12 12S6 25.63 6 19s5.37-13 12-13z" fill="white"/>
+          <text x="13" y="24" font-size="10" fill="white" font-family="Arial" font-weight="bold">10</text>
+        </svg>
+      </button>
+    </div>
+
+
+    <!-- Seekbar -->
+    <div style="flex-grow:1; display:flex; align-items:center; min-width:200px;">
+      <span id="current-time" style="font-size:12px; margin-right:10px;">0:00</span>
+      <input id="seekbar" type="range" min="0" max="100" value="0" style="flex-grow:1; margin-right:10px; accent-color:#205eff;">
+      <span id="total-time" style="font-size:12px;">0:00</span>
+    </div>
+
+    <!-- Volume / Speed / Close -->
+    <div style="display:flex; align-items:center; gap:8px;">
+      <!-- Inside your player UI -->
+      <!-- Volume Mute -->
+      <svg id="vol-mute" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+          width="24" height="24" style="min-width:24px; display:none;">
+        <!-- Speaker base -->
+        <path fill="white" d="M3 10v4h4l5 5V5L7 10H3z"/>
+        
+        <line x1="2" y1="6" x2="18" y2="16" stroke="#205eff" stroke-width="2"/>
+      </svg>
+
+      <!-- Volume Low -->
+      <svg id="vol-low" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+          width="24" height="24" style="min-width:24px; display:none;">
+        <path fill="white" d="M3 10v4h4l5 5V5L7 10H3z"/>
+        <path fill="#205eff" d="M14.5 12c0-1.77-.73-3.37-1.9-4.53l-1.06 1.06a5.985 5.985 0 0 1 0 6.94l1.06 1.06c1.17-1.16 1.9-2.76 1.9-4.53z"/>
+        
+      </svg>
+
+      <!-- Volume Medium -->
+      <svg id="vol-medium" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+          width="24" height="24" style="min-width:24px; display:none;">
+        <path fill="white" d="M3 10v4h4l5 5V5L7 10H3z"/>
+        <path fill="#205eff" d="M14.5 12c0-1.77-.73-3.37-1.9-4.53l-1.06 1.06a5.985 5.985 0 0 1 0 6.94l1.06 1.06c1.17-1.16 1.9-2.76 1.9-4.53z"/>
+        <path fill="#205eff" d="M15.8 12c0-2.1-.86-4.01-2.25-5.4l-0.9 0.9a6.985 6.985 0 0 1 0 8.99l0.9 0.9c1.39-1.39 2.25-3.3 2.25-5.39z"/>
+      </svg>
+      </svg>
+
+
+      <!-- Volume High -->
+      <svg id="vol-high" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+          width="24" height="24" style="min-width:24px;">
+        <path fill="white" d="M3 10v4h4l5 5V5L7 10H3z"/>
+        <path fill="#205eff" d="M14.5 12c0-1.77-.73-3.37-1.9-4.53l-1.06 1.06a5.985 5.985 0 0 1 0 6.94l1.06 1.06c1.17-1.16 1.9-2.76 1.9-4.53z"/>
+        <path fill="#205eff" d="M16.5 12c0-2.49-1.01-4.74-2.64-6.36l-1.06 1.06a8.96 8.96 0 0 1 0 10.6l1.06 1.06C15.49 16.74 16.5 14.49 16.5 12z"/>
+      </svg>
+
+
+      <input id="volume" type="range" min="0" max="1" step="0.01" value="1" style="width:80px; accent-color:#205eff;">
+      
+      <div class="speed-selector-wrapper">
+        <select id="speed" class="speed-selector">
+            <option value="0.75">0.75x</option>
+            <option value="1" selected>1x</option>
+            <option value="1.25">1.25x</option>
+            <option value="1.5">1.5x</option>
+            <option value="2">2x</option>
+        </select>
+    </div>
+
+    <button id="close-player" style="
+        position: absolute;
+        right: 10px;
+        top: 10px;
+        background: transparent;
+        color: white;
+        border: none;
+        font-size: 15px;
+        cursor: pointer;
+    ">✕</button>
+
+    </div>
+  </div>
+  <audio id="audio-element" preload="metadata"></audio>
+</div>
+
+
+<style>
+
+.speed-selector-wrapper {
+    margin-right: 10px;
+}
+
+@media (max-width: 768px) {
+    #persistent-audio-player {
+        flex-wrap: wrap;
+        padding-right: 60px; /* Ensure enough space for the close button */
+    }
+    
+    /* Fix for mobile controls spacing */
+    .audio-controls-container {
+        flex: 1 !important;
+        justify-content: space-between !important;
+        min-width: 250px !important;
+        max-width: 100% !important;
+    }
+}
+
+
+
+.podcast-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 20px 0;
+  color: white;
+}
+
+.podcast-label {
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.btn-icon {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    vertical-align: middle;
+    margin-right: 6px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.podcast-play-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+}
+
+
+.podcast-play-toggle {
+  background-color:rgb(255, 255, 255); /* Spotify green */
+  border: none;
+  color: white;
+  font-size: 16px;
+  padding: 8px 14px;
+  border-radius: 20px;
+  cursor: pointer;
+}
+
+.podcast-visualizer {
+  display: flex;
+  margin-left: 10px;
+  height: 16px;
+  align-items: flex-end;
+}
+
+.podcast-visualizer span {
+  width: 4px;
+  background-color:rgb(253, 253, 253);
+  margin: 0 2px;
+  animation: bounce 1s infinite ease-in-out;
+}
+
+.podcast-visualizer span:nth-child(1) { animation-delay: 0s; }
+.podcast-visualizer span:nth-child(2) { animation-delay: 0.2s; }
+.podcast-visualizer span:nth-child(3) { animation-delay: 0.4s; }
+.podcast-visualizer span:nth-child(4) { animation-delay: 0.6s; }
+.podcast-visualizer span:nth-child(5) { animation-delay: 0.8s; }
+
+@keyframes bounce {
+  0%, 100% { height: 6px; }
+  50% { height: 16px; }
+}
+
+
+.button-inner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+
+
+/* Skip Backward Icon */
+/* Play icon (triangle) */
+
+.custom-podcast-button-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 20px 0;
+    text-align: center;
+}
+
+.play-icon {
+    width: 0;
+    height: 0;
+    border-left: 12px solid white;
+    border-top: 8px solid transparent;
+    border-bottom: 8px solid transparent;
+}
+
+/* Pause icon (two bars) */
+.pause-icon {
+    display: flex;
+    gap: 4px;
+}
+.pause-icon::before,
+.pause-icon::after {
+    content: '';
+    width: 4px;
+    height: 16px;
+    background-color: white;
+    display: inline-block;
+}
+
+.circle-btn {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background-color: #343a40;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+}
+
+.speed-selector-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+/* Custom styled select */
+.speed-selector {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 4px;
+  outline: none;
+}
+
+/* Remove dropdown arrow */
+.speed-selector::-ms-expand {
+  display: none;
+}
+
+/* Transparent dropdown menu (only works well in Firefox + WebKit) */
+.speed-selector option {
+  background-color: #343a40; /* semi-transparent black */
+  color: white;
+  padding: 8px;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+/* Optional: highlight on hover (depends on browser) */
+.speed-selector option:hover {
+  background-color: #205eff;
+}
+
+#track-title #module-title {
+    font-size: 13px;
+    font-weight: normal;
+    color: #cccccc;
+    display: block;
+    margin-top: 4px;
+}
+
+#persistent-audio-player {
+    transition: left 0.3s ease, width 0.3s ease;
+}
+
+</style>
+</footer>
+
+{{{ output.standard_end_of_body_html }}}
+
+{{#js}}
+require(['theme_moove/persistent_player'], function(PersistentPlayer) {
+    PersistentPlayer.init();
+});
+{{/js}}
+
+
+{{#js}}
+    require(['theme_boost/footer-popover'], function(FooterPopover) {
+        FooterPopover.init();
+    });
+{{/js}}
+
+
+<!-- Floating Chat Icon with Tooltip on the Left -->
+<div id="chatbot-icon" style="
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 60px;
+    height: 60px;
+    background-color:#205eff;
+    border-radius: 50%;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    cursor: pointer;
+    z-index: 10000;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    transition: all 0.2s ease;
+"
+    onmouseover="document.getElementById('chat-tooltip').style.opacity = 1;"
+    onmouseout="document.getElementById('chat-tooltip').style.opacity = 0;">
+
+    <img src="https://cdn-icons-png.flaticon.com/512/2462/2462719.png" alt="Chat" style="width: 30px; height: 30px;">
+
+    <!-- Tooltip -->
+    <span id="chat-tooltip" style="
+        position: absolute;
+        right: 70px; /* space from the icon */
+        top: 50%;
+        transform: translateY(-50%);
+        background-color: #333;
+        color: #fff;
+        padding: 6px 10px;
+        border-radius: 6px;
+        font-size: 13px;
+        font-family: 'Segoe UI', sans-serif;
+        white-space: nowrap;
+        opacity: 0;
+        transition: opacity 0.2s ease-in-out;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        pointer-events: none;
+    ">
+        💬 Chat with VedaAI — AI for your AI questions
+        <span style="
+            position: absolute;
+            top: 50%;
+            left: 100%;
+            margin-top: -5px;
+            width: 0;
+            height: 0;
+            border-top: 5px solid transparent;
+            border-bottom: 5px solid transparent;
+            border-left: 6px solid #333;
+        "></span>
+    </span>
+</div>
+
+
+<!-- Floating Chat Window Styles -->
+<style>
+  #chat-sidebar {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 50%;
+    max-width: 570px;
+    height: calc(100% - 70px - 20px - 20px);   //70px - height of navbar, 20px - initial bottom, 15px - spaceBetween navbar and chatwindow header
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    transform: scale(0);
+    transform-origin: bottom right;
+    transition: transform 0.2s ease-in-out;
+    z-index: 9998;
+    overflow: hidden;
+    display: none;
+    flex-direction: column;
+  }
+
+  #chat-sidebar.open {
+    transform: scale(1);
+  }
+
+  #chatbot-icon img {
+    filter: invert(100%) brightness(200%) !important;
+  }
+
+  #chat-sidebar iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+  }
+
+  @media (max-width: 600px) {
+    #chat-sidebar {
+      width: 95%;
+      right: 2.5%;
+      bottom: 80px;
+      height: calc(100% - 70px - 20px - 20px);   //70px - height of navbar, 20px - initial bottom, 15px - spaceBetween navbar and chatwindow header
+    }
+  }
+
+  #chat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f1f1f1;
+    padding: 8px 12px;
+    border-bottom: 1px solid #ccc;
+    font-family: Arial, sans-serif;
+    height: 40px;
+  }
+
+  #chat-title {
+    font-weight: bold;
+    font-size: 16px;
+    color: #000;
+  }
+
+  #chat-close {
+    cursor: pointer;
+  }
+
+  #chat-close svg {
+    transition: box-shadow 0.2s ease;
+  }
+
+  #chat-close:hover svg {
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+  }
+  #chat-fullscreen svg {
+    transition: box-shadow 0.2s ease;
+  }
+  #chat-fullscreen:hover svg {
+   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  }
+
+  .fullscreen-chat {
+    top: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    max-width: none !important;
+    max-height: none !important;
+    border-radius: 0 !important;
+    transition: all 0.3s ease-in-out;
+   }
+  .no-transition {
+    transition: none !important;
+  }
+</style>
+
+<!-- Chat Window -->
+<div id="chat-sidebar" class="no-transition">
+  <div id="chat-header">
+    <div id="chat-title">Chat</div>
+    <div style="display: flex; gap: 10px; align-items: center; margin-left: auto;">
+      <!-- Fullscreen Icon -->
+      <div id="chat-fullscreen" style="cursor: pointer;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="black" viewBox="0 0 24 24">
+          <path d="M3 3h6v2H5v4H3V3zm18 0v6h-2V5h-4V3h6zm-6 18v-2h4v-4h2v6h-6zm-6 0H3v-6h2v4h4v2z"/>
+        </svg>
+      </div>
+      <!-- Close Icon -->
+      <div id="chat-close" style="cursor: pointer;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="black" viewBox="0 0 24 24">
+          <path d="M18 6L6 18M6 6l12 12" stroke="black" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chat iframe -->
+  <iframe src="{{config.wwwroot}}/my/chat.php" scrolling="no"></iframe>
+</div>
+
+<!-- Script -->
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const icon = document.getElementById('chatbot-icon');
+  const chatSidebar = document.getElementById('chat-sidebar');
+  const closeBtn = document.getElementById('chat-close');
+  const fullscreenBtn = document.getElementById('chat-fullscreen');
+  const path = window.location.pathname;
+  const navbar = document.querySelector('nav.navbar');
+
+  let isFullscreen = false;
+  
+  if (path.includes('/user/edit.php') && window.location.search.includes('course=1')) {
+    if (icon) icon.style.display = 'none';
+    if (chatSidebar) chatSidebar.style.display = 'none';
+    return; // stop further chatbot init
+  }
+
+  // On /my/chat.php page, hide components
+  if (path.includes('/my/chat.php')) {
+    if (icon) icon.style.display = 'none';
+    if (navbar) navbar.style.display = 'none';
+
+    const drawer = document.querySelector('[data-region="drawers"]');
+    if (drawer) drawer.style.display = 'none';
+    return;
+  }
+
+  // Hides chatIocn if user not logged-in , only for devlearn
+  if (
+  window.location.hostname === "devlearn.hitloop.com" && // domain matches
+  window.location.pathname === "/" &&                   // no extra path
+  !window.location.search                               // no query string
+) {
+  if (icon) icon.style.display = 'none';
+  if (chatSidebar) chatSidebar.style.display = 'none';
+  return;
+}
+
+  // To Open chat window on login, storing a localStorage variable.
+  let chatWindowOpenOnLogin = localStorage.getItem("chatWindowOpenOnLogin");
+  if(!chatWindowOpenOnLogin){
+    localStorage.setItem("chatWindowOpenOnLogin", "true");
+  }
+
+  // Load previous state from localStorage
+  let isOpen = localStorage.getItem('chatSidebarOpen') === 'true';
+  if (isOpen){
+    icon.style.display = 'none';
+    chatSidebar.classList.add('open');
+  } else {
+    chatSidebar.classList.remove('open');
+    icon.style.display = 'flex';
+  }
+
+
+  // Remove no-transition after a short delay to ensure no flicker
+  setTimeout(() => {
+    chatSidebar.classList.remove('no-transition');
+  }, 50);
+
+  // Toggle open/close
+  icon?.addEventListener('click', function () {
+    isOpen = !isOpen;
+    if (isOpen){
+      chatSidebar.classList.add('open');
+    } else {
+      chatSidebar.classList.remove('open');
+    }
+    icon.style.display = isOpen ? 'none' : 'flex';
+    localStorage.setItem('chatSidebarOpen', isOpen);
+    localStorage.setItem('chatWindowOpenOnLogin', "false");
+  });
+
+  // Close on X
+  closeBtn?.addEventListener('click', function () {
+    isOpen = false;
+    isFullscreen = false;
+    chatSidebar.classList.remove('fullscreen-chat');
+    chatSidebar.classList.remove('open');
+    localStorage.setItem('chatSidebarOpen', isOpen);
+    localStorage.setItem('chatWindowOpenOnLogin', "false");
+    icon.style.display = 'flex';
+  });
+  // Fullscreen button
+  fullscreenBtn?.addEventListener('click', function () {
+    isFullscreen = !isFullscreen;
+    if (isFullscreen) {
+        chatSidebar.classList.add('fullscreen-chat');
+        icon.style.display = 'none'; // Hide chat icon
+    } else {
+        chatSidebar.classList.remove('fullscreen-chat');
+        icon.style.display = 'flex'; // Show chat icon again
+    }
+ });
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+    const chatIcon = document.getElementById('chatbot-icon');
+    const chatSidebar = document.getElementById('chat-sidebar');
+    const player = document.getElementById('persistent-audio-player');
+
+    // Exit if the necessary elements don't exist on the page.
+    if (!chatIcon || !player) {
+        return;
+    }
+
+    // To launch chat window on user login/signup.
+    const isLogin = localStorage.getItem("chatWindowOpenOnLogin");
+    if (chatIcon && M.cfg.userId > 0 && isLogin === 'true')  {   // means user is logged in
+      chatIcon.style.display = 'flex';
+      console.log("Icon clicked by function");
+      localStorage.setItem("chatWindowOpenOnLogin", "false");
+      setTimeout(() => {
+        chatIcon.click();
+      }, 2000);
+      
+    }
+
+    // This function now MEASURES the player's height.
+    const adjustIconPosition = () => {
+        if (player.style.display !== 'none') {
+            // Player is visible:
+            // 1. Get the player's current height in pixels.
+            const playerHeight = player.offsetHeight;
+
+            // 2. Define a small margin (e.g., 15px) for spacing above the player.
+            const margin = 15;
+
+            // 3. Set the icon's position to the player's height + margin.
+            chatIcon.style.bottom = `${playerHeight + margin}px`;
+            chatSidebar.style.bottom = `${playerHeight + margin}px`;
+            chatSidebar.style.height = `calc(100% - 70px - ${playerHeight + margin}px - 20px)`;
+        } else {
+            // Player is hidden: Reset icon to its default low position.
+            chatIcon.style.bottom = '20px';
+            chatSidebar.style.bottom = '20px';
+            chatSidebar.style.height = 'calc(100% - 70px - 20px - 20px)';
+        }
+    };
+
+    // --- Observers ---
+
+    // 1. Watch for when the player is shown or hidden.
+    const observer = new MutationObserver(adjustIconPosition);
+    observer.observe(player, {
+        attributes: true,
+        attributeFilter: ['style']
+    });
+
+    // 2. Watch for window resizing, as this can also change the player's height.
+    let resizeTimeout;
+    window.addEventListener('resize', () => {
+        // Debounce the resize event to improve performance.
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(adjustIconPosition, 100);
+    });
+
+    // --- Initial Setup ---
+    // Run the function once on page load to set the correct initial position.
+    adjustIconPosition();
+});
+</script>
+

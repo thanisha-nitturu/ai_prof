@@ -1,0 +1,332 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+
+    @template theme_moove/navbar
+
+    This template renders the top navbar.
+
+    Example context (json):
+    {
+        "output": {
+            "should_display_navbar_logo": true,
+            "get_compact_logo_url": "http://placekitten.com/50/50",
+            "custom_menu": "<li>..</li>",
+            "page_heading_menu": "<li>..</li>",
+            "search_box": "<div><input type='text'></div>",
+            "navbar_plugin_output": "<div class='dropdown'>Messaging</div>",
+            "user_menu": "<div class='dropdown'>John Doe</div>"
+        },
+        "config": {
+            "wwwroot": "#",
+            "homeurl": "/my/"
+        },
+        "sitename": "Moodle Site",
+        "mobileprimarynav": [
+            {
+                "text": "Dashboard",
+                "url": "/my",
+                "isactive": true
+            },
+            {
+                "text": "Site home",
+                "url": "/",
+                "isactive": false
+            },
+            {
+                "text": "My courses",
+                "url": "/course",
+                "isactive": false
+            }
+        ]
+    }
+}}
+<nav class="navbar fixed-top bg-body navbar-expand border-bottom px-2" aria-label="{{#str}}sitemenubar, admin{{/str}}">
+    <button class="navbar-toggler aabtn d-block d-md-none px-1 my-1 border-0" data-toggler="drawers" data-action="toggle" data-target="theme_boost-drawers-primary">
+        <span class="navbar-toggler-icon"></span>
+        <span class="sr-only">{{#str}}sidepanel, core{{/str}}</span>
+    </button>
+
+    <a href="{{{ config.homeurl }}}" class="navbar-brand d-none d-md-flex align-items-center m-0 me-4 p-0 aabtn">
+
+        {{# output.should_display_logo }}
+            <img src="{{output.get_logo}}" class="logo me-1" alt="{{sitename}}">
+        {{/ output.should_display_logo }}
+        {{^ output.should_display_logo }}
+            {{{ sitename }}}
+        {{/ output.should_display_logo }}
+    </a>
+    
+    
+
+    {{#primarymoremenu}}
+        <div class="primary-navigation d-flex align-items-center w-100 px-2">
+            <div id="core-navigation-block" class="d-flex align-items-center">
+                {{> core/moremenu}}
+            </div>
+            
+            <div id="right-navigation-block" class="ms-auto d-flex align-items-center pr-3">
+                {{! Playground - Moved to right side }}
+                <div id="custom-playground-container" class="nav-item d-none d-md-flex align-items-center">
+                    <a id="playground-nav-link" class="nav-link mx-1 px-3 py-1 rounded-pill transition-all" href="{{config.wwwroot}}/mod/codingplayground/all_playgrounds.php#/playgrounds" style="font-size: 16px; font-weight: 500;">
+                        Playground
+                    </a>
+                </div>
+
+                {{#is_siteadmin}}
+                <div id="custom-placement-container" class="nav-item d-none d-md-flex align-items-center">
+                    <a id="placement-nav-link" class="nav-link mx-1 px-3 py-1 rounded-pill transition-all" href="{{config.wwwroot}}/local/placement/index.php" style="font-size: 16px; font-weight: 500;">
+                        Placement
+                    </a>
+                </div>
+                {{/is_siteadmin}}
+            </div>
+        </div>
+    {{/primarymoremenu}}
+
+    <ul class="navbar-nav d-none d-md-flex my-1 px-1">
+        <!-- page_heading_menu -->
+        {{{ output.page_heading_menu }}}
+    </ul>
+
+    <div id="usernavigation" class="navbar-nav ms-auto h-100">
+        {{# output.search_box }}
+            {{{ output.search_box }}}
+            <div class="divider border-start h-75 align-self-center mx-1"></div>
+        {{/output.search_box}}
+        {{#langmenu}}
+            {{> theme_boost/language_menu }}
+            <div class="divider border-start h-75 align-self-center mx-1"></div>
+        {{/langmenu}}
+        {{{ output.navbar_plugin_output }}}
+        <div class="d-flex align-items-stretch usermenu-container" data-region="usermenu">
+            {{#usermenu}}
+                {{> core/user_menu }}
+            {{/usermenu}}
+        </div>
+        {{{ output.edit_switch }}}
+    </div>
+</nav>
+
+<style>
+    /* Combined base styles for the Right-Side Tools */
+    #playground-nav-link, 
+    #placement-nav-link, 
+    #right-navigation-block .nav-item .nav-link,
+    .pathways-tool-link {
+        color: #74849a !important; 
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        text-decoration: none !important;
+        font-size: 16px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding-left: 20px !important;
+        padding-right: 20px !important;
+        margin: 0 2px !important;
+        border-radius: 8px !important;
+        height: 70px !important; /* Enforcing full height */
+        border: none !important;
+        white-space: nowrap;
+    }
+
+    #playground-nav-link:hover,
+    #placement-nav-link:hover,
+    .pathways-tool-link:hover {
+        background-color: #f6f8f9ff;
+        color: #4b6bfb !important; /* Brand Blue */
+        transform: translateY(-2px); /* Subtle elevation lift */
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); /* Soft shadow for depth */
+    }
+
+    #playground-nav-link:active,
+    #placement-nav-link:active,
+    #right-navigation-block .nav-item .nav-link:active,
+    .pathways-tool-link:active {
+        border: 4px solid #5d7afaff !important; /* Blue border only on click */
+    }
+
+    #playground-nav-link.active,
+    #placement-nav-link.active,
+    #right-navigation-block .nav-item .nav-link.active,
+    .pathways-tool-link.active {
+        background-color: #f1f5f9; /* Active pill tint */
+        border-radius: 10px !important; /* Pill shape for selection */
+        color: #4b6bfb !important;
+        font-weight: 700;
+        position: relative;
+        height: 38px !important; /* Compact active height */
+        margin-top: 16px !important; /* Centering in the 70px nav area */
+        margin-bottom: 16px !important;
+    }
+
+    /* Active underline indicator dash for both */
+    #playground-nav-link.active::after,
+    #placement-nav-link.active::after,
+    #right-navigation-block .nav-item .nav-link.active::after,
+    .pathways-tool-link.active::after {
+        content: "";
+        position: absolute;
+        bottom: -16px; /* Offset to stay at bottom of nav */
+        left: 50%;
+        transform: translateX(-50%);
+        width: 32px;
+        height: 3px;
+        background-color: #4b6bfb;
+        border-radius: 99px 99px 0 0;
+    }
+
+    /* Remove Moodle's default dots and list styling in the right block */
+    #right-navigation-block li {
+        list-style: none !important;
+        display: flex !important;
+        align-items: center !important;
+    }
+    #right-navigation-block li::before {
+        content: none !important;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        function migratePathways() {
+            const rightBlock = document.getElementById('right-navigation-block');
+            if (!rightBlock) return;
+
+            // Deep Recovery: Check EVERY nav-link and dropdown-item on the page
+            const allElements = document.querySelectorAll('.nav-link, .dropdown-item, .moremenu a');
+            let pathwaysLink = null;
+            
+            allElements.forEach(el => {
+                const text = el.textContent?.trim().toLowerCase();
+                const isPathways = text === 'pathways' || el.href?.includes('local/pathway');
+                // Ensure we don't pick up the playground link itself or an already migrated link
+                if (isPathways && el.id !== 'playground-nav-link') {
+                    pathwaysLink = el;
+                }
+            });
+
+            if (pathwaysLink) {
+                // Determine if it needs re-wrapping (if it's a dropdown link or missing its li)
+                let targetLi = pathwaysLink.closest('li.nav-item');
+                
+                if (!targetLi || pathwaysLink.classList.contains('dropdown-item')) {
+                    // Re-wrap orphaned or dropdown links into a clean nav-item structure
+                    const newLi = document.createElement('li');
+                    newLi.className = 'nav-item d-flex align-items-center';
+                    
+                    // Standardize the link class
+                    pathwaysLink.className = 'nav-link pathways-tool-link';
+                    newLi.appendChild(pathwaysLink);
+                    targetLi = newLi;
+                }
+
+                // If it's not already in our tool zone, teleport it!
+                if (targetLi.parentElement !== rightBlock) {
+                    pathwaysLink.classList.add('pathways-tool-link');
+                    pathwaysLink.classList.remove('rounded-pill', 'rounded-circle', 'rounded', 'dropdown-item');
+                    // Prepend so it sits to the LEFT of Playground
+                    rightBlock.prepend(targetLi);
+                }
+            }
+        }
+
+        function highlightActiveTools() {
+            const currentUrl = window.location.href;
+            const currentHash = window.location.hash;
+            
+            const playgroundLink = document.getElementById('playground-nav-link');
+            const placementLink = document.getElementById('placement-nav-link');
+            const pathwaysLink = document.querySelector('.pathways-tool-link');
+
+            const isActivity = currentUrl.includes('view.php') || currentUrl.includes('?id=') || currentUrl.includes('&id=');
+            const isPlaygroundContext = (currentUrl.includes('mod/codingplayground/all_playgrounds.php') || currentHash.includes('playgrounds')) && !isActivity;
+            const isPlacementContext = currentUrl.includes('local/placement') && !isActivity;
+            const isPathwaysContext = currentUrl.includes('local/pathway');
+
+            console.log('[DEBUG-NAV] URL:', currentUrl, 'Hash:', currentHash, 'isActivity:', isActivity, 'isPlayground:', isPlaygroundContext);
+
+            // Exclusive Highlighting Enforcement
+            if (isPlaygroundContext || isPlacementContext || isPathwaysContext) {
+                // Find all OTHER nav items that Moodle thinks are active
+                document.querySelectorAll('.navbar-nav .nav-link.active, .primary-navigation .nav-link.active').forEach(item => {
+                    if (item.id !== 'playground-nav-link' && item.id !== 'placement-nav-link' && !item.classList.contains('pathways-tool-link')) {
+                        item.classList.remove('active');
+                        item.removeAttribute('aria-current');
+                    }
+                });
+            }
+
+            // Reset our tools before applying
+            if (playgroundLink) { playgroundLink.classList.remove('active'); playgroundLink.removeAttribute('aria-current'); }
+            if (placementLink) { placementLink.classList.remove('active'); placementLink.removeAttribute('aria-current'); }
+            if (pathwaysLink) { pathwaysLink.classList.remove('active'); pathwaysLink.removeAttribute('aria-current'); }
+
+            // Highlight Playground exclusively
+            if (isPlaygroundContext) {
+                if (playgroundLink) {
+                    playgroundLink.classList.add('active');
+                    playgroundLink.setAttribute('aria-current', 'page');
+                }
+            } 
+            // Highlight Placement exclusively
+            else if (isPlacementContext) {
+                if (placementLink) {
+                    placementLink.classList.add('active');
+                    placementLink.setAttribute('aria-current', 'page');
+                }
+            }
+            // Highlight Pathways exclusively
+            else if (isPathwaysContext) {
+                if (pathwaysLink) {
+                    pathwaysLink.classList.add('active');
+                    pathwaysLink.setAttribute('aria-current', 'page');
+                }
+            }
+
+            // EXTRA PROTECTION: If we are in an activity, ensure custom tools ARE NOT highlighted
+            if (isActivity) {
+                if (playgroundLink) playgroundLink.classList.remove('active');
+                if (placementLink) placementLink.classList.remove('active');
+            }
+        }
+
+        // Initial run
+        migratePathways();
+        highlightActiveTools();
+        
+        // Interval run for dynamic re-renders
+        const syncInterval = setInterval(() => {
+            migratePathways();
+            highlightActiveTools();
+        }, 1000);
+
+        // Clear after 10 seconds to save resources
+        setTimeout(() => clearInterval(syncInterval), 10000);
+    });
+</script>
+
+{{#secondarymoremenu}}
+    <div class="secondary-navigation d-print-none moove">
+        <div class="moove-container-fluid">
+            {{> core/moremenu}}
+        </div>
+    </div>
+{{/secondarymoremenu}}
+
+{{> theme_boost/primary-drawer-mobile }}

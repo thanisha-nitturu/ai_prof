@@ -1,0 +1,551 @@
+// Enhanced Navbar Styles
+.navbar-nav .popover-region .popover-region-toggle .icon {
+    font-weight: inherit;
+}
+
+// .navbar.fixed-top {
+//     border: none;
+//     height: 70px;
+//     // More transparent background - adjust the 0.8 value (0.1-1.0 for transparency)
+//     background: rgba(255, 255, 255, 0.5);
+//     backdrop-filter: blur(15px);
+//     // box-shadow: 0 2px 20px rgba(0, 0, 0, 0.05);
+//     box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(32, 94, 255, 0.3);
+//     border-bottom: 10px solid rgba(32, 94, 255, 0.2);
+//     transition: all 0.3s ease;
+
+//     // Alternative color options - uncomment one to use:
+//     // Dark theme:
+//     // background: rgba(30, 41, 59, 0.8); // slate-800 with transparency
+
+//     // Blue theme:
+//     // background: rgba(59, 130, 246, 0.8); // blue-500 with transparency
+
+//     // Purple theme:
+//     // background: rgba(99, 102, 241, 0.8); // indigo-500 with transparency
+
+//     // Green theme:
+//     // background: rgba(34, 197, 94, 0.8); // green-500 with transparency
+
+//     // Custom color (example):
+//     // background: rgba(YOUR_R, YOUR_G, YOUR_B, 0.8);
+
+//     .primary-navigation {
+//         .navigation {
+//             height: 70px;
+//             display: flex;
+//             align-items: center;
+
+//             .nav-link {
+//                 height: 70px;
+//                 border: none;
+//                 border-radius: 8px;
+//                 padding: 0 20px;
+//                 margin: 0 4px;
+//                 font-weight: 500;
+//                 font-size: 0.95rem;
+//                 color: #64748b;
+//                 transition: all 0.3s ease;
+//                 position: relative;
+//                 display: flex;
+//                 align-items: center;
+
+//                 &:hover {
+//                     // Adjust hover colors based on your navbar theme
+//                     color: #205eff;
+//                     background-color: rgba(59, 130, 246, 0.08);
+//                     transform: translateY(-1px);
+
+//                     // For dark theme, use:
+//                     // color: #ffffff;
+//                     // background-color: rgba(255, 255, 255, 0.1);
+//                 }
+
+//                 &.active {
+//                     font-weight: 600;
+//                     color: #205eff;
+//                     background-color: rgba(59, 130, 246, 0.1);
+//                     border-bottom: none;
+
+//                     &::after {
+//                         content: '';
+//                         position: absolute;
+//                         bottom: 0;
+//                         left: 50%;
+//                         transform: translateX(-50%);
+//                         width: 24px;
+//                         height: 2px;
+//                         background: linear-gradient(90deg, #3b82f6, #6366f1);
+//                         border-radius: 3px;
+//                     }
+//                 }
+//             }
+//         }
+//     }
+
+//     .navbarcallbacks {
+//         display: flex;
+//         flex-direction: row-reverse;
+//         align-items: center;
+//         gap: 12px;
+
+//         .btn {
+//             border-radius: 8px;
+//             font-weight: 500;
+//             padding: 8px 16px;
+//             transition: all 0.3s ease;
+
+//             &.btn-primary {
+//                 background: linear-gradient(135deg, #3b82f6, #6366f1);
+//                 border: none;
+//                 box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+
+//                 &:hover {
+//                     transform: translateY(-2px);
+//                     box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+//                 }
+//             }
+//         }
+//     }
+
+//     // Logo enhancement
+//     .navbar-brand {
+//         font-weight: 700;
+//         font-size: 1.5rem;
+//         color: #1e293b; // Adjust based on navbar background
+//         // For dark backgrounds: color: #ffffff;
+//         // For colored backgrounds: color: rgba(255, 255, 255, 0.95);
+
+//         &:hover {
+//             transform: scale(1.05);
+//             transition: transform 0.3s ease;
+//         }
+//     }
+// }
+
+.navbar.fixed-top {
+    border: none;
+    height: 70px;
+    // More transparent background - adjust the 0.8 value (0.1-1.0 for transparency)
+    background: rgba(255, 255, 255, 0.5);
+    backdrop-filter: blur(15px);
+    // box-shadow: 0 2px 20px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(32, 94, 255, 0.3);
+    border-bottom: 10px solid rgba(32, 94, 255, 0.2);
+    transition: all 0.3s ease;
+
+    .navbar-brand .logo {
+        max-height: 50px;
+        width: auto;
+        object-fit: contain;
+        transition: transform 0.3s ease;
+    }
+
+    // Alternative color options - uncomment one to use:
+    // Dark theme:
+    // background: rgba(30, 41, 59, 0.8); // slate-800 with transparency
+
+    // Blue theme:
+    // background: rgba(59, 130, 246, 0.8); // blue-500 with transparency
+
+    // Purple theme:
+    // background: rgba(99, 102, 241, 0.8); // indigo-500 with transparency
+
+    // Green theme:
+    // background: rgba(34, 197, 94, 0.8); // green-500 with transparency
+
+    // Custom color (example):
+    // background: rgba(YOUR_R, YOUR_G, YOUR_B, 0.8);
+    .primary-navigation {
+        .navigation {
+            height: 70px;
+            display: flex;
+            align-items: center;
+
+            .nav-link {
+                height: 70px;
+                border: none;
+                border-radius: 8px;
+                padding: 0 20px;
+                margin: 0 4px;
+                font-weight: 500;
+                font-size: 0.95rem;
+                color: #485d7a;
+                transition: all 0.3s ease;
+                position: relative;
+                display: flex;
+                align-items: center;
+
+                &:hover {
+                    color: #205eff;
+                    // REMOVE the direct background-color
+                    // background-color: rgba(59, 130, 246, 0.08);
+                    transform: translateY(-1px);
+                }
+
+                &.active {
+                    font-weight: 600;
+                    color: #205eff;
+                    // REMOVE the direct background-color
+                    // background-color: rgba(59, 130, 246, 0.1);
+                    border-bottom: none;
+
+                    &::after {
+                        content: '';
+                        position: absolute;
+                        bottom: 0;
+                        left: 50%;
+                        transform: translateX(-50%);
+                        width: 24px;
+                        height: 2px;
+                        background: linear-gradient(90deg, #3b82f6, #6366f1);
+                        border-radius: 3px;
+                    }
+                }
+
+                // NEW: Create tight backgrounds using pseudo-elements
+                &:hover::before {
+                    content: '';
+                    position: absolute;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    width: calc(100% - 8px); // Slightly smaller than full width
+                    height: 32px; // TIGHT HEIGHT - adjust this value
+                    //background-color: rgba(59, 130, 246, 0.08);
+                    border-radius: 6px; // Smaller border radius
+                    z-index: -1;
+                    transition: all 0.3s ease;
+                }
+
+                &.active::before {
+                    content: '';
+                    position: absolute;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    width: calc(100% - 8px); // Slightly smaller than full width
+                    height: 32px; // TIGHT HEIGHT - adjust this value
+                    background-color: rgba(59, 130, 246, 0.1);
+                    border-radius: 6px; // Smaller border radius
+                    z-index: -1;
+                    transition: all 0.3s ease;
+                }
+            }
+        }
+    }
+}
+
+.secondary-navigation {
+    border: none;
+    align-items: stretch;
+    padding-top: 0;
+    padding-bottom: 0;
+    z-index: 1021;
+    // background: linear-gradient(135deg, #3b82f6, #6366f1);
+    // background: linear-gradient(135deg, rgba(59, 130, 246, 0.8), rgba(99, 102, 241, 0.8));
+    background-color: rgba(32, 94, 255, 0.6);
+    filter: drop-shadow(0px 4px 6px rgba(0, 0, 0, 0.1));
+    position: fixed;
+    top: 70px;
+    backdrop-filter: blur(10px);
+
+    >.moove-container-fluid {
+        padding: 0;
+    }
+
+    &.moove {
+        width: 100%;
+        max-width: 100% !important;
+    }
+
+    .moremenu {
+        box-shadow: none;
+        background-color: inherit;
+        // background-color: #205eff;
+        border-top: none;
+        border-bottom: none;
+        height: 60px;
+
+        // .nav-tabs {
+        //     border: none;
+        //     background-color: inherit;
+        //     max-width: none;
+        //     display: flex;
+        //     align-items: center;
+
+        //     .nav-link {
+        //         display: flex;
+        //         align-items: center;
+        //         white-space: nowrap;
+        //         color: rgba(255, 255, 255, 0.9);
+        //         border: none;
+        //         border-radius: 8px;
+        //         margin: 0 4px;
+        //         padding: 12px 20px;
+        //         font-weight: 500;
+        //         transition: all 0.3s ease;
+        //         position: relative;
+
+        //         &.active {
+        //             color: #ffffff;
+        //             font-weight: 600;
+        //             background-color: rgba(255, 255, 255, 0.15);
+        //             border-bottom: none;
+
+        //             &::after {
+        //                 content: '';
+        //                 position: absolute;
+        //                 bottom: 0;
+        //                 left: 50%;
+        //                 transform: translateX(-50%);
+        //                 width: 24px;
+        //                 height: 3px;
+        //                 background: #ffffff;
+        //                 border-radius: 2px;
+        //             }
+        //         }
+
+
+        //         &:hover,
+        //         &:focus {
+        //             background-color: rgba(255, 255, 255, 0.1);
+        //             color: #ffffff;
+        //             transform: translateY(-1px);
+        //         }
+        //     }
+        // }
+        .nav-tabs {
+            border: none;
+            background-color: transparent;
+            max-width: none;
+            display: flex;
+            align-items: center;
+
+            .nav-link {
+                display: flex;
+                align-items: center;
+                white-space: nowrap;
+                color: rgba(255, 255, 255, 0.9);
+                border: none;
+                border-radius: 8px;
+                margin: 0 4px;
+                padding: 12px 20px;
+                font-weight: 500;
+                transition: all 0.3s ease;
+                position: relative;
+                // REMOVE direct background color to allow the pseudo-element to show
+                background-color: transparent;
+
+                // Style for the active link's text and underline
+                &.active {
+                    color: #ffffff;
+                    font-weight: 600;
+
+                    &::after {
+                        content: '';
+                        position: absolute;
+                        bottom: 0;
+                        left: 50%;
+                        transform: translateX(-50%);
+                        width: 24px;
+                        height: 3px;
+                        background: #ffffff;
+                        border-radius: 2px;
+                    }
+                }
+
+                // Style for the hover state text
+                &:hover {
+                    color: #ffffff;
+                    transform: translateY(-1px);
+                }
+
+                // NEW: Create the tight background for both hover and active states
+                &.active::before,
+                &:hover::before {
+                    content: '';
+                    position: absolute;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    width: calc(100% - 16px); // Makes it narrower than the link
+                    height: 36px; // Sets a specific, tight height
+                    background-color: rgba(255, 255, 255, 0.15);
+                    border-radius: 6px;
+                    z-index: -1; // Places the background behind the text
+                    transition: all 0.3s ease;
+                }
+            }
+        }
+    }
+}
+
+// Enhanced Notifications
+.popover-region-notifications .popover-region-container {
+    @extend .scale-up;
+    top: 70px;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+    border: 1px solid rgba(226, 232, 240, 0.8);
+
+    .popover-region-header-container {
+        height: 50px;
+        padding: 11px 20px 15px;
+        border-bottom: 1px solid rgba(120, 130, 140, 0.13);
+        background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+        border-radius: 12px 12px 0 0;
+        font-weight: 600;
+        color: #334155;
+    }
+
+    .popover-region-content-container {
+        height: calc(100% - 50px);
+
+        .content-item-container {
+            line-height: initial;
+            background-color: #fff;
+            padding: 15px;
+            transition: all 0.3s ease;
+            border-left: 4px solid transparent;
+
+            &.unread {
+                background-color: #f8fafc;
+                border-left-color: #3b82f6;
+            }
+
+            &:hover {
+                background-color: #f1f5f9;
+                color: inherit;
+                transform: translateX(2px);
+
+                .content-item-footer .timestamp {
+                    color: inherit;
+                }
+            }
+
+            .content-item-body {
+                font-weight: normal;
+                width: calc(100% - 54px);
+
+                h3,
+                .notification-message {
+                    font-size: 1.2rem;
+                    margin-bottom: 5px;
+                    font-weight: 600;
+                    color: #1e293b;
+                }
+
+                p {
+                    line-height: 1.5;
+                    color: #64748b;
+                }
+
+                .notification-message {
+                    font-size: 1rem;
+                }
+            }
+
+            .view-more {
+                font-size: 0.9rem;
+                color: #3b82f6;
+                font-weight: 500;
+            }
+
+            .content-item-footer .timestamp {
+                font-size: 0.9rem;
+                line-height: inherit;
+                color: #94a3b8;
+            }
+
+            .unread-count-container {
+                width: 24px;
+
+                .badge {
+                    background: linear-gradient(135deg, #3b82f6, #6366f1);
+                    width: 21px;
+                    height: 21px;
+                    border-radius: 11px;
+                    line-height: 17px;
+                    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+                }
+            }
+        }
+    }
+
+    .popover-region-footer-container {
+        height: 50px;
+        padding: 15px 20px;
+        border: 1px solid #e2e8f0;
+        margin: 0 -1px;
+        background: #f8fafc;
+        border-radius: 0 0 12px 12px;
+
+        .popover-region-seeall-text {
+            line-height: initial;
+            color: #3b82f6;
+            font-weight: 500;
+
+            &:hover {
+                color: #2563eb;
+            }
+        }
+    }
+}
+
+.popover-region-notifications .popover-region-container[aria-hidden="false"] {
+    @extend .scale-up-show;
+}
+
+// Right hand drawer enhancement
+[data-region=right-hand-drawer].drawer {
+    top: 70px;
+    height: calc(100% - 70px);
+    border-radius: 12px 0 0 0;
+    box-shadow: -4px 0 20px rgba(0, 0, 0, 0.1);
+
+    .footer-container {
+        padding: 0.5rem 0;
+        background-color: #f8fafc;
+        color: #334155;
+        border-top: 1px solid #e2e8f0;
+    }
+}
+
+// Additional animations and utilities
+@keyframes scale-up {
+    from {
+        opacity: 0;
+        transform: scale(0.95) translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.scale-up {
+    animation: scale-up 0.2s ease-out;
+}
+
+.scale-up-show {
+    animation: scale-up 0.2s ease-out;
+}
+
+// Responsive enhancements
+@media (max-width: 768px) {
+    .navbar.fixed-top {
+        .primary-navigation .navigation .nav-link {
+            padding: 0 12px;
+            margin: 0 2px;
+            font-size: 0.9rem;
+        }
+    }
+
+    .secondary-navigation .moremenu .nav-tabs .nav-link {
+        padding: 10px 16px;
+        margin: 0 2px;
+        font-size: 0.9rem;
+    }
+}

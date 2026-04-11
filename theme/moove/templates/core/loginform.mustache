@@ -1,0 +1,206 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template core/loginform
+
+    Moodle template for the login page.
+}}
+
+<div class="loginform row {{#hastwocolumns}}hastwocolumns{{/hastwocolumns}}">
+    <div class="{{#hastwocolumns}}col-lg-6 col-md-12 left-column{{/hastwocolumns}}{{^hastwocolumns}}col{{/hastwocolumns}}">
+        {{#logourl}}
+            <div id="loginlogo" class="login-logo">
+                <img id="logoimage" src="{{logourl}}" class="img-fluid" alt="{{sitename}}"/>
+                <h1 class="login-heading visually-hidden">{{#str}} loginto, core, {{sitename}} {{/str}}</h1>
+            </div>
+        {{/logourl}}
+        {{^logourl}}
+            <h1 class="login-heading mb-4">{{#str}} loginto, core, {{sitename}} {{/str}}</h1>
+        {{/logourl}}
+        {{#maintenance}}
+            <div class="alert alert-danger login-maintenance">
+                {{{maintenance}}}
+            </div>
+        {{/maintenance}}
+        {{#error}}
+            <a href="#" id="loginerrormessage" class="visually-hidden">{{error}}</a>
+            <div class="alert alert-danger" role="alert">{{error}}</div>
+        {{/error}}
+        {{#info}}
+            <a href="#" id="logininfomessage" class="visually-hidden">{{info}}</a>
+            <div class="alert alert-info" role="alert">{{info}}</div>
+        {{/info}}
+        {{#cansignup}}
+            <a href="{{signupurl}}" class="visually-hidden">{{#str}} tocreatenewaccount {{/str}}</a>
+        {{/cansignup}}
+        {{#showloginform}}
+            <form class="login-form" action="{{loginurl}}" method="post" id="login">
+                <input id="anchor" type="hidden" name="anchor" value="">
+                <script>document.getElementById('anchor').value = location.hash;</script>
+                <input type="hidden" name="logintoken" value="{{logintoken}}">
+                <div class="login-form-username mb-3">
+                    <label for="username">
+                        {{^canloginbyemail}}
+                            {{#str}} username {{/str}}
+                        {{/canloginbyemail}}
+                        {{#canloginbyemail}}
+                            {{#str}} usernameemail {{/str}}
+                        {{/canloginbyemail}}
+                    </label>
+                    <input type="text" name="username" id="username"
+                        class="form-control form-control-lg"
+                        value="{{username}}"
+                        placeholder="{{^canloginbyemail}}{{#cleanstr}}username{{/cleanstr}}{{/canloginbyemail}}{{#canloginbyemail}}{{#cleanstr}}usernameemail{{/cleanstr}}{{/canloginbyemail}}"
+                        autocomplete="username">
+                </div>
+                <div class="login-form-password mb-3">
+                    <label for="password">{{#str}} password {{/str}}</label>
+                    <input type="password" name="password" id="password" value=""
+                        class="form-control form-control-lg"
+                        placeholder="{{#cleanstr}}password{{/cleanstr}}"
+                        autocomplete="current-password">
+                </div>
+                {{#recaptcha}}
+                    <div class="login-form-recaptcha mb-3">
+                        {{{recaptcha}}}
+                    </div>
+                {{/recaptcha}}
+                <div class="login-form-submit">
+                    <button class="btn btn-primary btn-block" type="submit" id="loginbtn">{{#str}}login{{/str}}</button>
+                </div>
+            </form>
+        {{/showloginform}}
+
+        {{#hasidentityproviders}}
+            <div class="login-text-divider text-center my-4">
+                <span class="divider-text">{{#str}} potentialidps, auth {{/str}}</span>
+            </div>
+            <div class="login-identityproviders">
+                {{#identityproviders}}
+                    <a class="btn login-identityprovider-btn w-100" href="{{url}}">
+                        {{#iconurl}}
+                            <img src="{{iconurl}}" alt="" width="24" height="24"/>
+                        {{/iconurl}}
+                        {{name}}
+                    </a>
+                {{/identityproviders}}
+            </div>
+        {{/hasidentityproviders}}
+
+        <div class="login-account-links text-center mt-4">
+            {{#cansignup}}
+                <div class="new-account-link mb-2">
+                    New to ai.prof? <a href="{{signupurl}}">Create an account</a>
+                </div>
+            {{/cansignup}}
+            <div class="forgot-password-link">
+                <a href="{{forgotpasswordurl}}">{{#str}}forgotaccount{{/str}}</a>
+            </div>
+        </div>
+
+        {{^hastwocolumns}}
+            {{#canloginasguest}}
+                <div class="login-divider"></div>
+                <h2 class="login-heading">{{#str}}someallowguest{{/str}}</h2>
+                <form action="{{loginurl}}" method="post" id="guestlogin">
+                    <input type="hidden" name="logintoken" value="{{logintoken}}">
+                    <input type="hidden" name="username" value="guest" />
+                    <input type="hidden" name="password" value="guest" />
+                    <button class="btn btn-secondary" type="submit" id="loginguestbtn">{{#str}}loginguest{{/str}}</button>
+                </form>
+            {{/canloginasguest}}
+            
+            <div class="d-flex mt-4">
+                {{#languagemenu}}
+                    <div class="login-languagemenu">
+                        {{>core/action_menu}}
+                    </div>
+                    <div class="divider border-start align-self-center mx-3"></div>
+                {{/languagemenu}}
+                <button type="button" class="btn btn-secondary"
+                    data-modal="alert"
+                    data-modal-title-str='["cookiesenabled", "core"]'
+                    data-modal-content-str='["cookiesenabled_help_html", "core"]'
+                    >{{#str}}cookiesnotice{{/str}}</button>
+            </div>
+        {{/hastwocolumns}}
+    </div>
+    {{#hastwocolumns}}
+        <div class="col-lg-6 col-md-12 right-column">
+            {{#hasinstructions}}
+                <div class="login-divider"></div>
+                <div class="login-instructions {{#cansignup}}mb-3{{/cansignup}}">
+                    <h2 class="login-heading">{{#str}}firsttime{{/str}}</h2>
+                    {{{instructions}}}
+                </div>
+            {{/hasinstructions}}
+            {{#canloginasguest}}
+                <div class="login-divider"></div>
+                <h2 class="login-heading">{{#str}}someallowguest{{/str}}</h2>
+                <form action="{{loginurl}}" method="post" id="guestlogin">
+                    <input type="hidden" name="logintoken" value="{{logintoken}}">
+                    <input type="hidden" name="username" value="guest" />
+                    <input type="hidden" name="password" value="guest" />
+                    <button class="btn btn-secondary" type="submit" id="loginguestbtn">{{#str}}loginguest{{/str}}</button>
+                </form>
+            {{/canloginasguest}}
+
+            <div class="d-flex mt-4">
+                {{#languagemenu}}
+                    <div class="login-languagemenu">
+                        {{>core/action_menu}}
+                    </div>
+                    <div class="divider border-start align-self-center mx-3"></div>
+                {{/languagemenu}}
+            </div>
+        </div>
+    {{/hastwocolumns}}
+</div>
+
+{{#js}}
+    require(['core_form/events'], function(FormEvent) {
+        {{^error}}
+            {{#autofocusform}}
+                function autoFocus() {
+                    const userNameField = document.getElementById('username');
+                    if (userNameField.value.length == 0) {
+                        userNameField.focus();
+                    } else {
+                        document.getElementById('password').focus();
+                    }
+                }
+                autoFocus();
+                window.addEventListener(FormEvent.eventTypes.fieldStructureChanged, autoFocus);
+            {{/autofocusform}}
+        {{/error}}
+        {{#error}}
+            document.getElementById('loginerrormessage').focus();
+        {{/error}}
+    });
+
+    {{#togglepassword}}
+        require(['core/togglesensitive'], function(ToggleSensitive) {
+            ToggleSensitive.init("password", {{smallscreensonly}});
+        });
+    {{/togglepassword}}
+    require(['core_form/submit'], function(Submit) {
+        Submit.init("loginbtn");
+        {{#canloginasguest}}
+            Submit.init("loginguestbtn");
+        {{/canloginasguest}}
+    });
+{{/js}}

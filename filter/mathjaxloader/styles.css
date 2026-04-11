@@ -1,0 +1,38 @@
+.jsenabled #MathJax_ZoomFrame {
+    position: absolute;
+}
+
+/* Make MathJax rendered formulas selectable as text */
+mjx-container {
+    -webkit-user-select: text !important;
+    -moz-user-select: text !important;
+    -ms-user-select: text !important;
+    user-select: text !important;
+    cursor: text;
+    position: relative;
+    font-weight: normal !important;
+    /* Breaking out of text line-height so the highlight covers top/bottom parts */
+    display: inline-block !important;
+    vertical-align: middle;
+    line-height: 0;
+    margin: 0 2px;
+}
+
+mjx-container svg {
+    -webkit-user-select: text !important;
+    -moz-user-select: text !important;
+    -ms-user-select: text !important;
+    user-select: text !important;
+    /* Ensure the highlight color behind shows through */
+    background-color: transparent !important;
+    display: block !important;
+}
+
+/* Selection highlight: Apply background color to the container.
+   Using padding ensures the full formula (fractions/superscripts) is covered. */
+mjx-container.mj-selected {
+    background-color: #bfdbfe !important;
+    border-radius: 2px;
+    padding: 4px 2px;
+    /* Extra padding to capture tall formulas */
+}
