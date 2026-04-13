@@ -23,11 +23,6 @@ node_modules/
 vendor/
 **/vendor/
 
-### Build Artifacts (Recursive) ###
-dist/
-**/dist/
-build/
-**/build/
 
 ### Plugin Specific (Veda & Monitoring) ###
 local/veda/handler_debug.log
