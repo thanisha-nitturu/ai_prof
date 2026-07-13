@@ -49,3 +49,4 @@ docker-compose.local.yml
 ### Moodledata (any path variation) ###
 moodledata-*/
 /var/www/moodledata*/
+.env
