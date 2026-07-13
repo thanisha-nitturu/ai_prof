@@ -1,53 +1,82 @@
-# Moodle Site with Veda AI Integration
+# DevLearn Moodle Platform
 
-This repository contains a custom Moodle 5.x installation integrated with the **Veda AI Ecosystem**. It includes several custom plugins for AI chat, automated proctoring, coding playgrounds, and custom dashboards.
+This repository contains the custom Moodle installation for **DevLearn**, integrated with the Veda AI Ecosystem. It uses a strictly managed Git workflow with Docker and Infisical for secret management.
 
-## 🚀 Quick Setup
+---
 
-### 1. Clone & Initialize Submodules
-Since several plugins are maintained in separate repositories, you must initialize them after cloning:
+## 🚀 How to Setup a New Server (Clean Clone Process)
+
+Follow these exact steps when pulling this code onto a new server (e.g., Staging or Production).
+
+### 1. Clone the Repository (with Submodules)
+Because we use custom plugins hosted in separate repositories, you **must** use the `--recurse-submodules` flag:
 ```bash
-git clone [YOUR_REPO_URL]
-git submodule update --init --recursive
-```789897897
+git clone --recurse-submodules git@github.com:thanisha-nitturu/ai_prof.git /var/www/html/moodle
+cd /var/www/html/moodle
+```
+*(If you already cloned normally, run `git submodule update --init --recursive` to pull them in).*
 
-### 2. Configure Moodle
-Copy the distribution config and fill in your database and Veda credentials:
+### 2. Choose Your Branch
+Switch to the branch that matches your server environment:
 ```bash
-cp config-dist.php config.php
-# Update config.php with your DB credentials, dataroot, and veda_fastapi_url
+git checkout staging   # For staging server
+# OR
+git checkout main      # For production server
 ```
 
-### 3. Install Dependencies
-You must install the JavaScript dependencies for the core and the interactive plugins:
-
-#### Root (Core Tools)
+### 3. Create the Moodledata Directory
+Moodle requires a persistent data folder **outside** of the web root. Create it and assign permissions:
 ```bash
-npm install
+# Example for staging. Change path as needed!
+mkdir -p /var/www/moodledata-staging
+chown -R www-data:www-data /var/www/moodledata-staging
 ```
 
-#### Course Dashboard (Interactive Frontend)
+### 4. Setup Environment Variables
+Never put real credentials in Git! We use `.env` files and Infisical.
 ```bash
-cd mod/coursedashboard/client
-npm install
-npm run build
+cp .env.example .env
+nano .env
+```
+Fill in your specific `INFISICAL_CLIENT_ID`, `MOODLE_ENV` (e.g., `dev`, `staging`, `prod`), and port configurations.
+
+### 5. Setup Moodle Config
+Copy the template configuration. It automatically reads your `.env` settings, so you don't need to edit it!
+```bash
+cp config.php.template config.php
 ```
 
-#### AI Chat Block
+### 6. Install PHP Dependencies
+Install the required packages securely:
 ```bash
-cd blocks/ai_chat
-npm install
+composer install --no-dev --optimize-autoloader
 ```
 
-## 🧩 Custom Plugins Overview
+### 7. Start Docker Containers
+Build and start the web, cron, and redis containers:
+```bash
+docker compose up -d --build
+```
 
-- **`local/veda`**: The core AI/Analytics bridge. Linked via Submodule.
-- **`mod/coursedashboard`**: Custom role-based student/admin dashboard. Linked via Submodule.
-- **`mod/codingplayground`**: Integrated IDE for programming activities.
-- **`local/profile_enforcer`**: Mandates profile pictures and captures user data for AI sync.
-- **`local/placement`**: Admin-only courses and placement dashboard.
+### 8. Finalize Moodle Installation
+If this is a **brand new database**, run the install script:
+```bash
+docker exec devlearn-moodle-web php admin/cli/install_database.php --agree-license --fullname="DevLearn" --shortname="devlearn" --adminuser=admin --adminpass=<your-password>
+```
+If you are **connecting to an existing database**, just run the upgrade script:
+```bash
+docker exec devlearn-moodle-web php admin/cli/upgrade.php --non-interactive
+```
 
-## 🛡️ Repository Hygiene
-- **config.php** is ignored. Never commit credentials.
-- **node_modules/** and **dist/** are ignored. Always run `npm install` and `npm run build` after pulling updates.
-- **Logs (*.log)** are ignored to keep the repo clean.
+Finally, purge the caches:
+```bash
+docker exec devlearn-moodle-web php admin/cli/purge_caches.php
+```
+
+---
+
+## 🛡️ Git Workflow Rules
+
+* **NEVER code directly on `dev`, `staging`, or `main`.** Always use feature branches (`feature/xxx`).
+* **NEVER commit `.env` or `config.php`.**
+* To update submodules to a newer version, pull the latest commit in the submodule folder, then commit that change to the parent repository.
