@@ -1,6 +1,6 @@
-# DevLearn Moodle Platform
+# ai_prof Platform
 
-This repository contains the custom Moodle installation for **DevLearn**, integrated with the Veda AI Ecosystem. It uses a strictly managed Git workflow with Docker and Infisical for secret management.
+This repository contains the generic Moodle installation for the **ai_prof** platform. It uses a strictly managed Git workflow with Docker and Infisical for secret management.
 
 ---
 
@@ -38,7 +38,16 @@ Never put real credentials in Git! We use `.env` files and Infisical.
 cp .env.example .env
 nano .env
 ```
-Fill in your specific `INFISICAL_CLIENT_ID`, `MOODLE_ENV` (e.g., `dev`, `staging`, `prod`), and port configurations.
+Fill in your specific values in the `.env` file (e.g., `INFISICAL_CLIENT_ID`, `INFISICAL_PROJECT_ID`, `MOODLE_ENV`, `COMPOSE_PROJECT_NAME`).
+
+**Important Infisical Variables:**
+You must configure the following secrets inside your Infisical dashboard for the environment to work correctly:
+* `DB_HOST` - Database host address
+* `DB_NAME` - Database name
+* `DB_USER` - Database username
+* `DB_PASS` - Database password
+* `DB_PORT` - Database port (usually 3306 or 5432)
+* `MOODLE_URL` - The public URL of your Moodle instance (e.g., https://app.aiprof.com)
 
 ### 5. Setup Moodle Config
 Copy the template configuration. It automatically reads your `.env` settings, so you don't need to edit it!
@@ -59,18 +68,18 @@ docker compose up -d --build
 ```
 
 ### 8. Finalize Moodle Installation
-If this is a **brand new database**, run the install script:
+If this is a **brand new database**, run the install script (replace `<your-project>` with your `COMPOSE_PROJECT_NAME` from `.env`):
 ```bash
-docker exec devlearn-moodle-web php admin/cli/install_database.php --agree-license --fullname="DevLearn" --shortname="devlearn" --adminuser=admin --adminpass=<your-password>
+docker exec <your-project>-web php admin/cli/install_database.php --agree-license --fullname="ai_prof" --shortname="aiprof" --adminuser=admin --adminpass=<your-password>
 ```
 If you are **connecting to an existing database**, just run the upgrade script:
 ```bash
-docker exec devlearn-moodle-web php admin/cli/upgrade.php --non-interactive
+docker exec <your-project>-web php admin/cli/upgrade.php --non-interactive
 ```
 
 Finally, purge the caches:
 ```bash
-docker exec devlearn-moodle-web php admin/cli/purge_caches.php
+docker exec <your-project>-web php admin/cli/purge_caches.php
 ```
 
 ---
