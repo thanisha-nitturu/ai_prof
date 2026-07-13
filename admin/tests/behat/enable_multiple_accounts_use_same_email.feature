@@ -19,7 +19,7 @@ Feature: Allowing multiple accounts to have the same email address
       | Email address | <email> |
       | New password  | test    |
     And I press "Create user"
-    Then I should <expect> "This email address is already registered."
+    Then I should <expect> "If you do not have an account, your registration will be processed."
 
     Examples:
       | allowsameemail | email          | expect  |
@@ -38,7 +38,7 @@ Feature: Allowing multiple accounts to have the same email address
     When I am on the "s2" "user > editing" page logged in as "admin"
     And I set the field "Email address" to "<email>"
     And I press "Update profile"
-    Then I should <expect> "This email address is already registered."
+    Then I should <expect> "If you do not have an account, your registration will be processed."
 
     Examples:
       | allowsameemail | email          | expect  |
@@ -60,7 +60,7 @@ Feature: Allowing multiple accounts to have the same email address
     And I open my profile in edit mode
     And I set the field "Email address" to "<email>"
     And I press "Update profile"
-    Then I should <expect> "This email address is already registered."
+    Then I should <expect> "If you do not have an account, your registration will be processed."
 
     Examples:
       | allowsameemail | email          | expect  |

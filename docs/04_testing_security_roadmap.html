@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Part 4: Testing, Security, Monitoring &amp; Implementation Roadmap</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Inter',-apple-system,sans-serif;background:#f8fafc;color:#1e293b;line-height:1.7}
+  .container{max-width:1100px;margin:0 auto;padding:40px 48px;background:#fff;min-height:100vh;box-shadow:0 0 60px rgba(0,0,0,.06)}
+  h1{font-size:2rem;font-weight:800;color:#0f172a;border-bottom:3px solid #3b82f6;padding-bottom:16px}
+  h2{font-size:1.45rem;font-weight:700;color:#1e40af;margin-top:48px;margin-bottom:20px;padding-bottom:10px;border-bottom:2px solid #e2e8f0}
+  h3{font-size:1.1rem;font-weight:600;color:#334155;margin-top:28px;margin-bottom:14px}
+  hr{border:none;border-top:1px solid #e2e8f0;margin:36px 0}
+  p{margin-bottom:14px}
+  table{width:100%;border-collapse:collapse;margin:18px 0 28px;font-size:.88rem}
+  thead{background:linear-gradient(135deg,#1e40af,#3b82f6);color:#fff}
+  th{padding:12px 16px;text-align:left;font-weight:600}
+  td{padding:10px 16px;border-bottom:1px solid #e2e8f0}
+  tbody tr:nth-child(even){background:#f8fafc}
+  tbody tr:hover{background:#eff6ff}
+  td strong{color:#1e293b}
+  code{font-family:'JetBrains Mono',monospace;background:#f1f5f9;padding:2px 7px;border-radius:4px;font-size:.85em;color:#be185d}
+  pre{background:#0f172a;color:#e2e8f0;padding:20px 24px;border-radius:10px;overflow-x:auto;margin:18px 0 28px;font-size:.82rem;line-height:1.6}
+  pre code{background:none;color:inherit;padding:0;font-size:inherit}
+  .mermaid{background:#fafbff;border:1px solid #e2e8f0;border-radius:12px;padding:24px;margin:24px 0;text-align:center}
+  ul,ol{margin:10px 0 18px 28px} li{margin-bottom:6px}
+  .caution{background:linear-gradient(135deg,#fef2f2,#fff1f2);border-left:4px solid #ef4444;padding:16px 20px;border-radius:0 8px 8px 0;margin:20px 0}
+  .caution strong{color:#dc2626}
+  .note{background:linear-gradient(135deg,#eff6ff,#dbeafe);border-left:4px solid #3b82f6;padding:16px 20px;border-radius:0 8px 8px 0;margin:20px 0}
+  .header-bar{background:linear-gradient(135deg,#0f172a 0%,#1e3a5f 50%,#1e40af 100%);color:#fff;padding:40px 48px;margin:-40px -48px 36px}
+  .header-bar h1{color:#fff;border-bottom-color:rgba(255,255,255,.3)}
+  .header-bar .subtitle{color:#93c5fd;font-size:.95rem;margin-top:6px}
+  .phase{background:linear-gradient(135deg,#1e40af,#3b82f6);color:#fff;display:inline-block;padding:6px 18px;border-radius:8px;font-weight:700;font-size:.9rem;margin-top:24px}
+  .tag{display:inline-block;padding:2px 10px;border-radius:20px;font-size:.75rem;font-weight:600}
+  .tag-high{background:#fef2f2;color:#dc2626} .tag-med{background:#fefce8;color:#a16207} .tag-low{background:#f0fdf4;color:#16a34a}
+  .summary-table td:first-child{font-weight:600;white-space:nowrap}
+  @media print{body{background:#fff}.container{box-shadow:none;padding:20px}.header-bar{margin:-20px -20px 24px;padding:28px}}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header-bar">
+    <h1>Part 4: Testing, Security, Monitoring &amp; Roadmap</h1>
+    <div class="subtitle">Hitloop Moodle Platform — Implementation Guide &amp; Roadmap</div>
+  </div>
+
+  <h2>4.1 Testing Strategy</h2>
+  <h3>Test Pyramid for Hitloop</h3>
+  <div class="mermaid">
+graph TD
+    subgraph Manual_Top["Manual (Top)"]
+        E2E["Exploratory / UAT&lt;br/&gt;QA team on Staging"]
+    end
+    subgraph Integration_Middle["Integration (Middle)"]
+        BEHAT["Behat Tests&lt;br/&gt;Login flows, quiz creation"]
+        API_TEST["API Tests&lt;br/&gt;Webservice endpoint validation"]
+    end
+    subgraph Unit_Base["Unit (Base)"]
+        PHPUNIT["PHPUnit&lt;br/&gt;Custom plugin logic"]
+        JEST["Jest&lt;br/&gt;React component tests"]
+    end
+    E2E --> BEHAT --> PHPUNIT
+    API_TEST --> PHPUNIT
+    BEHAT --> JEST
+  </div>
+
+  <h3>What Runs Where</h3>
+  <table>
+    <thead><tr><th>Test Type</th><th>Runs On</th><th>Trigger</th><th>Auto/Manual</th><th>Blocks Merge?</th></tr></thead>
+    <tbody>
+      <tr><td>PHP Syntax Lint</td><td>CI (every PR)</td><td>PR opened/updated</td><td>Auto</td><td>✅ Yes</td></tr>
+      <tr><td>PHPCS Standards</td><td>CI (every PR)</td><td>PR opened/updated</td><td>Auto</td><td>✅ Yes</td></tr>
+      <tr><td>PHPStan Analysis</td><td>CI (every PR)</td><td>PR opened/updated</td><td>Auto</td><td>✅ Yes</td></tr>
+      <tr><td>PHPUnit (custom plugins)</td><td>CI (every PR)</td><td>PR opened/updated</td><td>Auto</td><td>✅ Yes</td></tr>
+      <tr><td>Jest (frontends)</td><td>CI (every PR)</td><td>PR opened/updated</td><td>Auto</td><td>✅ Yes</td></tr>
+      <tr><td>Trivy Security Scan</td><td>CI (every PR)</td><td>PR opened/updated</td><td>Auto</td><td>✅ Yes (CRITICAL)</td></tr>
+      <tr><td>Behat (integration)</td><td>Staging</td><td>Deploy to staging</td><td>Auto</td><td>❌ Advisory</td></tr>
+      <tr><td>Smoke Test</td><td>Staging + Prod</td><td>After deploy</td><td>Auto</td><td>✅ Yes (triggers rollback)</td></tr>
+      <tr><td>Performance Test</td><td>Staging</td><td>Release branch</td><td>Manual</td><td>❌ No</td></tr>
+      <tr><td>UAT / Exploratory</td><td>Staging</td><td>Release branch</td><td>Manual</td><td>✅ Yes (approval gate)</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Custom Plugin Test Locations</h3>
+  <table>
+    <thead><tr><th>Plugin</th><th>Test Files Needed</th><th>Priority</th></tr></thead>
+    <tbody>
+      <tr><td><code>local/my_webservices</code></td><td><code>local/my_webservices/tests/externallib_test.php</code></td><td><span class="tag tag-high">🔴 HIGH</span></td></tr>
+      <tr><td><code>local/veda</code></td><td><code>local/veda/tests/api_handler_test.php</code></td><td><span class="tag tag-med">🟡 MEDIUM</span></td></tr>
+      <tr><td><code>mod/codingplayground</code></td><td><code>mod/codingplayground/tests/proxy_test.php</code></td><td><span class="tag tag-med">🟡 MEDIUM</span></td></tr>
+      <tr><td><code>mod/coursedashboard</code></td><td><code>mod/coursedashboard/tests/api_test.php</code></td><td><span class="tag tag-med">🟡 MEDIUM</span></td></tr>
+      <tr><td><code>mod/coursedashboard/client</code></td><td><code>client/src/__tests__/</code> (Jest)</td><td><span class="tag tag-low">🟢 LOW</span></td></tr>
+    </tbody>
+  </table>
+
+  <hr>
+
+  <h2>4.2 Security Implementation</h2>
+  <h3>4.2.1 Immediate Security Fixes (Phase 0 — Do Now)</h3>
+  <div class="caution"><strong>⚠️ CAUTION:</strong> Do these BEFORE anything else. These are production risks.</div>
+  <table>
+    <thead><tr><th>#</th><th>Action</th><th>How</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td><strong>Remove hardcoded DB password</strong></td><td>Replace <code>config.php</code> with template; use env vars</td></tr>
+      <tr><td>2</td><td><strong>Fix directory permissions</strong></td><td>Change <code>0777</code> → <code>0750</code> in config template</td></tr>
+      <tr><td>3</td><td><strong>Remove tool_generator password</strong></td><td>Delete from production config entirely</td></tr>
+      <tr><td>4</td><td><strong>Delete debug logs</strong></td><td>Remove <code>handler_debug.log</code> (3MB), <code>token_debug.log</code></td></tr>
+      <tr><td>5</td><td><strong>Delete backup files</strong></td><td>Remove <code>lib.php.backup</code>, <code>*.backup*</code></td></tr>
+      <tr><td>6</td><td><strong>Add .htaccess to Veda API</strong></td><td>Block direct access to log files</td></tr>
+    </tbody>
+  </table>
+
+  <h3>4.2.2 GitHub Branch Protection Rules</h3>
+  <pre><code>Branch: main
+  ├── Required reviews: 2
+  ├── Dismiss stale reviews: true
+  ├── Required status checks: lint, phpunit, frontend, security
+  ├── Enforce admins: true
+  ├── Allow force pushes: false
+  └── Allow deletions: false
+
+Branch: develop
+  ├── Required reviews: 1
+  ├── Required status checks: lint, phpunit
+  └── Allow force pushes: false</code></pre>
+
+  <h3>4.2.3 Secrets Inventory (GitHub Secrets to Create)</h3>
+  <table>
+    <thead><tr><th>Secret Name</th><th>Environment</th><th>Purpose</th></tr></thead>
+    <tbody>
+      <tr><td><code>SSH_PRIVATE_KEY</code></td><td>Staging</td><td>SSH key for staging deployment</td></tr>
+      <tr><td><code>PROD_SSH_PRIVATE_KEY</code></td><td>Production</td><td>SSH key for production deployment</td></tr>
+      <tr><td><code>STAGING_HOST</code></td><td>Staging</td><td>Staging server IP/hostname</td></tr>
+      <tr><td><code>PROD_HOST</code></td><td>Production</td><td>Production server IP/hostname</td></tr>
+      <tr><td><code>DEPLOY_USER</code></td><td>Both</td><td>SSH username for deployment</td></tr>
+      <tr><td><code>MOODLE_DB_PASSWORD</code></td><td>Both</td><td>Database password (per environment)</td></tr>
+      <tr><td><code>VEDA_API_SECRET</code></td><td>Both</td><td>Veda FastAPI authentication secret</td></tr>
+      <tr><td><code>LIVEKIT_API_KEY</code></td><td>Both</td><td>LiveKit API key</td></tr>
+    </tbody>
+  </table>
+
+  <hr>
+
+  <h2>4.3 Monitoring &amp; Observability</h2>
+  <div class="mermaid">
+flowchart TD
+    subgraph App_Layer["Application Layer"]
+        MOODLE_APP["Moodle Application"]
+        VEDA_SVC["Veda FastAPI"]
+        JUDGE0_SVC["Judge0 Backend"]
+    end
+    subgraph Collection["Collection Layer"]
+        HEALTH["Health Check Endpoints"]
+        NGINX_LOG["Nginx Logs"]
+        PHP_LOG["PHP-FPM Error Logs"]
+    end
+    subgraph Monitoring["Monitoring Tools"]
+        UPTIME["UptimeRobot&lt;br/&gt;Availability"]
+        AZURE_MON["Azure Monitor&lt;br/&gt;Infrastructure"]
+        SENTRY_M["Sentry&lt;br/&gt;Error Tracking"]
+    end
+    subgraph Alerting
+        SLACK["Slack Notifications"]
+        EMAIL["Email Alerts"]
+    end
+    MOODLE_APP --> HEALTH & PHP_LOG
+    HEALTH --> UPTIME
+    NGINX_LOG --> AZURE_MON
+    PHP_LOG --> SENTRY_M
+    UPTIME --> SLACK
+    AZURE_MON --> EMAIL
+    SENTRY_M --> SLACK
+  </div>
+
+  <h3>Key Metrics to Monitor</h3>
+  <table>
+    <thead><tr><th>Metric</th><th>Tool</th><th>Alert Threshold</th></tr></thead>
+    <tbody>
+      <tr><td>Site uptime</td><td>UptimeRobot</td><td>&lt; 99.9% (5 min check)</td></tr>
+      <tr><td>Response time (login page)</td><td>UptimeRobot</td><td>&gt; 3 seconds</td></tr>
+      <tr><td>PHP-FPM error rate</td><td>Azure Monitor</td><td>&gt; 10 errors/minute</td></tr>
+      <tr><td>MySQL slow queries</td><td>Azure Monitor</td><td>&gt; 5 queries &gt; 2s/minute</td></tr>
+      <tr><td>Redis memory usage</td><td>Azure Monitor</td><td>&gt; 80% of max</td></tr>
+      <tr><td>Disk space</td><td>Azure Monitor</td><td>&gt; 85% used</td></tr>
+      <tr><td>Moodle cron last run</td><td>Custom check</td><td>&gt; 10 minutes ago</td></tr>
+      <tr><td>SSL certificate expiry</td><td>UptimeRobot</td><td>&lt; 14 days</td></tr>
+    </tbody>
+  </table>
+
+  <hr>
+
+  <h2>4.4 Complete Implementation Roadmap</h2>
+
+  <div class="phase">Phase 0: Immediate Security Fixes — Week 1</div>
+  <table>
+    <thead><tr><th>#</th><th>Task</th><th>Effort</th><th>Owner</th></tr></thead>
+    <tbody>
+      <tr><td>0.1</td><td>Create <code>config.php</code> template with env vars</td><td>2h</td><td>DevOps</td></tr>
+      <tr><td>0.2</td><td>Create <code>/var/www/shared/</code> with production config</td><td>1h</td><td>DevOps</td></tr>
+      <tr><td>0.3</td><td>Set <code>directorypermissions</code> to <code>0750</code></td><td>15m</td><td>DevOps</td></tr>
+      <tr><td>0.4</td><td>Delete all <code>*.log</code>, <code>*.backup</code> files from repo</td><td>30m</td><td>DevOps</td></tr>
+      <tr><td>0.5</td><td>Create GitHub Secrets for all passwords/keys</td><td>1h</td><td>DevOps</td></tr>
+      <tr><td>0.6</td><td>Enable branch protection on <code>main</code></td><td>30m</td><td>Admin</td></tr>
+    </tbody>
+  </table>
+
+  <div class="phase">Phase 1: CI Pipeline — Weeks 2–3</div>
+  <table>
+    <thead><tr><th>#</th><th>Task</th><th>Effort</th><th>Owner</th></tr></thead>
+    <tbody>
+      <tr><td>1.1</td><td>Create <code>hitloop-ci.yml</code> (lint + PHPCS)</td><td>3h</td><td>DevOps</td></tr>
+      <tr><td>1.2</td><td>Add PHPUnit job with MySQL + Redis services</td><td>4h</td><td>DevOps</td></tr>
+      <tr><td>1.3</td><td>Add frontend build job (Grunt + Dashboard)</td><td>3h</td><td>DevOps</td></tr>
+      <tr><td>1.4</td><td>Add Trivy security scanning job</td><td>1h</td><td>DevOps</td></tr>
+      <tr><td>1.5</td><td>Write initial unit tests for <code>local/my_webservices</code></td><td>8h</td><td>Dev</td></tr>
+      <tr><td>1.6</td><td>Enable GitHub Dependabot</td><td>1h</td><td>DevOps</td></tr>
+    </tbody>
+  </table>
+
+  <div class="phase">Phase 2: Staging Environment — Weeks 4–5</div>
+  <table>
+    <thead><tr><th>#</th><th>Task</th><th>Effort</th><th>Owner</th></tr></thead>
+    <tbody>
+      <tr><td>2.1</td><td>Provision staging server (Azure VM)</td><td>4h</td><td>DevOps</td></tr>
+      <tr><td>2.2</td><td>Set up staging MySQL with sanitised data</td><td>3h</td><td>DevOps</td></tr>
+      <tr><td>2.3</td><td>Install staging services (Veda, Judge0, Redis)</td><td>4h</td><td>DevOps</td></tr>
+      <tr><td>2.4</td><td>Set up <code>/var/www/releases/</code> directory structure</td><td>1h</td><td>DevOps</td></tr>
+      <tr><td>2.5</td><td>Create <code>deploy-staging.yml</code></td><td>4h</td><td>DevOps</td></tr>
+      <tr><td>2.6</td><td>Test full staging deployment cycle</td><td>4h</td><td>DevOps + Dev</td></tr>
+      <tr><td>2.7</td><td>Add <code>health.php</code> endpoint</td><td>1h</td><td>Dev</td></tr>
+    </tbody>
+  </table>
+
+  <div class="phase">Phase 3: Production Deployment — Weeks 6–7</div>
+  <table>
+    <thead><tr><th>#</th><th>Task</th><th>Effort</th><th>Owner</th></tr></thead>
+    <tbody>
+      <tr><td>3.1</td><td>Restructure production to symlink-based releases</td><td>4h</td><td>DevOps</td></tr>
+      <tr><td>3.2</td><td>Set up <code>/var/www/backups/</code> with DB backup script</td><td>2h</td><td>DevOps</td></tr>
+      <tr><td>3.3</td><td>Create <code>deploy-production.yml</code></td><td>4h</td><td>DevOps</td></tr>
+      <tr><td>3.4</td><td>Configure GitHub Environment with approval gates</td><td>1h</td><td>Admin</td></tr>
+      <tr><td>3.5</td><td>Test production deployment with rollback</td><td>4h</td><td>DevOps + Dev</td></tr>
+    </tbody>
+  </table>
+
+  <div class="phase">Phase 4: Monitoring — Week 8</div>
+  <table>
+    <thead><tr><th>#</th><th>Task</th><th>Effort</th><th>Owner</th></tr></thead>
+    <tbody>
+      <tr><td>4.1</td><td>Set up UptimeRobot health checks</td><td>1h</td><td>DevOps</td></tr>
+      <tr><td>4.2</td><td>Configure Azure Monitor for VM metrics</td><td>2h</td><td>DevOps</td></tr>
+      <tr><td>4.3</td><td>Create Slack webhook for deploy notifications</td><td>1h</td><td>DevOps</td></tr>
+      <tr><td>4.4</td><td>Configure log rotation</td><td>1h</td><td>DevOps</td></tr>
+    </tbody>
+  </table>
+
+  <div class="phase">Phase 5: Advanced — Weeks 9–12</div>
+  <table>
+    <thead><tr><th>#</th><th>Task</th><th>Effort</th><th>Owner</th></tr></thead>
+    <tbody>
+      <tr><td>5.1</td><td>Write Behat tests for critical user flows</td><td>16h</td><td>QA + Dev</td></tr>
+      <tr><td>5.2</td><td>Add Jest tests for Dashboard + Playground</td><td>12h</td><td>Frontend Dev</td></tr>
+      <tr><td>5.3</td><td>Set up Sentry for PHP error tracking</td><td>3h</td><td>DevOps</td></tr>
+      <tr><td>5.4</td><td>Add CDN for static assets</td><td>4h</td><td>DevOps</td></tr>
+      <tr><td>5.5</td><td>Containerise Moodle for local dev (Docker)</td><td>8h</td><td>DevOps</td></tr>
+    </tbody>
+  </table>
+
+  <hr>
+
+  <h2>4.5 Before vs After Summary</h2>
+  <table class="summary-table">
+    <thead><tr><th>Capability</th><th>Before</th><th>After</th></tr></thead>
+    <tbody>
+      <tr><td>Code Quality</td><td>Manual review only</td><td>Automated lint + PHPCS + PHPStan on every PR</td></tr>
+      <tr><td>Testing</td><td>None</td><td>PHPUnit + Jest running on every PR</td></tr>
+      <tr><td>Security</td><td>Hardcoded passwords</td><td>Env vars + GitHub Secrets + Key Vault</td></tr>
+      <tr><td>Deployments</td><td>Manual SSH + git pull</td><td>One-click automated with rollback</td></tr>
+      <tr><td>Environments</td><td>Single server</td><td>Dev (CI) → Staging → Production</td></tr>
+      <tr><td>Rollback</td><td>Manual, risky</td><td>Automated symlink switch (&lt; 30 seconds)</td></tr>
+      <tr><td>Monitoring</td><td>None</td><td>Uptime + error tracking + alerts</td></tr>
+      <tr><td>Branch Safety</td><td>None</td><td>Protected branches + required reviews</td></tr>
+      <tr><td>Recovery Time</td><td>Hours (manual)</td><td>Minutes (automated rollback)</td></tr>
+    </tbody>
+  </table>
+
+</div>
+<script>mermaid.initialize({startOnLoad:true,theme:'default',securityLevel:'loose'});</script>
+</body>
+</html>

@@ -27,6 +27,7 @@ defined('MOODLE_INTERNAL') || die();
 
 $capabilities = [
         'local/ai_manager:use' => [
+                'riskbitmask' => 0,
                 'captype' => 'read',
                 'contextlevel' => CONTEXT_SYSTEM,
                 'archetypes' => [
@@ -39,6 +40,7 @@ $capabilities = [
                 ],
         ],
         'local/ai_manager:manage' => [
+                'riskbitmask' => RISK_CONFIG,
                 'captype' => 'write',
                 'contextlevel' => CONTEXT_SYSTEM,
                 'archetypes' => [
@@ -51,6 +53,7 @@ $capabilities = [
                 ],
         ],
         'local/ai_manager:managetenants' => [
+                'riskbitmask' => RISK_CONFIG,
                 'captype' => 'write',
                 'contextlevel' => CONTEXT_SYSTEM,
                 'archetypes' => [
@@ -63,6 +66,7 @@ $capabilities = [
                 ],
         ],
         'local/ai_manager:viewstatistics' => [
+                'riskbitmask' => 0,
                 'captype' => 'write',
                 'contextlevel' => CONTEXT_SYSTEM,
                 'archetypes' => [
@@ -75,6 +79,7 @@ $capabilities = [
                 ],
         ],
         'local/ai_manager:viewuserstatistics' => [
+                'riskbitmask' => RISK_PERSONAL,
                 'captype' => 'read',
                 'contextlevel' => CONTEXT_SYSTEM,
                 'archetypes' => [
@@ -87,6 +92,7 @@ $capabilities = [
                 ],
         ],
         'local/ai_manager:viewusernames' => [
+                'riskbitmask' => RISK_PERSONAL,
                 'captype' => 'read',
                 'contextlevel' => CONTEXT_SYSTEM,
                 'archetypes' => [
@@ -99,6 +105,7 @@ $capabilities = [
                 ],
         ],
         'local/ai_manager:viewusage' => [
+                'riskbitmask' => 0,
                 'captype' => 'read',
                 'contextlevel' => CONTEXT_SYSTEM,
                 'archetypes' => [
@@ -111,6 +118,7 @@ $capabilities = [
                 ],
         ],
         'local/ai_manager:managevertexcache' => [
+                'riskbitmask' => RISK_DATALOSS,
                 'captype' => 'write',
                 'contextlevel' => CONTEXT_SYSTEM,
                 'archetypes' => [
@@ -123,6 +131,7 @@ $capabilities = [
                 ],
         ],
         'local/ai_manager:viewprompts' => [
+                'riskbitmask' => RISK_PERSONAL,
                 'captype' => 'read',
                 'contextlevel' => CONTEXT_COURSE,
                 'archetypes' => [
@@ -132,6 +141,7 @@ $capabilities = [
                 ],
         ],
         'local/ai_manager:viewtenantprompts' => [
+                'riskbitmask' => RISK_PERSONAL,
                 'captype' => 'read',
                 'contextlevel' => CONTEXT_SYSTEM,
                 'archetypes' => [
@@ -142,6 +152,7 @@ $capabilities = [
                 ],
         ],
         'local/ai_manager:viewpromptsdates' => [
+                'riskbitmask' => 0,
                 'captype' => 'read',
                 'contextlevel' => CONTEXT_SYSTEM,
                 'archetypes' => [

@@ -1,0 +1,19 @@
+--- /var/www/html/moodle/grade/report/grader/styles.css
++++ /var/www/html/moodle/grade/report/grader/styles.css
+@@ -158,7 +158,7 @@
+ }
+ 
+ /* Overall Average label cell — centered, distinct from range/groupavg */
+-.path-grade-report-grader .gradeparent .avg .header {
++.path-grade-report-grader .gradeparent tr.avg th.header.range {
+     font-weight: 700;
+     text-align: center !important;
+     letter-spacing: 0.02em;
+@@ -380,7 +380,8 @@
+ 
+ .path-grade-report-grader .gradeparent {
+     overflow-x: auto;
++    overflow-y: auto;
++    max-height: 75vh; /* Force a scrollable height so sticky bottom works */
+     position: relative;
+ }

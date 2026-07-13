@@ -42,9 +42,18 @@ if (\core\session\manager::is_loggedinas()) {
 $context = context_user::instance($USER->id);
 require_capability('report/usersessions:manageownsessions', $context);
 
+// --- [START] CUSTOM IDOR PROTECTION: Task 6 ---
+// Explicitly block any attempt to view another user's session data via URL manipulation.
+$requestid = optional_param('id', 0, PARAM_INT);
+if ($requestid != 0 && $requestid != $USER->id && !is_siteadmin()) {
+    throw new \moodle_exception('nopermissiontoviewsessions', 'report_usersessions');
+}
+// --- [END] CUSTOM IDOR PROTECTION ---
+
 $delete = optional_param('delete', 0, PARAM_INT);
 $deleteall = optional_param('deleteall', false, PARAM_BOOL);
-$lastip = cleanremoteaddr(optional_param('lastip', '', PARAM_TEXT));
+$lastip = cleanremoteaddr(optional_param('lastip', '', PARAM_TEXT)); 
+
 
 $PAGE->set_url('/report/usersessions/user.php');
 $PAGE->set_context($context);

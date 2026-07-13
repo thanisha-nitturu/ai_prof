@@ -72,6 +72,7 @@ if ($ADMIN->fulltree) {
         'dracula' => 'dracula',
         'far' => 'far',
         'foundation' => 'foundation',
+        'gemini-dark' => 'gemini-dark',
         'github-gist' => 'github-gist',
         'github' => 'github',
         'gml' => 'gml',

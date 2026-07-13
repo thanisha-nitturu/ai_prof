@@ -1,0 +1,4 @@
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteRule ^p/([A-Za-z0-9][A-Za-z0-9_-]{1,78}[A-Za-z0-9_-])$ /local/portfolio/view.php [L,QSA]
+</IfModule>

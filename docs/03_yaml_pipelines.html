@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Part 3: Complete YAML Pipeline Files</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', -apple-system, sans-serif; background: #f8fafc; color: #1e293b; line-height: 1.7; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 40px 48px; background: #fff; min-height: 100vh; box-shadow: 0 0 60px rgba(0,0,0,0.06); }
+  h1 { font-size: 2rem; font-weight: 800; color: #0f172a; border-bottom: 3px solid #3b82f6; padding-bottom: 16px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #1e40af; margin-top: 48px; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid #e2e8f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #334155; margin-top: 28px; margin-bottom: 14px; }
+  hr { border: none; border-top: 1px solid #e2e8f0; margin: 36px 0; }
+  p { margin-bottom: 14px; }
+  code { font-family: 'JetBrains Mono', monospace; background: #f1f5f9; padding: 2px 7px; border-radius: 4px; font-size: 0.85em; color: #be185d; }
+  pre { background: #0f172a; color: #e2e8f0; padding: 24px 28px; border-radius: 12px; overflow-x: auto; margin: 18px 0 28px; font-size: 0.82rem; line-height: 1.65; border: 1px solid #334155; }
+  pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+  .file-label { display: inline-block; background: linear-gradient(135deg, #1e40af, #3b82f6); color: #fff; padding: 6px 16px; border-radius: 8px 8px 0 0; font-size: 0.82rem; font-weight: 600; font-family: 'JetBrains Mono', monospace; margin-top: 20px; }
+  .yaml-key { color: #7dd3fc; }
+  .yaml-val { color: #86efac; }
+  .yaml-comment { color: #64748b; font-style: italic; }
+  .header-bar { background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #1e40af 100%); color: #fff; padding: 40px 48px; margin: -40px -48px 36px; }
+  .header-bar h1 { color: #fff; border-bottom-color: rgba(255,255,255,0.3); }
+  .header-bar .subtitle { color: #93c5fd; font-size: 0.95rem; margin-top: 6px; }
+  ul { margin: 10px 0 18px 28px; }
+  li { margin-bottom: 6px; }
+  @media print { body { background: #fff; } .container { box-shadow: none; padding: 20px; } pre { font-size: 0.72rem; } }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header-bar">
+    <h1>Part 3: Complete YAML Pipeline Files</h1>
+    <div class="subtitle">Hitloop Moodle Platform — Production-Ready GitHub Actions Pipelines</div>
+  </div>
+
+  <h2>3.1 Main CI Pipeline</h2>
+  <div class="file-label">.github/workflows/hitloop-ci.yml</div>
+  <pre><code><span class="yaml-comment"># =============================================================</span>
+<span class="yaml-comment"># Hitloop Moodle — Continuous Integration Pipeline</span>
+<span class="yaml-comment"># Runs on every PR and push to develop/main</span>
+<span class="yaml-comment"># =============================================================</span>
+<span class="yaml-key">name:</span> <span class="yaml-val">Hitloop CI</span>
+
+<span class="yaml-key">on:</span>
+  <span class="yaml-key">pull_request:</span>
+    <span class="yaml-key">branches:</span> <span class="yaml-val">[develop, main]</span>
+  <span class="yaml-key">push:</span>
+    <span class="yaml-key">branches:</span> <span class="yaml-val">[develop]</span>
+
+<span class="yaml-key">concurrency:</span>
+  <span class="yaml-key">group:</span> <span class="yaml-val">ci-${{ github.ref }}</span>
+  <span class="yaml-key">cancel-in-progress:</span> <span class="yaml-val">true</span>
+
+<span class="yaml-key">env:</span>
+  <span class="yaml-key">PHP_VERSION:</span> <span class="yaml-val">'8.2'</span>
+  <span class="yaml-key">NODE_VERSION:</span> <span class="yaml-val">'20'</span>
+
+<span class="yaml-key">jobs:</span>
+  <span class="yaml-comment"># ─── JOB 1: PHP Lint &amp; Static Analysis ───</span>
+  <span class="yaml-key">lint:</span>
+    <span class="yaml-key">name:</span> <span class="yaml-val">"🔍 PHP Lint &amp; Static Analysis"</span>
+    <span class="yaml-key">runs-on:</span> <span class="yaml-val">ubuntu-24.04</span>
+    <span class="yaml-key">steps:</span>
+      - <span class="yaml-key">name:</span> <span class="yaml-val">Checkout code with submodules</span>
+        <span class="yaml-key">uses:</span> <span class="yaml-val">actions/checkout@v4</span>
+        <span class="yaml-key">with:</span>
+          <span class="yaml-key">submodules:</span> <span class="yaml-val">recursive</span>
+          <span class="yaml-key">fetch-depth:</span> <span class="yaml-val">0</span>
+
+      - <span class="yaml-key">name:</span> <span class="yaml-val">Setup PHP ${{ env.PHP_VERSION }}</span>
+        <span class="yaml-key">uses:</span> <span class="yaml-val">shivammathur/setup-php@v2</span>
+        <span class="yaml-key">with:</span>
+          <span class="yaml-key">php-version:</span> <span class="yaml-val">${{ env.PHP_VERSION }}</span>
+          <span class="yaml-key">extensions:</span> <span class="yaml-val">mysqli, redis, gd, intl, mbstring, xml, curl, zip, sodium, igbinary</span>
+          <span class="yaml-key">tools:</span> <span class="yaml-val">phpcs, phpstan</span>
+          <span class="yaml-key">coverage:</span> <span class="yaml-val">none</span>
+
+      - <span class="yaml-key">name:</span> <span class="yaml-val">Cache Composer dependencies</span>
+        <span class="yaml-key">uses:</span> <span class="yaml-val">actions/cache@v4</span>
+        <span class="yaml-key">with:</span>
+          <span class="yaml-key">path:</span> <span class="yaml-val">vendor</span>
+          <span class="yaml-key">key:</span> <span class="yaml-val">composer-${{ hashFiles('composer.lock') }}</span>
+
+      - <span class="yaml-key">name:</span> <span class="yaml-val">Install Composer dependencies</span>
+        <span class="yaml-key">run:</span> <span class="yaml-val">composer install --no-dev --prefer-dist --no-progress</span>
+
+      - <span class="yaml-key">name:</span> <span class="yaml-val">PHP Syntax Check (custom plugins only)</span>
+        <span class="yaml-key">run:</span> |
+          find local/veda local/my_webservices local/ai_manager \
+               mod/codingplayground mod/coursedashboard \
+               -name "*.php" -not -path "*/vendor/*" \
+               -exec php -l {} \;
+
+      - <span class="yaml-key">name:</span> <span class="yaml-val">PHPCS — Moodle Coding Standards</span>
+        <span class="yaml-key">run:</span> |
+          phpcs --standard=phpcs.xml --extensions=php \
+            --ignore=*/vendor/*,*/node_modules/*,*/dist/* \
+            local/veda/ local/my_webservices/ local/ai_manager/ \
+            mod/codingplayground/ mod/coursedashboard/
+
+  <span class="yaml-comment"># ─── JOB 2: PHPUnit Tests ───</span>
+  <span class="yaml-key">phpunit:</span>
+    <span class="yaml-key">name:</span> <span class="yaml-val">"🧪 PHPUnit Tests"</span>
+    <span class="yaml-key">runs-on:</span> <span class="yaml-val">ubuntu-24.04</span>
+    <span class="yaml-key">services:</span>
+      <span class="yaml-key">mysql:</span>
+        <span class="yaml-key">image:</span> <span class="yaml-val">mysql:8.4</span>
+        <span class="yaml-key">env:</span>
+          <span class="yaml-key">MYSQL_ROOT_PASSWORD:</span> <span class="yaml-val">root</span>
+          <span class="yaml-key">MYSQL_DATABASE:</span> <span class="yaml-val">moodle_test</span>
+          <span class="yaml-key">MYSQL_USER:</span> <span class="yaml-val">moodle</span>
+          <span class="yaml-key">MYSQL_PASSWORD:</span> <span class="yaml-val">moodle_test_pass</span>
+        <span class="yaml-key">ports:</span> <span class="yaml-val">['3306:3306']</span>
+        <span class="yaml-key">options:</span> <span class="yaml-val">--health-cmd="mysqladmin ping" --health-interval=10s --tmpfs /var/lib/mysql:rw</span>
+      <span class="yaml-key">redis:</span>
+        <span class="yaml-key">image:</span> <span class="yaml-val">redis:7</span>
+        <span class="yaml-key">ports:</span> <span class="yaml-val">['6379:6379']</span>
+    <span class="yaml-key">steps:</span>
+      - <span class="yaml-key">uses:</span> <span class="yaml-val">actions/checkout@v4</span>
+        <span class="yaml-key">with:</span> { <span class="yaml-key">submodules:</span> <span class="yaml-val">recursive</span> }
+      - <span class="yaml-key">uses:</span> <span class="yaml-val">shivammathur/setup-php@v2</span>
+        <span class="yaml-key">with:</span> { <span class="yaml-key">php-version:</span> <span class="yaml-val">'8.2'</span>, <span class="yaml-key">extensions:</span> <span class="yaml-val">mysqli,redis,gd,intl</span> }
+      - <span class="yaml-key">run:</span> <span class="yaml-val">composer install --prefer-dist</span>
+      - <span class="yaml-key">name:</span> <span class="yaml-val">Prepare Moodle for PHPUnit</span>
+        <span class="yaml-key">run:</span> |
+          cp .github/workflows/config-template.php config.php
+          mkdir -p ../moodledata ../phpunitdata
+          php admin/tool/phpunit/cli/init.php --no-composer-self-update
+        <span class="yaml-key">env:</span> { <span class="yaml-key">dbtype:</span> <span class="yaml-val">mysqli</span> }
+      - <span class="yaml-key">name:</span> <span class="yaml-val">Run PHPUnit — Custom Plugins</span>
+        <span class="yaml-key">run:</span> <span class="yaml-val">vendor/bin/phpunit --log-junit phpunit-results.xml</span>
+      - <span class="yaml-key">uses:</span> <span class="yaml-val">actions/upload-artifact@v4</span>
+        <span class="yaml-key">with:</span> { <span class="yaml-key">name:</span> <span class="yaml-val">phpunit-results</span>, <span class="yaml-key">path:</span> <span class="yaml-val">phpunit-results.xml</span> }
+
+  <span class="yaml-comment"># ─── JOB 3: Frontend Builds ───</span>
+  <span class="yaml-key">frontend:</span>
+    <span class="yaml-key">name:</span> <span class="yaml-val">"🎨 Frontend Builds"</span>
+    <span class="yaml-key">runs-on:</span> <span class="yaml-val">ubuntu-24.04</span>
+    <span class="yaml-key">steps:</span>
+      - <span class="yaml-key">uses:</span> <span class="yaml-val">actions/checkout@v4</span>
+        <span class="yaml-key">with:</span> { <span class="yaml-key">submodules:</span> <span class="yaml-val">recursive</span> }
+      - <span class="yaml-key">uses:</span> <span class="yaml-val">actions/setup-node@v4</span>
+        <span class="yaml-key">with:</span> { <span class="yaml-key">node-version:</span> <span class="yaml-val">'20'</span> }
+      - <span class="yaml-key">name:</span> <span class="yaml-val">Grunt — Moodle AMD modules</span>
+        <span class="yaml-key">run:</span> <span class="yaml-val">npm ci &amp;&amp; npx grunt</span>
+      - <span class="yaml-key">name:</span> <span class="yaml-val">Build Course Dashboard frontend</span>
+        <span class="yaml-key">working-directory:</span> <span class="yaml-val">mod/coursedashboard/client</span>
+        <span class="yaml-key">run:</span> <span class="yaml-val">npm ci &amp;&amp; npm run build</span>
+
+  <span class="yaml-comment"># ─── JOB 4: Security Scanning ───</span>
+  <span class="yaml-key">security:</span>
+    <span class="yaml-key">name:</span> <span class="yaml-val">"🔒 Security Scan"</span>
+    <span class="yaml-key">runs-on:</span> <span class="yaml-val">ubuntu-24.04</span>
+    <span class="yaml-key">steps:</span>
+      - <span class="yaml-key">uses:</span> <span class="yaml-val">actions/checkout@v4</span>
+      - <span class="yaml-key">name:</span> <span class="yaml-val">Trivy Vulnerability Scan</span>
+        <span class="yaml-key">uses:</span> <span class="yaml-val">aquasecurity/trivy-action@master</span>
+        <span class="yaml-key">with:</span>
+          <span class="yaml-key">scan-type:</span> <span class="yaml-val">'fs'</span>
+          <span class="yaml-key">severity:</span> <span class="yaml-val">'CRITICAL,HIGH'</span>
+</code></pre>
+
+  <hr>
+
+  <h2>3.2 Deploy to Staging Pipeline</h2>
+  <div class="file-label">.github/workflows/deploy-staging.yml</div>
+  <pre><code><span class="yaml-key">name:</span> <span class="yaml-val">Deploy to Staging</span>
+
+<span class="yaml-key">on:</span>
+  <span class="yaml-key">push:</span>
+    <span class="yaml-key">branches:</span> <span class="yaml-val">[develop]</span>
+
+<span class="yaml-key">jobs:</span>
+  <span class="yaml-key">deploy-staging:</span>
+    <span class="yaml-key">name:</span> <span class="yaml-val">"🚀 Deploy → Staging"</span>
+    <span class="yaml-key">runs-on:</span> <span class="yaml-val">ubuntu-24.04</span>
+    <span class="yaml-key">environment:</span>
+      <span class="yaml-key">name:</span> <span class="yaml-val">staging</span>
+      <span class="yaml-key">url:</span> <span class="yaml-val">https://staging.hitloop.com</span>
+    <span class="yaml-key">steps:</span>
+      - <span class="yaml-key">uses:</span> <span class="yaml-val">actions/checkout@v4</span>
+        <span class="yaml-key">with:</span> { <span class="yaml-key">submodules:</span> <span class="yaml-val">recursive</span> }
+
+      - <span class="yaml-key">name:</span> <span class="yaml-val">Build production artifact</span>
+        <span class="yaml-key">run:</span> |
+          composer install --no-dev --optimize-autoloader
+          npm ci &amp;&amp; npx grunt
+          cd mod/coursedashboard/client &amp;&amp; npm ci &amp;&amp; npm run build &amp;&amp; cd ../../..
+          RELEASE="release-$(date +%Y%m%d-%H%M%S)-${GITHUB_SHA::8}"
+          echo "RELEASE=$RELEASE" >> $GITHUB_ENV
+          tar czf /tmp/${RELEASE}.tar.gz --exclude='.git' --exclude='node_modules' \
+            --exclude='config.php' --exclude='*.log' .
+
+      - <span class="yaml-key">name:</span> <span class="yaml-val">Deploy via SSH</span>
+        <span class="yaml-key">run:</span> |
+          <span class="yaml-comment"># 1. Upload artifact to server</span>
+          scp /tmp/$RELEASE.tar.gz $DEPLOY_USER@$HOST:/tmp/
+          <span class="yaml-comment"># 2. Enable maintenance mode</span>
+          ssh $DEPLOY_USER@$HOST "php /var/www/html/moodle/admin/cli/maintenance.php --enable"
+          <span class="yaml-comment"># 3. Extract release</span>
+          ssh $DEPLOY_USER@$HOST "mkdir -p /var/www/releases/$RELEASE &amp;&amp; \
+            tar xzf /tmp/$RELEASE.tar.gz -C /var/www/releases/$RELEASE"
+          <span class="yaml-comment"># 4. Link shared config</span>
+          ssh $DEPLOY_USER@$HOST "ln -sf /var/www/shared/config.php /var/www/releases/$RELEASE/config.php"
+          <span class="yaml-comment"># 5. Atomic symlink switch</span>
+          ssh $DEPLOY_USER@$HOST "ln -sfn /var/www/releases/$RELEASE /var/www/html/moodle"
+          <span class="yaml-comment"># 6. Moodle upgrade + cache purge</span>
+          ssh $DEPLOY_USER@$HOST "php /var/www/html/moodle/admin/cli/upgrade.php --non-interactive"
+          ssh $DEPLOY_USER@$HOST "php /var/www/html/moodle/admin/cli/purge_caches.php"
+          <span class="yaml-comment"># 7. Disable maintenance</span>
+          ssh $DEPLOY_USER@$HOST "php /var/www/html/moodle/admin/cli/maintenance.php --disable"
+
+      - <span class="yaml-key">name:</span> <span class="yaml-val">Smoke test</span>
+        <span class="yaml-key">run:</span> |
+          HTTP_CODE=$(curl -o /dev/null -s -w "%{http_code}" "https://staging.hitloop.com/login/index.php")
+          [ "$HTTP_CODE" -eq 200 ] || exit 1
+</code></pre>
+
+  <hr>
+
+  <h2>3.3 Deploy to Production Pipeline</h2>
+  <div class="file-label">.github/workflows/deploy-production.yml</div>
+  <pre><code><span class="yaml-key">name:</span> <span class="yaml-val">Deploy to Production</span>
+
+<span class="yaml-key">on:</span>
+  <span class="yaml-key">push:</span>
+    <span class="yaml-key">tags:</span> <span class="yaml-val">['v*.*.*']</span>
+
+<span class="yaml-key">jobs:</span>
+  <span class="yaml-key">deploy-production:</span>
+    <span class="yaml-key">name:</span> <span class="yaml-val">"🏭 Deploy → Production"</span>
+    <span class="yaml-key">runs-on:</span> <span class="yaml-val">ubuntu-24.04</span>
+    <span class="yaml-key">environment:</span>
+      <span class="yaml-key">name:</span> <span class="yaml-val">production</span>  <span class="yaml-comment"># ← requires manual approval in GitHub settings</span>
+      <span class="yaml-key">url:</span> <span class="yaml-val">https://devlearn.hitloop.com</span>
+    <span class="yaml-key">steps:</span>
+      - <span class="yaml-key">uses:</span> <span class="yaml-val">actions/checkout@v4</span>
+        <span class="yaml-key">with:</span> { <span class="yaml-key">submodules:</span> <span class="yaml-val">recursive</span> }
+
+      - <span class="yaml-key">name:</span> <span class="yaml-val">Build + Deploy (same as staging, with DB backup first)</span>
+        <span class="yaml-key">run:</span> |
+          <span class="yaml-comment"># Step 0: Create DB backup BEFORE deployment</span>
+          ssh $USER@$HOST "mysqldump -u root moodle --single-transaction | gzip > /var/www/backups/db-$(date +%Y%m%d).sql.gz"
+          <span class="yaml-comment"># Steps 1-7: Same as staging deployment above</span>
+          <span class="yaml-comment"># ... (artifact upload, maintenance mode, symlink switch, upgrade, etc.)</span>
+
+      - <span class="yaml-key">name:</span> <span class="yaml-val">Smoke test production</span>
+        <span class="yaml-key">run:</span> |
+          HTTP_CODE=$(curl -o /dev/null -s -w "%{http_code}" "https://devlearn.hitloop.com/login/index.php")
+          [ "$HTTP_CODE" -eq 200 ] && echo "✅ Production OK" || exit 1
+
+  <span class="yaml-comment"># ─── Automatic Rollback (if smoke test fails) ───</span>
+  <span class="yaml-key">rollback:</span>
+    <span class="yaml-key">name:</span> <span class="yaml-val">"⏪ Emergency Rollback"</span>
+    <span class="yaml-key">needs:</span> <span class="yaml-val">deploy-production</span>
+    <span class="yaml-key">if:</span> <span class="yaml-val">failure()</span>
+    <span class="yaml-key">runs-on:</span> <span class="yaml-val">ubuntu-24.04</span>
+    <span class="yaml-key">steps:</span>
+      - <span class="yaml-key">name:</span> <span class="yaml-val">Rollback to previous release</span>
+        <span class="yaml-key">run:</span> |
+          PREVIOUS=$(ssh $USER@$HOST "ls -dt /var/www/releases/*/ | sed -n '2p'")
+          ssh $USER@$HOST "ln -sfn $PREVIOUS /var/www/html/moodle"
+          ssh $USER@$HOST "php /var/www/html/moodle/admin/cli/purge_caches.php"
+          ssh $USER@$HOST "php /var/www/html/moodle/admin/cli/maintenance.php --disable"
+          echo "✅ Rollback complete"
+</code></pre>
+
+  <hr>
+
+  <h2>3.4 Secure Config Template</h2>
+  <div class="file-label">.github/workflows/config-deploy-template.php</div>
+  <pre><code>&lt;?php
+<span class="yaml-comment">// Auto-generated config.php — DO NOT EDIT MANUALLY</span>
+<span class="yaml-comment">// Generated by CI/CD pipeline at deploy time</span>
+
+unset($CFG);
+global $CFG;
+$CFG = new stdClass();
+
+<span class="yaml-comment">// Database — populated from environment variables</span>
+$CFG->dbtype    = 'mysqli';
+$CFG->dblibrary = 'native';
+$CFG->dbhost    = getenv('MOODLE_DB_HOST') ?: 'localhost';
+$CFG->dbname    = getenv('MOODLE_DB_NAME') ?: 'moodle';
+$CFG->dbuser    = getenv('MOODLE_DB_USER') ?: 'moodle-user';
+$CFG->dbpass    = getenv('MOODLE_DB_PASSWORD');  <span class="yaml-comment">// NEVER hardcode</span>
+$CFG->prefix    = 'mdl_';
+
+<span class="yaml-comment">// Redis Sessions</span>
+$CFG->session_handler_class = '\core\session\redis';
+$CFG->session_redis_host = getenv('REDIS_HOST') ?: '127.0.0.1';
+
+<span class="yaml-comment">// URLs</span>
+$CFG->wwwroot   = getenv('MOODLE_WWWROOT') ?: 'https://devlearn.hitloop.com';
+$CFG->dataroot  = getenv('MOODLE_DATAROOT') ?: '/var/www/moodledata';
+
+<span class="yaml-comment">// Security — FIXED from 0777</span>
+$CFG->directorypermissions = 0750;
+$CFG->cookiesecure = 1;
+$CFG->cookiehttponly = 1;
+
+<span class="yaml-comment">// External services</span>
+$CFG->veda_fastapi_url = getenv('VEDA_FASTAPI_URL') ?: 'http://localhost:8066';
+$CFG->veda_frontend_type = getenv('VEDA_FRONTEND_TYPE') ?: 'nextjs';
+$CFG->veda_nextjs_url = getenv('VEDA_NEXTJS_URL') ?: 'http://localhost:3000';
+
+require_once(__DIR__ . '/lib/setup.php');
+</code></pre>
+
+</div>
+</body>
+</html>

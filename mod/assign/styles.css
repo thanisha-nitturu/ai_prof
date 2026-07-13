@@ -134,6 +134,8 @@
 .path-mod-assign .gradingtable table {
     border-collapse: separate;
     border-spacing: 0;
+    width: max-content;
+    min-width: 100%;
 }
 
 .path-mod-assign .gradingtable thead th {
@@ -412,11 +414,13 @@
 .path-mod-assign [data-region="grading-navigation"] {
     padding: 1em;
 }
+
 .path-mod-assign [data-region="assignment-info"] {
     white-space: nowrap;
     overflow-x: hidden;
     text-overflow: ellipsis;
 }
+
 .path-mod-assign [data-region="assignment-info"] small[data-region="assignment-tooltip"] {
     margin-left: 0.5em;
 }
@@ -524,7 +528,7 @@
     border-right: 1px solid #ddd;
 }
 
-.path-mod-assign [data-region="review-panel"] + [data-region="grade-panel"] [data-region="grade"] {
+.path-mod-assign [data-region="review-panel"]+[data-region="grade-panel"] [data-region="grade"] {
     margin-left: auto;
     margin-right: auto;
     max-width: 100%;
@@ -562,7 +566,7 @@
     display: none;
 }
 
-.path-mod-assign [data-region="review-panel"].collapsed + [data-region="grade-panel"] {
+.path-mod-assign [data-region="review-panel"].collapsed+[data-region="grade-panel"] {
     position: absolute;
     left: 30px;
     right: 0;
@@ -573,7 +577,7 @@
     transition: width 0.5s, right 0.5s, left 0.5s;
 }
 
-.path-mod-assign [data-region="review-panel"].collapsed + [data-region="grade-panel"] [data-region="grade"],
+.path-mod-assign [data-region="review-panel"].collapsed+[data-region="grade-panel"] [data-region="grade"],
 .path-mod-assign [data-region="grade-panel"].fullwidth [data-region="grade"] {
     max-width: 800px;
     margin-left: auto;
@@ -633,8 +637,8 @@
     background-color: transparent;
 }
 
-.path-mod-assign [data-region="grade-panel"] .submissionsummarytable .generaltable tbody > tr:nth-child(2n+1) > td,
-.path-mod-assign [data-region="grade-panel"] .submissionsummarytable .generaltable tbody tr:hover > td {
+.path-mod-assign [data-region="grade-panel"] .submissionsummarytable .generaltable tbody>tr:nth-child(2n+1)>td,
+.path-mod-assign [data-region="grade-panel"] .submissionsummarytable .generaltable tbody tr:hover>td {
     background-color: transparent;
 }
 
@@ -671,7 +675,7 @@
     min-width: 0;
 }
 
-.path-mod-assign [data-region="grade-panel"] #id_gradeheader > legend {
+.path-mod-assign [data-region="grade-panel"] #id_gradeheader>legend {
     visibility: hidden;
     height: 0;
     margin-bottom: 0;
@@ -769,6 +773,7 @@
     max-width: 100%;
     padding-bottom: 0;
 }
+
 .path-mod-assign .gradingform_rubric {
     max-width: calc(100vw - 200px);
 }
@@ -906,7 +911,7 @@
 
 /***** Start attempt settings *****/
 
-.path-mod-assign [data-region="grade-panel"] #id_attemptsettings > legend {
+.path-mod-assign [data-region="grade-panel"] #id_attemptsettings>legend {
     font-size: 18px;
     font-weight: 500;
     line-height: 40px;
@@ -1007,7 +1012,7 @@
     .path-mod-assign [data-region="grading-navigation-panel"],
     .path-mod-assign [data-region="review-panel"],
     .path-mod-assign [data-region="grade-panel"],
-    .path-mod-assign [data-region="review-panel"].collapsed + [data-region="grade-panel"],
+    .path-mod-assign [data-region="review-panel"].collapsed+[data-region="grade-panel"],
     .path-mod-assign [data-region="grade-actions-panel"] {
         position: inherit;
         width: 100%;
@@ -1175,9 +1180,9 @@
     display: none;
 }
 
-.path-mod-assign [data-region="grade-panel"] .mform .fitem .fcheckbox > span,
-.path-mod-assign [data-region="grade-panel"] .mform .fitem .fradio > span,
-.path-mod-assign [data-region="grade-panel"] .mform .fitem .fgroup > span {
+.path-mod-assign [data-region="grade-panel"] .mform .fitem .fcheckbox>span,
+.path-mod-assign [data-region="grade-panel"] .mform .fitem .fradio>span,
+.path-mod-assign [data-region="grade-panel"] .mform .fitem .fgroup>span {
     margin-top: 4px;
 }
 
@@ -1211,6 +1216,7 @@
 .path-mod-assign #page-content {
     position: inherit;
 }
+
 /** End of base fixes **/
 
 /** Fix to YUI tree (which is a table) when displayed within grading table. **/
@@ -1218,6 +1224,7 @@
     border: 0;
     padding: 0;
 }
+
 /** End of YUI tree fix **/
 
 /* Countdown timer. */

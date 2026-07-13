@@ -1,0 +1,82 @@
+/* Google Gemini Dark Mode Theme for highlight.js */
+
+.hljs {
+  display: block;
+  overflow-x: auto;
+  background: #131314; /* Gemini's deep dark background */
+  color: #e3e3e3;      /* Standard text color */
+  padding: 16px;
+  border-radius: 10px; /* The rounded corners used in the Gemini UI */
+  font-family: 'Google Sans Mono', 'Roboto Mono', monospace; 
+}
+
+/* Comments */
+.hljs-comment,
+.hljs-quote {
+  color: #9aa0a6; /* Google Grey 500 */
+  font-style: italic;
+}
+
+/* Keywords, Tags, Built-ins, Types */
+.hljs-keyword,
+.hljs-selector-tag,
+.hljs-built_in,
+.hljs-type,
+.hljs-template-tag {
+  color: #8ab4f8; /* Google Blue 300 */
+}
+
+/* Strings, Regex, Additions */
+.hljs-string,
+.hljs-regexp,
+.hljs-addition {
+  color: #81c995; /* Google Green 300 */
+}
+
+/* Numbers, Literals (Booleans) */
+.hljs-number,
+.hljs-literal {
+  color: #f28b82; /* Google Red 300 */
+}
+
+/* Titles, Class names, Functions */
+.hljs-title,
+.hljs-class .hljs-title,
+.hljs-title.class_,
+.hljs-title.function_ {
+  color: #fde293; /* Google Yellow 300 */
+}
+
+/* Variables, Attributes, Properties */
+.hljs-name,
+.hljs-variable,
+.hljs-template-variable,
+.hljs-attr,
+.hljs-attribute,
+.hljs-property {
+  color: #e3e3e3; /* Inherits standard text color for clean readability */
+}
+
+/* Meta, Deletions */
+.hljs-meta,
+.hljs-meta .hljs-keyword,
+.hljs-meta .hljs-string,
+.hljs-deletion {
+  color: #f28b82; /* Google Red 300 */
+}
+
+/* Symbols, Bullets, Links */
+.hljs-symbol,
+.hljs-bullet,
+.hljs-link {
+  color: #8ab4f8; /* Google Blue 300 */
+}
+
+/* Formatting overrides */
+.hljs-emphasis {
+  font-style: italic;
+}
+
+.hljs-strong {
+  font-weight: bold;
+}

@@ -1,0 +1,13 @@
+--- /var/www/html/moodle/grade/report/grader/styles.css
++++ /var/www/html/moodle/grade/report/grader/styles.css
+@@ -42,8 +42,8 @@
+  */
+ .path-grade-report-grader .gradeparent .cell {
+     border: 1px solid #ccc;
+-    border-top-width: 0;
+-    border-left-width: 0;
++    /* border-top-width: 0; */
++    /* border-left-width: 0; */
+     padding: 0.5rem 1rem;
+     vertical-align: top;
+     height: 100%;

@@ -1,0 +1,150 @@
+<?php  // Moodle configuration file
+
+// ═══════════════════════════════════════════════════════════════════
+// INFISICAL SECRET LOADER
+// All secrets are fetched exclusively from Infisical.
+// ═══════════════════════════════════════════════════════════════════
+require_once __DIR__ . '/vendor/autoload.php';
+
+use Infisical\SDK\InfisicalSDK;
+use Infisical\SDK\Models\GetSecretParameters;
+
+// ── Load .env credentials ─────────────────────────────────────────
+$dotenv = Dotenv\Dotenv::createUnsafeMutable(__DIR__);
+$dotenv->load();
+
+$_inf_client_id     = $_ENV['INFISICAL_CLIENT_ID']     ?? getenv('INFISICAL_CLIENT_ID');
+$_inf_client_secret = $_ENV['INFISICAL_CLIENT_SECRET'] ?? getenv('INFISICAL_CLIENT_SECRET');
+$_inf_project_id    = $_ENV['INFISICAL_PROJECT_ID']    ?? getenv('INFISICAL_PROJECT_ID');
+
+// ── Connect & authenticate with Infisical ─────────────────────────
+$apiUrl = getenv('INFISICAL_API_URL') ?: 'http://localhost:8082';
+$_inf_sdk = new InfisicalSDK($apiUrl);
+$_inf_sdk->auth()->universalAuth()->login($_inf_client_id, $_inf_client_secret);
+
+// ── Closure to fetch a single secret ─────────────────────────────
+// Properties are readonly — must be passed via constructor
+$_inf_env = getenv('MOODLE_ENV') ?: 'dev';
+$_inf_get = static function (string $name) use ($_inf_sdk, $_inf_project_id, $_inf_env): string {
+    $params = new GetSecretParameters(
+        secretKey:   $name,
+        environment: $_inf_env,      // Dynamic environment
+        projectId:   $_inf_project_id,
+        secretPath:  '/'
+    );
+    return $_inf_sdk->secrets()->get($params)->secretValue;
+};
+
+// ── Fetch all 9 secrets ───────────────────────────────────────────
+$_s = [
+    'MOODLE_DB_HOST'         => $_inf_get('MOODLE_DB_HOST'),
+    'MOODLE_DB_NAME'         => $_inf_get('MOODLE_DB_NAME'),
+    'MOODLE_DB_USER'         => $_inf_get('MOODLE_DB_USER'),
+    'MOODLE_DB_PASS'         => $_inf_get('MOODLE_DB_PASS'),
+    'MOODLE_GENERATOR_PASS'  => $_inf_get('MOODLE_GENERATOR_PASS'),
+    'MOODLE_REDIS_HOST'      => $_inf_get('MOODLE_REDIS_HOST'),
+    'MOODLE_REDIS_PORT'      => $_inf_get('MOODLE_REDIS_PORT'),
+    'MOODLE_VEDA_API_URL'    => $_inf_get('MOODLE_VEDA_API_URL'),
+    'MOODLE_VEDA_NEXTJS_URL' => $_inf_get('MOODLE_VEDA_NEXTJS_URL'),
+];
+// ═══════════════════════════════════════════════════════════════════
+
+unset($CFG);
+global $CFG;
+$CFG = new stdClass();
+
+$CFG->dbtype    = 'mysqli';
+$CFG->dblibrary = 'native';
+$CFG->dbhost    = ($_s['MOODLE_DB_HOST'] === 'localhost' || $_s['MOODLE_DB_HOST'] === '127.0.0.1') ? 'host.docker.internal' : $_s['MOODLE_DB_HOST'];
+$CFG->dbname    = $_s['MOODLE_DB_NAME'];
+$CFG->dbuser    = $_s['MOODLE_DB_USER'];
+$CFG->dbpass    = $_s['MOODLE_DB_PASS'];
+$CFG->prefix    = 'mdl_';
+$CFG->dboptions = array (
+  'dbpersist' => 0,
+  'dbport' => '',
+  'dbsocket' => '',
+  'dbcollation' => 'utf8mb4_unicode_ci',
+);
+
+
+// REDIS SESSION HANDLING (Production Optimized)
+$CFG->session_handler_class = '\core\session\redis';
+$CFG->session_redis_host = getenv('MOODLE_REDIS_HOST') ?: $_s['MOODLE_REDIS_HOST'];
+$CFG->session_redis_port = (int) $_s['MOODLE_REDIS_PORT'];
+$CFG->session_redis_database = 0;
+
+// CRITICAL: Unique prefix to avoid conflict with Cache Store
+$CFG->session_redis_prefix = 'moodle_sess_';
+
+$CFG->session_redis_acquire_lock_timeout = 120;
+$CFG->session_redis_lock_expire = 7200;
+
+// Enable igbinary to match your Cache Store settings (Faster/Smaller)
+$CFG->session_redis_serializer_use_igbinary = true;
+
+
+$_env_urls = [
+    'dev'     => 'https://devlearn.hitloop.com',
+    'staging' => 'https://staging.hitloop.com',
+    'prod'    => 'https://app.aiprof.com', // Using app.aiprof.com for prod
+];
+$CFG->wwwroot   = $_env_urls[$_inf_env] ?? $_env_urls['dev'];
+$CFG->dataroot  = '/var/www/moodledata';
+$CFG->sslproxy  = true;
+$CFG->admin     = 'admin';
+
+$CFG->directorypermissions = 0777;
+
+
+$CFG->preventexecpath = false;
+$CFG->pathtogs = '/usr/bin/gs';
+$CFG->pathtophp = '/usr/bin/php';
+$CFG->pathtodu = '/usr/bin/du';
+$CFG->aspellpath = '/usr/bin/aspell';
+$CFG->pathtodot = '/usr/bin/dot';
+$CFG->pathtopdftoppm = '/usr/bin/pdftoppm';
+$CFG->pathtopython = '/usr/bin/python3';
+$CFG->tool_generator_users_password = $_s['MOODLE_GENERATOR_PASS'];
+$CFG->pathtoclam = '/usr/bin/clamscan'; // path of clamAV for virus detection in uploaded files.
+$CFG->veda_fastapi_url = 'https://devlearn.hitloop.com/veda-api';
+// Force Moodle to accept the absolute path for FFprobe
+$CFG->pathtoffprobe = '/usr/bin/ffprobe';
+
+//$CFG->proxyhost = 'localhost'; // Or your Proxy's specific IP
+//$CFG->reverseproxy = true;
+
+$CFG->cookiesecure = 1;
+$CFG->cookiehttponly = 1;
+$CFG->getenvremoteaddrconf = array('HTTP_X_FORWARDED_FOR');
+
+$CFG->session_validatebyip = true;
+$CFG->pathtoclam = '/usr/bin/clamscan';
+
+$CFG->cachejs = true;
+$CFG->cacherecords = true;
+$CFG->cachetext = true;
+$CFG->dboptions = array(
+    'dbpersist' => true,
+    'dbcollation' => 'utf8mb4_unicode_ci'
+);
+
+$CFG->veda_frontend_type = 'nextjs';
+$CFG->veda_nextjs_url = $_s['MOODLE_VEDA_NEXTJS_URL'];
+$CFG->veda_nextjs_url = 'http://host.docker.internal:3002'; // LOCAL DEV OVERRIDE
+
+// ═══════════════════════════════════════════════════════════════════
+// LOCAL DEV: Allow localhost in CSP for iframe embedding
+// ═══════════════════════════════════════════════════════════════════
+$CFG->customcspframe = 'http://localhost:3000 http://localhost:3002 https://devlearn.hitloop.com';
+
+// ═══════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════
+
+
+// ═══════════════════════════════════════════════════════════════════
+
+require_once(__DIR__ . '/lib/setup.php');
+
+// There is no php closing tag in this file,
+// it is intentional because it prevents trailing whitespace problems!

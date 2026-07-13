@@ -1136,11 +1136,1221 @@ class renderer extends \plugin_renderer_base {
      */
     public function render_assign_grading_table(\assign_grading_table $table) {
         $o = '';
+
+        // Construct the 'Remove all Filter' button and the table within a single wrapper so AJAX and Form layouts don't break
+        $cmid = $this->page->cm->id;
+        $reseturl = new \moodle_url('/mod/assign/view.php', [
+            'id' => $cmid,
+            'action' => 'grading',
+            'group' => 0,
+            'status' => '',
+            'workflowfilter' => '',
+            'markingallocationfilter' => '',
+            'suspendedparticipantsfilter' => 0,
+            'tifirst' => '',
+            'tilast' => '',
+            'search' => '',
+            'treset' => 1,
+            'reset' => 1
+        ]);
+        
+        $o .= '<div class="gradingtable-wrapper">';
+
+        $o .= '<div id="custom-reset-filters-container" style="display: flex; align-items: center; margin-left: auto;">
+            <a href="' . $reseturl->out(false) . '" class="btn btn-sm btn-outline-danger" style="font-size: 13px; font-weight: 500; padding: 6px 16px; border-radius: 6px; border: 0.5px solid #dc3545; height: 38px; display: inline-flex; justify-content: center; align-items: center;">
+                Remove all Filters
+            </a>
+        </div>';
+
         $o .= $this->output->box_start('boxaligncenter gradingtable position-relative');
 
         $this->page->requires->js_init_call('M.mod_assign.init_grading_table', array());
+        
+        // Inject CSS to format and align the "View all Submissions" page to match the requested template
+        $o .= '<style>
+            /* Full 100% width - aggressively override Moodle constraints */
+            form,
+            form.mform,
+            form.mform fieldset,
+            form.mform .fcontainer {
+                max-width: 100% !important;
+                width: 100% !important;
+                flex: 1 1 auto !important;
+                border: none !important;
+            }
+            body.path-mod-assign #page-content,
+            body.path-mod-assign .secondary-navigation,
+            body.path-mod-assign .primary-align,
+            body.path-mod-assign [role="main"],
+            body.path-mod-assign .container {
+                max-width: 100% !important;
+                width: 100% !important;
+                padding-left: 0px !important;
+                padding-right: 0px !important;
+            }
+            body.path-mod-assign #page-header {
+                margin-bottom: 4px !important;
+                padding-bottom: 4px !important;
+            }
+            body.path-mod-assign #page-content {
+                margin-top: 0 !important;
+                padding-top: 0 !important;
+            }
+            #region-main {
+                background: var(--color-background-primary, #ffffff) !important;
+                padding: 0px 0px !important;
+                box-sizing: border-box !important;
+                overflow: visible !important;
+            }
+            #region-main > .card {
+                border: none !important;
+                box-shadow: none !important;
+                padding: 0 !important;
+            }
+            body.path-mod-assign #region-main-box {
+                flex: 0 0 100% !important;
+                max-width: 100% !important;
+                padding: 0 !important;
+            }
+            body.path-mod-assign .card-body {
+                padding: 0 !important;
+            }
+
+            /* Toolbar alignments */
+            .tertiary-navigation,
+            .tertiary-navigation > div.d-flex {
+                display: flex !important;
+                align-items: center !important;
+                gap: 8px 8px !important;
+                flex-wrap: wrap !important;
+                margin-bottom: 4px !important;
+                padding-bottom: 4px !important;
+                width: 100% !important;
+            }
+            .tertiary-navigation .navitem {
+                margin: 0 !important;
+                border: none !important;
+            }
+            
+            /* Remove horizontal lines */
+            hr {
+                display: none !important;
+            }
+            .tertiary-navigation .navitem::before,
+            .tertiary-navigation .navitem::after,
+            .tertiary-navigation .navitem-divider,
+            .tertiary-navigation .divider {
+                display: none !important;
+                border: none !important;
+            }
+            
+            .tertiary-navigation .navitem:last-child,
+            .tertiary-navigation .d-flex.ml-auto,
+            .tertiary-navigation .ms-auto {
+                margin-left: auto !important;
+                margin-right: 0 !important;
+            }
+            
+            .tertiary-navigation input[type="text"],
+            .tertiary-navigation select,
+            .tertiary-navigation .btn,
+            .tertiary-navigation .dropdown-toggle {
+                padding: 6px 16px !important; /* Increased horizontal padding */
+                min-height: 38px !important; /* Standardize vertical height */
+                font-size: 13px !important;
+                border-radius: var(--border-radius-md, 6px) !important;
+                display: inline-flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+            }
+            
+            /* Add border to clickable dropdown buttons and secondary buttons so they do not look like plain text */
+            .tertiary-navigation select,
+            .tertiary-navigation .btn:not(.btn-primary):not(.btn-success):not(.btn-danger),
+            .tertiary-navigation .dropdown-toggle {
+                border: 0.5px solid var(--color-border-tertiary, #dee2e6) !important;
+                background-color: #ffffff !important;
+                color: #374151 !important;
+                box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
+            }
+            
+            /* Force dropdowns to open downwards and not flip up */
+            .tertiary-navigation .dropdown,
+            .tertiary-navigation .btn-group {
+                position: relative !important;
+            }
+            .tertiary-navigation .dropdown-menu {
+                top: 100% !important;
+                bottom: auto !important;
+                transform: none !important;
+                margin-top: 4px !important;
+            }
+            .tertiary-navigation .dropdown-menu.dropdown-menu-right,
+            .tertiary-navigation .dropdown-menu.dropdown-menu-end {
+                left: auto !important;
+                right: 0 !important;
+            }
+            
+            /* Seamless Input Groups (Floating Clear Cross inside Search Bar) */
+            .tertiary-navigation .input-group {
+                display: flex !important;
+                flex-wrap: nowrap !important;
+                align-items: center !important;
+                position: relative !important;
+            }
+            .tertiary-navigation .input-group input[type="text"] {
+                border-radius: var(--border-radius-md, 6px) !important; /* Full border */
+                border-right: 0.5px solid var(--color-border-tertiary, #dee2e6) !important;
+                padding-right: 32px !important; /* Make room for the absolute X */
+                width: 100% !important;
+            }
+            .tertiary-navigation .input-group .btn,
+            .tertiary-navigation .input-group-append .btn {
+                position: absolute !important;
+                right: 4px !important;
+                top: 50% !important;
+                transform: translateY(-50%) !important;
+                border: none !important;
+                background: transparent !important;
+                box-shadow: none !important;
+                padding: 4px !important;
+                min-height: 0 !important;
+                height: 24px !important;
+                width: 24px !important;
+                color: #6b7280 !important;
+                z-index: 5 !important;
+            }
+            /* Respect Moodle native hidden state for empty search bars */
+            .tertiary-navigation .btn.d-none,
+            .tertiary-navigation .input-group .btn.d-none,
+            .tertiary-navigation .input-group-append .btn.d-none {
+                display: none !important;
+            }
+
+            /* Grading options row alignment */
+            .gradingoptionsform {
+                display: flex !important;
+                align-items: center !important;
+                justify-content: space-between !important;
+                font-size: 10px !important;
+                margin-bottom: 3px !important;
+                flex-wrap: wrap !important;
+                gap: 3px !important;
+            }
+
+            /* Outer wrapper — clips the table to the page content width */
+            .gradingtable-wrapper {
+                width: 100% !important;
+                max-width: 100% !important;
+                overflow: hidden !important;   /* clips overflow horizontally */
+                box-sizing: border-box !important;
+            }
+
+            /* Table scroll container */
+            .gradingtable {
+                width: 100% !important;
+                max-width: 100% !important;
+                overflow-x: auto !important;
+                overflow-y: visible !important;
+                -webkit-overflow-scrolling: touch !important;
+                flex-shrink: 0 !important;
+                border: 0.5px solid var(--color-border-tertiary, #dee2e6) !important;
+                border-radius: var(--border-radius-md, 6px) !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                box-sizing: border-box !important;
+            }
+
+            /* Hide table caption and remove unwanted gaps safely */
+            .gradingtable table.generaltable caption {
+                display: none !important;
+                height: 0 !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                visibility: hidden !important;
+            }
+            .gradingtable > .no-overflow {
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            
+            /* Globally hide Moodle YUI cloned floating headers to prevent detached headers */
+            .floater,
+            .yui3-datatable-header {
+                display: none !important;
+                visibility: hidden !important;
+                height: 0 !important;
+                opacity: 0 !important;
+            }
+            
+            /* The table itself — use full width, allow natural column sizing */
+            .gradingtable table.generaltable {
+                display: table !important;
+                table-layout: auto !important;
+                width: max-content !important;
+                min-width: 100% !important;
+                border-collapse: collapse !important;
+                border-spacing: 0 !important;
+                font-size: 11px !important;
+                color: var(--color-text-primary, #111827) !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+
+            /* Header alignments and fixes */
+            .gradingtable table.generaltable thead {
+                visibility: visible !important;
+                opacity: 1 !important;
+                display: table-header-group !important;
+            }
+            .gradingtable table.generaltable thead,
+            .gradingtable table.generaltable thead tr {
+                position: static !important;
+                height: auto !important;
+                line-height: normal !important;
+                transform: none !important;
+                margin: 0 !important;
+            }
+            .gradingtable table.generaltable thead tr {
+                background: var(--color-background-secondary, #f8f9fa) !important;
+            }
+            
+            /* Hide only the YUI dummy row (which has no text) injected for column sizing */
+            .gradingtable table.generaltable thead tr:not(:last-child),
+            .gradingtable table.generaltable thead tr.yui3-datatable-first-row,
+            .gradingtable table.generaltable thead tr.emptyrow {
+                display: none !important;
+                height: 0 !important;
+            }
+            
+            .gradingtable table.generaltable thead th {
+                background-color: var(--color-background-secondary, #f8f9fa) !important;
+                border-bottom: 0.5px solid var(--color-border-tertiary, #dee2e6) !important;
+                border-top: none !important;
+                border-right: 0.5px solid var(--color-border-tertiary, #dee2e6) !important;
+                padding: 5px 4px !important;
+                font-weight: 500 !important;
+                font-size: 13px !important;
+                white-space: nowrap !important;
+                text-align: left !important;
+                vertical-align: bottom !important;
+            }
+            /* Compact column widths to reduce horizontal scroll */
+            .gradingtable table.generaltable thead th.c0,
+            .gradingtable table.generaltable tbody td.c0 {
+                width: 30px !important;
+                max-width: 30px !important;
+                text-align: center !important;
+            }
+            .gradingtable table.generaltable thead th.status,
+            .gradingtable table.generaltable tbody td.status {
+                width: 90px !important;
+                max-width: 100px !important;
+            }
+            /* Due column — as narrow as the content allows */
+            .gradingtable table.generaltable thead th.duedate,
+            .gradingtable table.generaltable tbody td.duedate {
+                width: 1% !important;
+                white-space: nowrap !important;
+                padding-left: 6px !important;
+                padding-right: 6px !important;
+            }
+
+            /* Feedback column — compact */
+            .gradingtable table.generaltable thead th.assignfeedback_comments,
+            .gradingtable table.generaltable tbody td.assignfeedback_comments {
+                width: 120px !important;
+                max-width: 140px !important;
+                text-align: center !important;
+            }
+            .gradingtable table.generaltable thead th.finalgrade,
+            .gradingtable table.generaltable tbody td.finalgrade {
+                width: 70px !important;
+                max-width: 80px !important;
+            }
+            .gradingtable table.generaltable thead th:last-child {
+                border-right: none !important;
+            }
+
+            /* Body rows - Force uniform #f8f9fa color by neutralizing Bootstrap 5 td striping */
+            .gradingtable table.generaltable tbody tr,
+            .gradingtable table.generaltable tbody tr:nth-of-type(odd),
+            .gradingtable table.generaltable tbody tr:nth-child(even),
+            .gradingtable table.generaltable tbody tr.unselectedrow {
+                border-bottom: 0.5px solid var(--color-border-tertiary, #dee2e6) !important;
+                background-color: #f8f9fa !important;
+            }
+            
+            .gradingtable table.generaltable tbody tr > td,
+            .gradingtable table.generaltable tbody tr > th {
+                background-color: #f8f9fa !important;
+                box-shadow: none !important; /* Neutralize Bootstrap 5 zebra shadow */
+                --bs-table-accent-bg: transparent !important;
+            }
+            
+            .gradingtable table.generaltable tbody tr:last-child {
+                border-bottom: none !important;
+            }
+
+            /* Custom CSS to tighten the layout and make table headers blue */
+            .tertiary-navigation {
+                margin-bottom: 0.5rem !important;
+                padding-bottom: 0 !important;
+                border-bottom: none !important;
+            }
+            .name-filter-container label,
+            .name-filter-container small {
+                display: none !important;
+            }
+            .name-filter-container .dropdown {
+                margin-top: 0 !important;
+            }
+            .generaltable th a {
+                color: #0f6cbf !important; /* Moodle primary blue */
+            }
+
+            /* Remove bullets and align file submissions neatly */
+            .gradingtable table.generaltable tbody td .plugincontents ul:has(.icon) {
+                list-style-type: none !important;
+                padding-left: 0 !important;
+                margin-left: 0 !important;
+            }
+            .gradingtable table.generaltable tbody td .plugincontents ul:has(.icon) li {
+                list-style-type: none !important;
+                margin-bottom: 0.75rem;
+                padding-left: 0 !important;
+                margin-left: 0 !important;
+            }
+            .gradingtable table.generaltable tbody td .plugincontents .fileuploadsubmission {
+                display: flex;
+                align-items: center;
+                flex-wrap: wrap;
+                gap: 0.25rem; /* Neatly reduces the gap */
+            }
+            .gradingtable table.generaltable tbody td .plugincontents .fileuploadsubmission .icon {
+                margin: 0 !important;
+                padding: 0 !important;
+                width: 16px;
+                height: 16px;
+            }
+            .gradingtable table.generaltable tbody td .plugincontents .fileuploadsubmissiontime {
+                margin-left: 1.25rem; /* Aligns the date perfectly under the file name */
+                font-size: 0.85em;
+                color: #6c757d;
+            }
+            
+            /* Ensure plugin content backgrounds are transparent to inherit row hover color */
+            .gradingtable table.generaltable tbody td .plugincontents,
+            .gradingtable table.generaltable tbody td .plugincontentsummary {
+                background-color: transparent !important;
+            }
+            
+            .gradingtable table.generaltable tbody tr:hover > td,
+            .gradingtable table.generaltable tbody tr:hover > th {
+                background-color: #e9ecef !important; /* Slightly darker shade for hover effect */
+            }
+            .gradingtable td {
+                padding: 5px 4px !important;
+                vertical-align: middle !important;
+                line-height: 1.3 !important;
+                border-top: none !important;
+                border-right: 0.5px solid var(--color-border-tertiary, #dee2e6) !important;
+                font-size: 11px !important;
+            }
+            .gradingtable td:last-child {
+                border-right: none !important;
+            }
+            
+            /* Centering for right-side columns */
+            .gradingtable th.grade,
+            .gradingtable td.grade,
+            .gradingtable td.c5,
+            .gradingtable td.cgrade,
+            .gradingtable th.timemarked,
+            .gradingtable td.timemarked,
+            .gradingtable th.assignfeedback_comments,
+            .gradingtable td.assignfeedback_comments,
+            .gradingtable th.cutoffdate,
+            .gradingtable td.cutoffdate,
+            .gradingtable th.timesubmitted {
+                text-align: center !important;
+                vertical-align: middle !important;
+                min-width: 80px !important;
+            }
+
+            /* Grade column 3-dots action menu absolute positioning */
+            .gradingtable td.grade,
+            .gradingtable td.c5,
+            .gradingtable td.cgrade {
+                position: relative !important;
+                white-space: nowrap !important; /* Prevents 68.00 % from splitting into two lines */
+                padding-right: 28px !important; /* Leave room for the action menu */
+            }
+            
+            /* Quick Grading Inputs and Selects Styling */
+            .gradingtable td.grade .quickgrade,
+            .gradingtable td.c5 .quickgrade,
+            .gradingtable td.cgrade .quickgrade {
+                max-width: 60px !important;
+                text-align: center !important;
+                border: 0.5px solid var(--color-border-tertiary, #dee2e6) !important;
+                border-radius: var(--border-radius-md, 6px) !important;
+                padding: 4px 6px !important;
+                margin: 0 4px 0 0 !important;
+                display: inline-block !important;
+                font-size: 11px !important;
+                background-color: #ffffff !important;
+                vertical-align: middle !important;
+            }
+            .gradingtable td.grade {
+                white-space: nowrap !important;
+                vertical-align: middle !important;
+            }
+            
+            .gradingtable td.grade .action-menu,
+            .gradingtable td.c5 .action-menu,
+            .gradingtable td.cgrade .action-menu {
+                position: absolute !important;
+                top: 4px !important;
+                right: 4px !important;
+                margin: 0 !important;
+                display: inline-block !important;
+            }
+
+            /* File submissions column alignment and strict containment */
+            .gradingtable [id^="assign_files_tree"] {
+                width: 100% !important;
+                max-width: 200px !important;
+                min-width: 140px !important;
+                white-space: normal !important;
+                word-wrap: break-word !important;
+                overflow: hidden !important; /* Brutally prevent any bleeding into the next column */
+            }
+            
+            /* Remove YUI tree indentation and spacer cells to eliminate left space */
+            .gradingtable .ygtvitem td:not(.ygtvcontent),
+            .gradingtable .ygtvblankdepthcell,
+            .gradingtable .ygtvdepthcell,
+            .gradingtable .ygtvspacer {
+                display: none !important;
+                width: 0 !important;
+            }
+            
+            /* Overcome YUI TreeView rigid layouts and white backgrounds that cause overlap */
+            .gradingtable .ygtvitem table {
+                table-layout: fixed !important;
+                width: 100% !important;
+                background-color: transparent !important;
+            }
+            
+            .gradingtable .ygtvitem,
+            .gradingtable .ygtvitem td,
+            .gradingtable .ygtvcontent,
+            .gradingtable .ygtvlabel,
+            .gradingtable .ygtvrow,
+            .gradingtable [class*="ygtv-highlight"],
+            .gradingtable .assignsubmission_file,
+            .gradingtable .assignsubmission_file .box,
+            .gradingtable .assignsubmission_file div,
+            .gradingtable .fileuploadsubmission,
+            .gradingtable .fileuploadsubmission div {
+                background-color: transparent !important;
+                white-space: normal !important;
+                word-wrap: break-word !important;
+                max-width: 100% !important;
+            }
+
+            .gradingtable .fileuploadsubmission {
+                display: flex !important;
+                align-items: flex-start !important;
+                gap: 6px !important;
+                overflow-wrap: break-word !important; /* Wrap whole words, break only if necessary */
+                word-break: normal !important;
+                text-align: left !important;
+                line-height: 1.3 !important;
+            }
+            
+            .gradingtable .fileuploadsubmissiontime {
+                display: block !important;
+                float: none !important;
+                text-align: left !important;
+                font-size: 10.5px !important;
+                line-height: 1.2 !important;
+                color: var(--color-text-secondary, #6b7280) !important;
+                margin-top: 4px !important;
+                padding-left: 22px !important; /* Aligns with text, skipping the icon */
+            }
+
+            /* Un-fix the sticky footer and place it neatly at the bottom of the table */
+            .stickyfooter,
+            #sticky-footer {
+                position: static !important;
+                box-shadow: none !important;
+                background: transparent !important;
+                padding: 0 !important;
+                margin-top: 20px !important;
+                border-top: none !important;
+                z-index: 1 !important;
+                width: 100% !important;
+            }
+
+            /* Fix Pagination and Show dropdown alignment */
+            .paging,
+            .paging-bar,
+            div:has(> .pagination) {
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                gap: 16px !important;
+                margin: 20px 0 !important;
+                flex-wrap: wrap !important;
+            }
+            
+            .paging form,
+            .paging-bar form,
+            form:has(select[name="perpage"]) {
+                display: flex !important;
+                align-items: center !important;
+                gap: 8px !important;
+                margin: 0 !important;
+            }
+            
+            .paging form label,
+            .paging-bar form label,
+            form:has(select[name="perpage"]) label {
+                margin: 0 !important;
+                font-size: 13px !important;
+                font-weight: 500 !important;
+                line-height: 1 !important;
+            }
+            
+            .paging form select,
+            .paging-bar form select,
+            form:has(select[name="perpage"]) select {
+                margin: 0 !important;
+                padding: 4px 30px 4px 10px !important;
+                height: 32px !important;
+                border-radius: 4px !important;
+                border: 0.5px solid var(--color-border-tertiary, #dee2e6) !important;
+            }
+            
+            .pagination {
+                display: flex !important;
+                align-items: center !important;
+                margin: 0 !important;
+                gap: 4px !important;
+                flex-wrap: wrap !important;
+            }
+            
+            .pagination .page-item .page-link {
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                min-width: 32px !important;
+                height: 32px !important;
+                padding: 0 8px !important;
+                font-size: 13px !important;
+                border-radius: 4px !important;
+                border: 0.5px solid var(--color-border-tertiary, #dee2e6) !important;
+                color: var(--color-text-primary, #374151) !important;
+            }
+            
+            .pagination .page-item.active .page-link {
+                background-color: #4f46e5 !important;
+                border-color: #4f46e5 !important;
+                color: #ffffff !important;
+                font-weight: 600 !important;
+            }
+            
+            /* Name Filter Dropdown Alphabet Adjustments */
+            .initialsdropdownform .initialbar {
+                display: flex !important;
+                flex-direction: column !important;
+                align-items: flex-start !important;
+                margin-bottom: 16px !important;
+                position: relative !important;
+                width: 100% !important;
+            }
+            .initialsdropdownform .initialbarlabel {
+                width: 100% !important;
+                margin-bottom: 6px !important;
+                font-weight: 600 !important;
+                font-size: 12px !important;
+                line-height: 26px !important; /* perfectly aligns with the height of the All button */
+                color: #4b5563 !important;
+            }
+            .initialsdropdownform .initialbargroups {
+                display: flex !important;
+                flex-wrap: wrap !important;
+                gap: 4px !important;
+                width: 100% !important;
+            }
+            
+            /* Move "All" button to the extreme right side of the label */
+            .initialsdropdownform .initialbargroups > ul:first-child {
+                position: absolute !important;
+                top: 0 !important;
+                right: 0 !important;
+                margin: 0 !important;
+            }
+            
+            .initialsdropdownform .pagination {
+                gap: 4px !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            .initialsdropdownform .pagination .page-item {
+                margin: 0 !important;
+            }
+            .initialsdropdownform .pagination .page-item .page-link,
+            .initialsdropdownform .pagination .page-item input[type="button"] {
+                min-width: 26px !important;
+                height: 26px !important;
+                padding: 0 !important;
+                font-size: 11.5px !important;
+                font-weight: 500 !important;
+                margin: 0 !important; /* Overrides Moodle native .me-1 */
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                border-radius: 4px !important;
+            }
+            
+            /* Premium Feedback Modal Styling */
+            .modal-dialog {
+                max-width: 850px !important; /* Wider modal for readability */
+            }
+            .modal-content {
+                border: none !important;
+                border-radius: 12px !important;
+                box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+            }
+            .modal-header {
+                border-bottom: 1px solid #f3f4f6 !important;
+                padding: 1.5rem !important;
+                background-color: #ffffff !important;
+                border-radius: 12px 12px 0 0 !important;
+            }
+            .modal-title {
+                font-weight: 700 !important;
+                color: #111827 !important;
+                font-size: 1.25rem !important;
+                letter-spacing: -0.025em !important;
+            }
+            .modal-body {
+                padding: 2rem !important;
+                color: #374151 !important;
+                line-height: 1.7 !important;
+                font-size: 0.95rem !important;
+                font-family: var(--font-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif) !important;
+            }
+            
+            /* Elegant Headings inside Modal Body */
+            .modal-body h1, 
+            .modal-body h2, 
+            .modal-body h3, 
+            .modal-body h4,
+            .modal-body h5,
+            .modal-body h6,
+            .modal-body p > strong:only-child {
+                font-size: 1.15rem !important;
+                font-weight: 700 !important;
+                color: #1f2937 !important;
+                margin-top: 2rem !important;
+                margin-bottom: 1rem !important;
+                text-transform: uppercase !important;
+                letter-spacing: 0.05em !important;
+                border-left: 4px solid #4f46e5 !important;
+                padding-left: 0.875rem !important;
+                line-height: 1.3 !important;
+                display: block !important;
+            }
+            
+            /* Remove top margin for the very first heading */
+            .modal-body > *:first-child,
+            .modal-body > *:first-child > strong:only-child {
+                margin-top: 0 !important;
+            }
+            
+            .modal-body p {
+                margin-bottom: 1.25rem !important;
+            }
+            
+            /* Lists inside Modal */
+            .modal-body ul, 
+            .modal-body ol {
+                margin-bottom: 1.25rem !important;
+                padding-left: 1.5rem !important;
+            }
+            .modal-body li {
+                margin-bottom: 0.5rem !important;
+            }
+            
+            /* Code blocks / Inline code */
+            .modal-body code {
+                background-color: #f3f4f6 !important;
+                color: #db2777 !important;
+                padding: 0.2rem 0.4rem !important;
+                border-radius: 4px !important;
+                font-size: 0.875em !important;
+            }
+            
+            /* Submission Details Merged Column */
+            .submission-details-container {
+                display: flex !important;
+                flex-direction: column !important;
+                align-items: center !important;
+                text-align: center !important;
+                gap: 4px !important;
+                min-width: 200px !important;
+            }
+            .submission-details-container .plugin-item {
+                margin-bottom: 0 !important;
+            }
+            .submission-details-container .plugincontentsummary {
+                padding: 4px !important;
+                margin: 0 !important;
+            }
+            .comments-modal-btn {
+                background-color: transparent !important;
+                border: 1px solid #4f46e5 !important;
+                color: #4f46e5 !important;
+                border-radius: 6px !important;
+                font-weight: 500 !important;
+                display: flex !important;
+                align-items: center !important;
+                gap: 6px !important;
+                justify-content: center !important;
+                width: fit-content !important;
+                padding: 4px 10px !important;
+                transition: all 0.2s ease !important;
+            }
+            .comments-modal-btn:hover {
+                background-color: #4f46e5 !important;
+                color: white !important;
+            }
+            .submission-comments-modal .modal-body {
+                background-color: #ffffff !important;
+                padding: 24px !important;
+                font-size: 14px !important;
+            }
+            /* Hide the native toggle inside the modal since we auto-expand it */
+            .custom-comments-body .comment-link {
+                display: none !important;
+            }
+        </style>';
+        
         $o .= $this->flexible_table($table, $table->get_rows_per_page(), false);
+        
+        $o .= '<script>
+            (function() {
+                // Move "Remove all Filters" button just above the Grading table
+                document.addEventListener("DOMContentLoaded", function() {
+                    var resetBtn = document.getElementById("custom-reset-filters-container");
+                    var tertiaryNavs = document.querySelectorAll(".tertiary-navigation");
+                    if (resetBtn && tertiaryNavs.length > 0) {
+                        // The Quick Grading row is always the last tertiary-navigation before the table
+                        var targetRow = tertiaryNavs[tertiaryNavs.length - 1];
+                        var innerFlex = targetRow.querySelector(".d-flex.flex-wrap") || targetRow.querySelector("div.d-flex") || targetRow;
+                        innerFlex.appendChild(resetBtn);
+                    }
+
+                    // Move "Show", Pagination, and "Notify students + Save" out of the sticky footer and place below the table
+                    function relocateFooterControls() {
+                        var tableWrapper = document.querySelector(".gradingtable-wrapper");
+                        if (!tableWrapper || document.getElementById("grading-below-table-bar")) return;
+
+                        var stickyFooter = document.querySelector(".stickyfooter") || document.querySelector(".sticky-footer") || document.querySelector("[data-sticky-footer]");
+                        var perpageEl = stickyFooter ? stickyFooter.querySelector("form:has(select[name=\"perpage\"]), label:has(select[name=\"perpage\"])") : null;
+                        var pagingBarEl = stickyFooter ? stickyFooter.querySelector("nav.pagination, .pagination") : null;
+                        if (!perpageEl) perpageEl = document.querySelector("form:has(select[name=\"perpage\"]), label:has(select[name=\"perpage\"])");
+                        if (!pagingBarEl) pagingBarEl = document.querySelector(".paging-bar nav.pagination, nav:has(.pagination)");
+                        var savePanel = document.querySelector("[data-region=\"quick-grading-save\"]");
+
+                        // Need at least perpage or paging bar to proceed
+                        if (!perpageEl && !pagingBarEl && !savePanel) return;
+
+                        // Build a clean bar below the table
+                        var belowBar = document.createElement("div");
+                        belowBar.id = "grading-below-table-bar";
+                        belowBar.style.cssText = [
+                            "display: flex",
+                            "align-items: center",
+                            "justify-content: space-between",
+                            "gap: 16px",
+                            "margin-top: 12px",
+                            "padding: 10px 14px",
+                            "background: #f8f9fa",
+                            "border: 0.5px solid #dee2e6",
+                            "border-radius: 6px",
+                            "box-sizing: border-box",
+                            "width: 100%",
+                            "flex-wrap: wrap",
+                        ].join(";");
+
+                        // Left side: Show dropdown + pagination
+                        var leftGroup = document.createElement("div");
+                        leftGroup.style.cssText = "display:flex;align-items:center;gap:16px;flex-wrap:wrap;";
+                        if (perpageEl) {
+                            // Get the closest col-auto parent if it exists, otherwise take the element itself
+                            var perpageContainer = perpageEl.closest(".col-auto") || perpageEl;
+                            perpageContainer.style.cssText = "margin:0;padding:0;";
+                            leftGroup.appendChild(perpageContainer);
+                        }
+                        if (pagingBarEl) {
+                            var pagingContainer = pagingBarEl.closest(".col") || pagingBarEl.closest("nav") || pagingBarEl;
+                            pagingContainer.style.cssText = "margin:0;padding:0;";
+                            leftGroup.appendChild(pagingContainer);
+                        }
+                        belowBar.appendChild(leftGroup);
+
+                        // Right side: Save panel (if quick grading)
+                        if (savePanel) {
+                            savePanel.style.cssText = "display:flex;align-items:center;gap:12px;margin:0;";
+                            belowBar.appendChild(savePanel);
+                        }
+
+                        tableWrapper.appendChild(belowBar);
+
+                        // Hide the now-empty sticky footer
+                        if (stickyFooter) {
+                            stickyFooter.style.display = "none";
+                        }
+                        // Remove the bottom padding Moodle adds for the sticky footer
+                        document.body.style.paddingBottom = "0";
+                        var mainContent = document.getElementById("region-main");
+                        if (mainContent) mainContent.style.paddingBottom = "0";
+                    }
+
+                    // Try immediately, then retry after short delay (Moodle renders sticky footer async)
+                    relocateFooterControls();
+                    setTimeout(relocateFooterControls, 300);
+                    setTimeout(relocateFooterControls, 800);
+                });
+
+                if (window.gradingTableAjaxInitialized) return;
+                window.gradingTableAjaxInitialized = true;
+                
+                // Auto-expand native comments when the new Submission Comments Modal opens
+                require(["jquery"], function($) {
+                    $(document).on("show.bs.modal", ".submission-comments-modal", function() {
+                        var $commentLink = $(this).find(".comment-link");
+                        if ($commentLink.length && $commentLink.attr("aria-expanded") !== "true") {
+                            setTimeout(function() {
+                                $commentLink[0].click();
+                            }, 50);
+                        }
+                    });
+                });
+                
+                // Hard refresh filter clearing logic
+                try {
+                    const navEntries = performance.getEntriesByType("navigation");
+                    const isReload = navEntries.length > 0 ? navEntries[0].type === "reload" : performance.navigation.type === 1;
+                    if (isReload) {
+                        const currentUrl = new URL(window.location.href);
+                        if (!currentUrl.searchParams.has("_cleared")) {
+                            const stickyFilters = ["tifirst", "tilast", "status", "workflowfilter", "markingallocationfilter"];
+                            let needsRefresh = false;
+                            
+                            stickyFilters.forEach(f => {
+                                if (!currentUrl.searchParams.has(f) || currentUrl.searchParams.get(f) !== "") {
+                                    currentUrl.searchParams.set(f, "");
+                                    needsRefresh = true;
+                                }
+                            });
+                            
+                            // Delete non-sticky filters entirely so they do not cause SQL errors (e.g. userid=0)
+                            const nonStickyFilters = ["search", "userid"];
+                            nonStickyFilters.forEach(f => {
+                                if (currentUrl.searchParams.has(f)) {
+                                    currentUrl.searchParams.delete(f);
+                                    needsRefresh = true;
+                                }
+                            });
+                            
+                            if (needsRefresh) {
+                                currentUrl.searchParams.set("_cleared", "1");
+                                window.location.replace(currentUrl.toString());
+                                return; // Stop execution to allow redirect
+                            }
+                        }
+                    } else if (window.location.search.includes("_cleared=1")) {
+                        // Clean up the URL cosmetically after the clearing redirect
+                        const cleanUrl = new URL(window.location.href);
+                        cleanUrl.searchParams.delete("_cleared");
+                        window.history.replaceState({}, "", cleanUrl.toString());
+                    }
+                } catch(e) {}
+                
+                window.updateGradingTable = function(url) {
+                    const gradingTable = document.querySelector(".gradingtable");
+                    if (gradingTable) {
+                        gradingTable.style.opacity = "0.5";
+                        gradingTable.style.pointerEvents = "none";
+                        gradingTable.style.transition = "opacity 0.2s ease";
+                    }
+                    
+                    fetch(url, { headers: { "X-Requested-With": "XMLHttpRequest" } })
+                    .then(response => response.text())
+                    .then(html => {
+                        const parser = new DOMParser();
+                        const doc = parser.parseFromString(html, "text/html");
+                        
+                        const newGradingTable = doc.querySelector(".gradingtable");
+                        if (newGradingTable && gradingTable) {
+                            // 1. Replace Table (keeps AMD modules intact outside)
+                            gradingTable.innerHTML = newGradingTable.innerHTML;
+                            gradingTable.style.opacity = "1";
+                            gradingTable.style.pointerEvents = "auto";
+                            
+                            // 2. Replace Pagination safely
+                            const oldPagination = document.querySelector(".pagination")?.closest("nav") || document.querySelector(".pagination");
+                            const newPagination = doc.querySelector(".pagination")?.closest("nav") || doc.querySelector(".pagination");
+                            if (oldPagination && newPagination) {
+                                oldPagination.innerHTML = newPagination.innerHTML;
+                            } else if (oldPagination) {
+                                oldPagination.innerHTML = "";
+                            }
+                            
+                            // 3. Manually visually sync tertiary navigation (Toolbars) to preserve ES6 listeners
+                            const currentNav = document.querySelector(".tertiary-navigation");
+                            const newNav = doc.querySelector(".tertiary-navigation");
+                            if (currentNav && newNav) {
+                                // Sync text inputs (Search)
+                                const oldSearch = currentNav.querySelectorAll("input[type=\'text\'], input[type=\'search\']");
+                                const newSearch = newNav.querySelectorAll("input[type=\'text\'], input[type=\'search\']");
+                                oldSearch.forEach((el, i) => { if (newSearch[i]) el.value = newSearch[i].value; });
+                                
+                                // Sync selects
+                                const oldSelect = currentNav.querySelectorAll("select");
+                                const newSelect = newNav.querySelectorAll("select");
+                                oldSelect.forEach((el, i) => { if (newSelect[i]) el.value = newSelect[i].value; });
+                                
+                                // Sync dropdown button texts (Action menus)
+                                const oldButtons = currentNav.querySelectorAll(".dropdown-toggle");
+                                const newButtons = newNav.querySelectorAll(".dropdown-toggle");
+                                oldButtons.forEach((el, i) => { 
+                                    if (newButtons[i]) el.innerHTML = newButtons[i].innerHTML;
+                                });
+                                
+                                // Sync combobox/select_menu current values (Name initials, Status filter)
+                                const oldValues = currentNav.querySelectorAll("[data-region=\'currentvalue\']");
+                                const newValues = newNav.querySelectorAll("[data-region=\'currentvalue\']");
+                                oldValues.forEach((el, i) => {
+                                    if (newValues[i]) el.innerHTML = newValues[i].innerHTML;
+                                });
+                                
+                                // Sync core/select_menu (Status filter) state
+                                const oldSelects = currentNav.querySelectorAll(".select-menu");
+                                const newSelects = newNav.querySelectorAll(".select-menu");
+                                oldSelects.forEach((el, i) => {
+                                    if (newSelects[i]) {
+                                        const oldInput = el.querySelector("input[type=\'hidden\']");
+                                        const newInput = newSelects[i].querySelector("input[type=\'hidden\']");
+                                        if (oldInput && newInput) oldInput.value = newInput.value;
+                                        
+                                        const oldText = el.querySelector("[data-selected-option]");
+                                        const newText = newSelects[i].querySelector("[data-selected-option]");
+                                        if (oldText && newText) oldText.innerHTML = newText.innerHTML;
+                                        
+                                        const oldOptions = el.querySelectorAll("[role=\'option\']");
+                                        const newOptions = newSelects[i].querySelectorAll("[role=\'option\']");
+                                        oldOptions.forEach((opt, j) => {
+                                            if (newOptions[j]) {
+                                                if (newOptions[j].hasAttribute("aria-selected")) {
+                                                    opt.setAttribute("aria-selected", "true");
+                                                } else {
+                                                    opt.removeAttribute("aria-selected");
+                                                }
+                                            }
+                                        });
+                                    }
+                                });
+                                
+                                // Sync checkboxes (Quick grading, Folders)
+                                const oldChecks = currentNav.querySelectorAll("input[type=\'checkbox\']");
+                                const newChecks = newNav.querySelectorAll("input[type=\'checkbox\']");
+                                oldChecks.forEach((el, i) => { if (newChecks[i]) el.checked = newChecks[i].checked; });
+                            }
+                            
+                            try {
+                                if (typeof M !== "undefined" && M.mod_assign && M.mod_assign.init_grading_table) {
+                                    if (typeof YUI !== "undefined") {
+                                        YUI().use("node", function(Y) {
+                                            M.mod_assign.init_grading_table(Y);
+                                        });
+                                    }
+                                }
+                            } catch (e) {
+                                console.error("Grading table reinit error:", e);
+                            }
+                            
+                            window.history.pushState({}, "", url);
+                        } else {
+                            window.location.href = url;
+                        }
+                    })
+                    .catch(err => {
+                        console.error("AJAX error:", err);
+                        window.location.href = url;
+                    });
+                };
+                
+                // Intercept changes (checkboxes, selects, and core/select_menu)
+                document.addEventListener("change", function(e) {
+                    if (e.target.closest(".tertiary-navigation") || e.target.closest(".gradingoptionsform")) {
+                        
+                        if (e.target.tagName === "SELECT") {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            e.stopImmediatePropagation();
+                            window.updateGradingTable(e.target.value);
+                        } else if (e.target.classList.contains("select-menu") || e.target.dataset.region === "select-menu") {
+                            // core/select_menu (Status filter) triggers change on the div, and value holds the URL
+                            if (e.target.value) {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                e.stopImmediatePropagation();
+                                window.updateGradingTable(e.target.value);
+                            }
+                        } else if (e.target.type === "checkbox") {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            e.stopImmediatePropagation();
+                            const url = new URL(window.location.href);
+                            const name = e.target.id.split("-")[0];
+                            url.searchParams.set(name, e.target.checked ? 1 : 0);
+                            window.updateGradingTable(url.toString());
+                        }
+                    }
+                }, true);
+                
+                // Intercept Enter key in search box
+                document.addEventListener("keydown", function(e) {
+                    if (e.key === "Enter" && e.target.closest(".tertiary-navigation input")) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        e.stopImmediatePropagation();
+                        
+                        const url = new URL(window.location.href);
+                        url.searchParams.set("search", e.target.value);
+                        url.searchParams.delete("userid");
+                        window.updateGradingTable(url.toString());
+                    }
+                }, true);
+                
+                // Intercept all links and combobox/select_menu dropdown clicks
+                document.addEventListener("click", function(e) {
+                    // Intercept initials bar Apply button
+                    const initialsApply = e.target.closest(".initialsdropdownform input[data-action=\'save\']");
+                    if (initialsApply) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        e.stopImmediatePropagation();
+                        
+                        const form = initialsApply.closest(".initialsdropdownform");
+                        
+                        const firstItems = Array.from(form.querySelectorAll(".firstinitial li"));
+                        const lastItems = Array.from(form.querySelectorAll(".lastinitial li"));
+                        
+                        const firstActive = firstItems.find(item => item.classList.contains("active"));
+                        const lastActive = lastItems.find(item => item.classList.contains("active"));
+                        
+                        const sifirst = firstActive ? firstActive.querySelector(".page-link, input[type=\'button\']") : null;
+                        const silast = lastActive ? lastActive.querySelector(".page-link, input[type=\'button\']") : null;
+                        
+                        const url = new URL(window.location.href);
+                        
+                        const firstVal = (firstActive && firstActive.classList.contains("initialbarall")) ? "" : (sifirst ? (sifirst.value || sifirst.dataset.initial || sifirst.textContent) : "");
+                        const lastVal = (lastActive && lastActive.classList.contains("initialbarall")) ? "" : (silast ? (silast.value || silast.dataset.initial || silast.textContent) : "");
+                        
+                        if (firstVal && firstVal !== "All") {
+                            url.searchParams.set("tifirst", firstVal);
+                        } else {
+                            url.searchParams.set("tifirst", "");
+                        }
+                        
+                        if (lastVal && lastVal !== "All") {
+                            url.searchParams.set("tilast", lastVal);
+                        } else {
+                            url.searchParams.set("tilast", "");
+                        }
+                        
+                        window.updateGradingTable(url.toString());
+                        
+                        const dropdownFormContainer = form.closest(".dropdown-menu");
+                        if (dropdownFormContainer) {
+                            dropdownFormContainer.classList.remove("show");
+                        }
+                        return;
+                    }
+                    
+                    const option = e.target.closest("[role=\'option\']");
+                    if (option && e.target.closest(".tertiary-navigation")) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        e.stopImmediatePropagation();
+                        
+                        const value = option.dataset.value;
+                        
+                        // Handle Name Filter (comboboxsearch) where value is userid
+                        const combobox = e.target.closest(".comboboxsearch");
+                        if (combobox) {
+                            const url = new URL(window.location.href);
+                            const searchInput = document.querySelector(".tertiary-navigation input[type=\'text\']");
+                            if (searchInput) url.searchParams.set("search", searchInput.value);
+                            if (value) url.searchParams.set("userid", value);
+                            
+                            window.updateGradingTable(url.toString());
+                            
+                            // Visually update combobox text immediately
+                            const btnText = combobox.querySelector("[data-region=\'currentvalue\']");
+                            if (btnText) btnText.textContent = option.textContent.trim();
+                            const dropdown = combobox.querySelector(".dropdown-menu");
+                            if (dropdown) dropdown.classList.remove("show");
+                            return;
+                        }
+                        
+                        // Handle Status Filter (select_menu) where value is the full URL
+                        const selectMenu = e.target.closest(".select-menu");
+                        if (selectMenu) {
+                            if (value && (value.startsWith("http") || value.startsWith("/"))) {
+                                window.updateGradingTable(value);
+                                
+                                // Visually update select_menu text immediately
+                                const btnText = selectMenu.querySelector("[data-selected-option]");
+                                if (btnText) btnText.textContent = option.textContent.trim();
+                                
+                                const allOptions = selectMenu.querySelectorAll("[role=\'option\']");
+                                allOptions.forEach(opt => opt.removeAttribute("aria-selected"));
+                                option.setAttribute("aria-selected", "true");
+                                
+                                const dropdown = selectMenu.querySelector(".dropdown-menu");
+                                if (dropdown) dropdown.classList.remove("show");
+                            }
+                            return;
+                        }
+                    }
+                    
+                    // Intercept standard links
+                    const link = e.target.closest(".pagination a, .generaltable th a, a.btn-outline-danger, a[href*=\'hide\'], a[href*=\'show\'], a[href*=\'action=grading\']");
+                    if (link) {
+                        const href = link.getAttribute("href");
+                        if (href && href !== "#" && !href.startsWith("javascript:")) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            e.stopImmediatePropagation();
+                            window.updateGradingTable(href);
+                        }
+                    }
+                }, true);
+                
+            })();
+        </script>';
+        
         $o .= $this->output->box_end();
+        $o .= '</div>';
 
         return $o;
     }

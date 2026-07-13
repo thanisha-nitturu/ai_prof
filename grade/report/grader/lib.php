@@ -658,36 +658,30 @@ class grade_report_grader extends grade_report {
 
         $colspan = 1 + count($extrafields);
 
-        $levels = count($this->gtree->levels) - 1;
-
-        $fillercell = new html_table_cell();
-        $fillercell->header = true;
-        $fillercell->attributes['scope'] = 'col';
-        $fillercell->attributes['class'] = 'cell topleft';
-        $fillercell->text = html_writer::span(get_string('participants'), 'accesshide');
-        $fillercell->colspan = $colspan;
-        $fillercell->rowspan = $levels;
-        $row = new html_table_row(array($fillercell));
-        if ($levels >= 1) { // Do not display the filler cell if there are no levels as there will be nothing else in the row.
-            $rows[] = $row;
+        $actual_levels = [];
+        foreach ($this->gtree->get_levels() as $level_row) {
+            $has_items = false;
+            foreach ($level_row as $element) {
+                if ($element['type'] === 'item') {
+                    $has_items = true;
+                    break;
+                }
+            }
+            if ($has_items) {
+                $actual_levels[] = $level_row;
+            }
         }
-
-        for ($i = 1; $i < $levels; $i++) {
-            $row = new html_table_row();
-            $rows[] = $row;
-        }
+        $levels = count($actual_levels) - 1;
 
         $headerrow = new html_table_row();
-        $headerrow->attributes['class'] = 'heading';
+        $headerrow->attributes['class'] = 'heading_name_row';
 
         $studentheader = new html_table_cell();
-        // The browser's scrollbar may partly cover (in certain operative systems) the content in the student header
-        // when horizontally scrolling through the table contents (most noticeable when in RTL mode).
-        // Therefore, add slight padding on the left or right when using RTL mode.
-        $studentheader->attributes['class'] = "header ps-3";
+        $studentheader->attributes['class'] = "header ps-3 align-middle";
         $studentheader->scope = 'col';
         $studentheader->header = true;
         $studentheader->id = 'studentheader';
+        $studentheader->rowspan = $levels + 1;
         $element = ['type' => 'userfield', 'name' => 'fullname'];
         $studentheader->text = $arrows['studentname'] .
             $this->gtree->get_cell_action_menu($element, 'gradeitem', $this->gpr, $this->baseurl);
@@ -695,10 +689,11 @@ class grade_report_grader extends grade_report {
 
         foreach ($extrafields as $field) {
             $fieldheader = new html_table_cell();
-            $fieldheader->attributes['class'] = 'userfield user' . $field;
+            $fieldheader->attributes['class'] = 'userfield user' . $field . ' align-middle';
             $fieldheader->attributes['data-col'] = $field;
             $fieldheader->scope = 'col';
             $fieldheader->header = true;
+            $fieldheader->rowspan = $levels + 1;
 
             $collapsecontext = [
                 'field' => $field,
@@ -706,7 +701,6 @@ class grade_report_grader extends grade_report {
             ];
 
             $collapsedicon = $OUTPUT->render_from_template('gradereport_grader/collapse/icon', $collapsecontext);
-            // Need to wrap the button into a div with our hooking element for user items, gradeitems already have this.
             $collapsedicon = html_writer::div($collapsedicon, 'd-none', ['data-collapse' => 'expandbutton']);
 
             $element = ['type' => 'userfield', 'name' => $field];
@@ -716,6 +710,12 @@ class grade_report_grader extends grade_report {
         }
 
         $rows[] = $headerrow;
+
+        for ($i = 0; $i < $levels; $i++) {
+            $emptyrow = new html_table_row();
+            $emptyrow->attributes['class'] = 'heading';
+            $rows[] = $emptyrow;
+        }
 
         $suspendedstring = null;
 
@@ -835,7 +835,22 @@ class grade_report_grader extends grade_report {
             $cache->set(get_class($this), $scalesarray);
         }
 
-        foreach ($this->gtree->get_levels() as $row) {
+        $actual_levels = [];
+        foreach ($this->gtree->get_levels() as $level_row) {
+            $has_items = false;
+            foreach ($level_row as $element) {
+                if ($element['type'] === 'item') {
+                    $has_items = true;
+                    break;
+                }
+            }
+            // Only keep the level that contains the actual grade items
+            if ($has_items) {
+                $actual_levels[] = $level_row;
+            }
+        }
+
+        foreach ($actual_levels as $row) {
             $headingrow = new html_table_row();
             $headingrow->attributes['class'] = 'heading_name_row';
 
@@ -1020,6 +1035,12 @@ class grade_report_grader extends grade_report {
                 $element = ['eid' => $eid, 'object' => $grade, 'type' => 'grade'];
 
                 $itemcell->attributes['class'] .= ' grade i' . $itemid;
+                
+                // Show tooltip with column header name if the cell value is not null.
+                if (!is_null($gradeval)) {
+                    $itemcell->attributes['title'] = strip_tags($item->get_name());
+                }
+
                 if ($item->is_category_item()) {
                     $itemcell->attributes['class'] .= ' cat';
                 }
@@ -1262,10 +1283,13 @@ class grade_report_grader extends grade_report {
                 $gradetypeclass = ' grade_type_text';
             }
 
+            $tooltip = get_string('overallaverage', 'grades') . ' ' . strip_tags($gradeitem->get_name());
+
             if (empty($aggr['average'])) {
                 $avgcell = new html_table_cell();
                 $avgcell->attributes['class'] = $gradetypeclass . ' i' . $gradeitem->id;
                 $avgcell->attributes['data-itemid'] = $gradeitem->id;
+                $avgcell->attributes['title'] = $tooltip;
                 $avgcell->text = html_writer::div('-', '', ['data-collapse' => 'avgrowcell']);
             } else {
                 $numberofgrades = '';
@@ -1276,6 +1300,7 @@ class grade_report_grader extends grade_report {
                 $avgcell = new html_table_cell();
                 $avgcell->attributes['class'] = $gradetypeclass . ' i' . $gradeitem->id;
                 $avgcell->attributes['data-itemid'] = $gradeitem->id;
+                $avgcell->attributes['title'] = $tooltip;
                 $avgcell->text = html_writer::div($aggr['average'] . $numberofgrades, '', ['data-collapse' => 'avgrowcell']);
             }
         }
@@ -1293,6 +1318,28 @@ class grade_report_grader extends grade_report {
         global $OUTPUT;
         $leftrows = $this->get_left_rows($displayaverages);
         $rightrows = $this->get_right_rows($displayaverages);
+
+        $pre_html = '';
+
+        // Extract the root course category action menu (aggregation toggle) and place it above the table
+        $course_element = null;
+        foreach ($this->gtree->get_levels() as $level_row) {
+            foreach ($level_row as $element) {
+                if ($element['type'] === 'category') {
+                    $course_element = $element;
+                    break 2; // Break out of both loops
+                }
+            }
+        }
+
+        if ($course_element) {
+            $actionmenu = $this->gtree->get_cell_action_menu($course_element, 'gradeitem', $this->gpr);
+            if ($actionmenu) {
+                $coursename = $course_element['object']->get_name();
+                $togglehtml = html_writer::tag('span', $coursename . ' View', ['class' => 'fw-bold fs-6 mb-0 text-muted']) . $actionmenu;
+                $pre_html .= html_writer::div($togglehtml, 'course-aggregation-toggle d-flex justify-content-center align-items-center gap-2 my-2 p-2 bg-white rounded shadow-sm border mx-auto', ['style' => 'max-width: max-content;']);
+            }
+        }
 
         $html = '';
 
@@ -1317,7 +1364,7 @@ class grade_report_grader extends grade_report {
             }
         }
         $html .= html_writer::table($fulltable);
-        return $OUTPUT->container($html, 'gradeparent');
+        return $pre_html . $OUTPUT->container($html, 'gradeparent');
     }
 
     /**
@@ -1413,12 +1460,23 @@ class grade_report_grader extends grade_report {
                 $avgrow = new html_table_row();
                 $avgrow->attributes['class'] = 'avg r'.$this->rowcount++;
                 $avgcell = new html_table_cell();
-                $avgcell->attributes['class'] = 'header range';
-                $avgcell->colspan = $colspan;
+                $avgcell->attributes['class'] = 'header range sticky-avg-cell';
+                $avgcell->colspan = 1;
                 $avgcell->header = true;
                 $avgcell->scope = 'row';
                 $avgcell->text = $straverage;
                 $avgrow->cells[] = $avgcell;
+
+                for ($i = 1; $i < $colspan; $i++) {
+                    $emptycell = new html_table_cell();
+                    $emptycell->attributes['class'] = 'header range empty-avg-cell';
+                    $emptycell->colspan = 1;
+                    $emptycell->header = true;
+                    $emptycell->scope = 'row';
+                    $emptycell->text = '';
+                    $avgrow->cells[] = $emptycell;
+                }
+
                 $rows[] = $avgrow;
             }
         }
@@ -1565,7 +1623,7 @@ class grade_report_grader extends grade_report {
         }
 
         if ($element['type'] != 'categoryitem' && $element['type'] != 'courseitem' && $editable) {
-            $editicon = $this->gtree->get_edit_icon($element, $this->gpr);
+            // Edit icon is intentionally hidden to clean up the UI since editing is available via the action menu.
         }
 
         $editcalculationicon = '';

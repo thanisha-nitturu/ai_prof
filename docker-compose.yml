@@ -1,0 +1,59 @@
+services:
+  devlearn-moodle-web:
+    build: .
+    container_name: devlearn-moodle-web
+    restart: always
+    ports:
+      - "8084:80"
+    volumes:
+      - .:/var/www/html
+      - /var/www/moodledata:/var/www/moodledata
+    environment:
+      - INFISICAL_API_URL=http://infisical-backend:8080
+      - MOODLE_REDIS_HOST=devlearn-moodle-redis
+      - MOODLE_REDIS_PORT=6379
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      - devlearn-moodle-redis
+    networks:
+      - default
+      - infisical_net
+
+  devlearn-moodle-cron:
+    build: .
+    container_name: devlearn-moodle-cron
+    restart: always
+    command: /bin/bash -c "while true; do php /var/www/html/admin/cli/cron.php; sleep 60; done"
+    volumes:
+      - .:/var/www/html
+      - /var/www/moodledata:/var/www/moodledata
+    environment:
+      - INFISICAL_API_URL=http://infisical-backend:8080
+      - MOODLE_REDIS_HOST=devlearn-moodle-redis
+      - MOODLE_REDIS_PORT=6379
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      - devlearn-moodle-redis
+    networks:
+      - default
+      - infisical_net
+
+  devlearn-moodle-redis:
+    image: redis:7-alpine
+    container_name: devlearn-moodle-redis
+    restart: always
+    ports:
+      - "6384:6379"
+    volumes:
+      - redis_data:/data
+
+volumes:
+  redis_data:
+
+networks:
+  default:
+  infisical_net:
+    external: true
+    name: infisical_infisical

@@ -488,7 +488,7 @@ final class authlib_test extends \advanced_testcase {
         ];
 
         $errors = signup_validate_data($formdata, []);
-        $this->assertStringContainsString('This email address is already registered.', $errors['email']);
+        $this->assertStringContainsString('If you do not have an account, your registration will be processed.', $errors['email']);
 
         // Emails are accent-sensitive though so if we change a -> á in the u1's email, it should pass.
         // Please note that Moodle does not normally support such emails yet. We test the DB search sensitivity here.

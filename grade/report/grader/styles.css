@@ -25,9 +25,10 @@
     border: 1px solid #ccc;
     border-top-width: 0;
     border-left-width: 0;
-    padding: 0.5rem 1rem;
+    padding: 0.25rem 0.5rem !important; /* Decreased from 0.5rem 1rem for a more compact view */
     vertical-align: top;
     height: 100%;
+    position: relative;
 }
 
 .path-grade-report-grader .overriddengrade {
@@ -66,6 +67,23 @@
 }
 
 /**
+ * Make all td cells relative so absolute positioning works inside them
+ */
+.path-grade-report-grader .gradeparent td {
+    position: relative !important;
+}
+
+/**
+ * Feedback Icon
+ */
+.path-grade-report-grader .gradeparent .feedback-icon {
+    position: absolute !important;
+    top: 2px !important;
+    left: 4px !important;
+    z-index: 10 !important;
+}
+
+/**
  * All the floating divs.
  */
 .path-grade-report-grader .gradeparent .floater {
@@ -91,11 +109,7 @@
     white-space: nowrap;
 }
 
-.path-grade-report-grader .heading .gradeitemheader {
-    text-indent: -2rem;
-    padding-left: 2rem;
-    padding-top: 6px;
-}
+/* Removed overlapping text-indent hacks */
 
 .path-grade-report-grader .dropdown-item {
     text-align: left;
@@ -137,10 +151,16 @@
  * The footer's header.
  */
 .path-grade-report-grader .gradeparent .range .header,
-.path-grade-report-grader .gradeparent .avg .header,
 .path-grade-report-grader .gradeparent .groupavg .header {
     font-weight: bold;
     text-align: right;
+}
+
+/* Overall Average label cell — centered, distinct from range/groupavg */
+.path-grade-report-grader .gradeparent tr.avg th.header.range {
+    font-weight: 700;
+    text-align: center !important;
+    letter-spacing: 0.02em;
 }
 
 /**
@@ -148,6 +168,56 @@
  */
 .path-grade-report-grader .gradeparent .avg.floating .cell {
     border-top-width: 1px;
+}
+
+/* ==========================================
+   STICKY "OVERALL AVERAGE" ROW
+   ========================================== */
+
+/*
+/* Visual distinction for the Overall Average row */
+.path-grade-report-grader .gradeparent tr.avg > td,
+.path-grade-report-grader .gradeparent tr.avg > th {
+    background-color: #f0f4ff !important;
+    background-clip: padding-box !important;
+    border-top: 2px solid #4a6cf7 !important;
+}
+
+/* Center-align ALL content inside the avg row cells */
+.path-grade-report-grader .gradeparent tr.avg > td,
+.path-grade-report-grader .gradeparent tr.avg > th {
+    text-align: center !important;
+    vertical-align: middle !important;
+}
+
+/* Center the grade value wrappers produced by html_writer::div() */
+.path-grade-report-grader .gradeparent tr.avg [data-collapse="avgrowcell"] {
+    text-align: center !important;
+    width: 100%;
+    display: block;
+}
+
+/* Override the right-align forced on grade_type_value cells in the avg row */
+.path-grade-report-grader .gradeparent tr.avg td.grade_type_value,
+.path-grade-report-grader .gradeparent tr.avg td.grade_type_value input,
+.path-grade-report-grader .gradeparent tr.avg td.grade_type_value div {
+    text-align: center !important;
+    margin-left: 0 !important;
+}
+
+/* ==========================================
+   STICKY FOOTER LABEL FIX
+   ========================================== */
+
+.path-grade-report-grader th.sticky-avg-cell {
+    position: sticky !important;
+    left: 0 !important;
+    z-index: 30 !important;
+    border-right: none !important;
+}
+
+.path-grade-report-grader th.empty-avg-cell {
+    border-left: none !important;
 }
 
 /**
@@ -231,6 +301,16 @@
     width: 460px;
 }
 
+/* Force the initials and search dropdowns to always display below the button */
+.path-grade-report-grader .initialsdropdown.show,
+.path-grade-report-grader .usersearchdropdown.show {
+    top: 100% !important;
+    bottom: auto !important;
+    left: 0 !important;
+    transform: none !important;
+    margin-top: 0.25rem !important;
+}
+
 .path-grade-report-grader .initialsdropdown::after {
     content: '';
 }
@@ -242,14 +322,17 @@
 .path-grade-report-grader .usersearchwidget {
     pointer-events: none;
 }
+
 .path-grade-report-grader .usersearchwidget input {
     pointer-events: initial;
     z-index: 1;
 }
+
 .path-grade-report-grader .usersearchwidget button,
 .path-grade-report-grader .usersearchwidget a {
     pointer-events: initial;
 }
+
 .path-grade-report-grader .usersearchdropdown {
     /*Extra height to allow non result items.*/
     max-height: 400px;
@@ -257,11 +340,13 @@
     pointer-events: all;
     padding: 0;
 }
+
 .path-grade-report-grader .usersearchdropdown .unsearchablecontentcontainer {
     position: sticky;
     bottom: 0;
     background-color: white;
 }
+
 .path-grade-report-grader .usersearchdropdown .footer {
     border-top: 1px solid #dee2e6;
     font-size: 90%;
@@ -276,4 +361,74 @@
     .path-grade-report-grader .gradeparent table {
         padding-right: 6em;
     }
+}
+
+/* ==========================================
+   COMPACT LAYOUT OVERRIDES
+   ========================================== */
+
+/* Decrease padding outside the grader table to maximize screen real estate */
+#page-grade-report-grader-index #region-main,
+#page-grade-report-grader-index .card-body {
+    padding: 0.5rem !important;
+}
+
+#page-grade-report-grader-index #page-content {
+    padding-top: 0.5rem !important;
+    padding-bottom: 0.5rem !important;
+}
+
+/* ==========================================
+   STICKY LEFT COLUMN FIX
+   ========================================== */
+
+.path-grade-report-grader .gradeparent {
+    overflow-x: auto;
+    position: relative;
+}
+
+.path-grade-report-grader .gradeparent table {
+    width: max-content;
+    min-width: 100%;
+}
+
+.path-grade-report-grader th#studentheader,
+.path-grade-report-grader .userrow th.user {
+    position: sticky !important;
+    left: 0;
+    z-index: 30 !important;
+    background: #fff !important;
+    background-clip: padding-box !important;
+    box-shadow: 2px 0 4px rgba(0,0,0,.05);
+}
+
+.path-grade-report-grader th#studentheader {
+    z-index: 40 !important;
+}
+
+/* Neutralize Moodle's JS 'pinned' class to prevent it from breaking CSS sticky z-index layering */
+.path-grade-report-grader th.pinned {
+    position: sticky !important;
+    transform: none !important;
+}
+
+/* ==========================================
+   AJAX GRADE SAVE FEEDBACK
+   ========================================== */
+
+/* Green flash on a successfully saved grade cell */
+@keyframes gradeSavedFlash {
+    0%   { background-color: #d4edda; }
+    60%  { background-color: #c3e6cb; }
+    100% { background-color: inherit; }
+}
+
+.path-grade-report-grader .grade-saved {
+    animation: gradeSavedFlash 1.5s ease forwards;
+}
+
+/* Subtle loading state on the submit button while saving */
+#gradersubmit:disabled {
+    opacity: 0.7;
+    cursor: wait;
 }

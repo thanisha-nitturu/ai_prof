@@ -1,0 +1,18 @@
+--- /var/www/html/moodle/grade/report/grader/styles.css
++++ /var/www/html/moodle/grade/report/grader/styles.css
+@@ -34,7 +34,6 @@
+     border-bottom-width: 0;
+     border-right-width: 0;
+     margin-bottom: 2em;
+-    height: 100%;
+ }
+ 
+ /**
+@@ -46,7 +45,6 @@
+     /* border-left-width: 0; */
+     padding: 0.5rem 1rem;
+     vertical-align: top;
+-    height: 100%;
+ }
+ 
+ .path-grade-report-grader .overriddengrade {

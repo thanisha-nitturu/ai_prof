@@ -53,12 +53,14 @@ function get_upcoming_events_for_course($courseid, $currtime) {
             return $it != 'open';
         });
     }
-    list($insql, $inparams) = $DB->get_in_or_equal($excludedstatuses, SQL_PARAMS_QM, 'param', false);
+    list($insql, $inparams) = $DB->get_in_or_equal($excludedstatuses, SQL_PARAMS_NAMED, 'param', false);
+    $inparams['courseid'] = (int)$courseid;
+    $inparams['currtime'] = (int)$currtime;
 
     return $DB->get_records_sql("SELECT *
         FROM {event}
-        WHERE courseid = $courseid
-            AND timestart > $currtime
+        WHERE courseid = :courseid
+            AND timestart > :currtime
             AND visible = 1
             AND eventtype $insql
         ORDER BY timestart",
@@ -197,13 +199,16 @@ function send_overdue_activity_reminders($curtime, $timewindowstart, $activityro
 
     $rangestart = $timewindowstart;
     $statuses = ['due', 'close', 'expectcompletionon', 'gradingdue'];
-    list($insql, $inparams) = $DB->get_in_or_equal($statuses);
+    list($insql, $inparams) = $DB->get_in_or_equal($statuses, SQL_PARAMS_NAMED);
+
+    $inparams['rangestart'] = (int)$rangestart;
+    $inparams['curtime'] = (int)$curtime;
 
     $querysql = "SELECT e.*
         FROM {event} e
             LEFT JOIN {local_reminders_post_act} lrpa ON e.id = lrpa.eventid
         WHERE
-            e.timestart >= $rangestart AND e.timestart < $curtime
+            e.timestart >= :rangestart AND e.timestart < :curtime
             AND lrpa.eventid IS NULL
             AND e.eventtype $insql
             AND e.visible = 1";

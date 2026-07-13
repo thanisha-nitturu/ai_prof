@@ -123,6 +123,11 @@
   <exclude-pattern>mod/jupyternotebook/github/psr/http-message/</exclude-pattern>
   <exclude-pattern>mod/jupyternotebook/github/ralouphie/getallheaders/</exclude-pattern>
   <exclude-pattern>mod/jupyternotebook/github/symfony/options-resolver/</exclude-pattern>
+  <exclude-pattern>mod/supervideo/vendor/kapture/</exclude-pattern>
+  <exclude-pattern>mod/supervideo/amd/src/player_render.js</exclude-pattern>
+  <exclude-pattern>mod/videolesson/resources/plyr/</exclude-pattern>
+  <exclude-pattern>mod/videolesson/resources/hls.min.js</exclude-pattern>
+  <exclude-pattern>mod/videolesson/resources/bowser.min.js</exclude-pattern>
   <exclude-pattern>mod/videotime/amd/src/player.js</exclude-pattern>
   <exclude-pattern>mod/videotime/appjs/player.js</exclude-pattern>
   <exclude-pattern>mod/vpl/thirdpartylibs/noVNC/</exclude-pattern>

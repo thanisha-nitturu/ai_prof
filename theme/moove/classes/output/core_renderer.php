@@ -155,13 +155,28 @@ class core_renderer extends \theme_boost\output\core_renderer {
             return $logo;
         }
 
-        $logo = $this->get_logo_url();
+        $logo = parent::get_logo_url();
 
         if ($logo) {
             return $logo->out(false);
         }
 
         return false;
+    }
+
+    /**
+     * Override get_logo_url to use the Moove theme logo system-wide.
+     *
+     * @param int|null $maxwidth The maximum width of the logo.
+     * @param int $maxheight The maximum height of the logo.
+     * @return \moodle_url|null
+     */
+    public function get_logo_url($maxwidth = null, $maxheight = 200) {
+        $logo = $this->get_theme_logo_url();
+        if ($logo) {
+            return new \moodle_url($logo);
+        }
+        return parent::get_logo_url($maxwidth, $maxheight);
     }
 
     /**
@@ -485,6 +500,21 @@ class core_renderer extends \theme_boost\output\core_renderer {
      */
     public function navbar(): string {
         $newnav = new \theme_moove\output\boostnavbar($this->page);
+        
+        // Intercept and modify breadcrumb items
+        foreach ($newnav->get_items() as $item) {
+            $text = $item->text instanceof \lang_string ? $item->text->out() : $item->text;
+            $decoded = html_entity_decode((string)$text, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+            if (strpos($decoded, ':') !== false) {
+                $parts = explode(':', $decoded);
+                $clean = trim($parts[0]);
+                $item->text = $clean;
+                if (property_exists($item, 'shorttext')) {
+                    $item->shorttext = $clean;
+                }
+            }
+        }
+
         return $this->render_from_template('core/navbar', $newnav);
     }
 }

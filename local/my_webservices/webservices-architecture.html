@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My WebServices — Architecture Diagram | DevLearn</title>
+<meta name="description" content="Interactive architecture block diagram for the local_my_webservices Moodle plugin">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:#0a0e1a;color:#e2e8f0;min-height:100vh;overflow-x:hidden}
+.bg-glow{position:fixed;top:-200px;left:-200px;width:600px;height:600px;background:radial-gradient(circle,rgba(99,102,241,.12) 0%,transparent 70%);pointer-events:none;z-index:0}
+.bg-glow-2{position:fixed;bottom:-200px;right:-200px;width:500px;height:500px;background:radial-gradient(circle,rgba(16,185,129,.08) 0%,transparent 70%);pointer-events:none;z-index:0}
+header{position:relative;z-index:1;text-align:center;padding:48px 24px 24px;border-bottom:1px solid rgba(255,255,255,.06)}
+header h1{font-size:2rem;font-weight:800;background:linear-gradient(135deg,#818cf8,#6ee7b7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+header p{color:#94a3b8;margin-top:8px;font-size:.95rem}
+.badge{display:inline-block;margin-top:12px;padding:4px 14px;border-radius:20px;font-size:.75rem;font-weight:600;background:rgba(99,102,241,.15);color:#a5b4fc;border:1px solid rgba(99,102,241,.25)}
+.container{position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:40px 24px 80px}
+
+/* DIAGRAM */
+.diagram{display:flex;flex-direction:column;align-items:center;gap:0}
+.arrow-down{width:2px;height:40px;background:linear-gradient(180deg,#6366f1,#818cf8);position:relative;margin:0 auto}
+.arrow-down::after{content:'▼';position:absolute;bottom:-14px;left:50%;transform:translateX(-50%);color:#818cf8;font-size:14px}
+.arrow-label{text-align:center;font-size:.7rem;color:#94a3b8;margin:4px 0 0;letter-spacing:.5px}
+
+/* BLOCK STYLES */
+.block{border-radius:16px;padding:28px 32px;width:100%;max-width:700px;position:relative;transition:transform .25s,box-shadow .25s;cursor:default}
+.block:hover{transform:translateY(-3px);box-shadow:0 12px 40px rgba(0,0,0,.3)}
+.block h3{font-size:1.1rem;font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:10px}
+.block h3 .icon{font-size:1.3rem}
+.block p{font-size:.85rem;color:#94a3b8;line-height:1.6}
+.block .tag{display:inline-block;margin-top:10px;padding:3px 10px;border-radius:8px;font-size:.68rem;font-weight:600;letter-spacing:.3px}
+
+.block-external{background:linear-gradient(135deg,rgba(251,146,60,.08),rgba(251,146,60,.03));border:1px solid rgba(251,146,60,.2)}
+.block-external h3{color:#fdba74}
+.block-external .tag{background:rgba(251,146,60,.12);color:#fb923c}
+.block-moodle{background:linear-gradient(135deg,rgba(99,102,241,.1),rgba(99,102,241,.03));border:1px solid rgba(99,102,241,.25)}
+.block-moodle h3{color:#a5b4fc}
+.block-moodle .tag{background:rgba(99,102,241,.15);color:#818cf8}
+.block-services{background:linear-gradient(135deg,rgba(16,185,129,.08),rgba(16,185,129,.03));border:1px solid rgba(16,185,129,.2)}
+.block-services h3{color:#6ee7b7}
+.block-services .tag{background:rgba(16,185,129,.12);color:#34d399}
+.block-db{background:linear-gradient(135deg,rgba(244,114,182,.08),rgba(244,114,182,.03));border:1px solid rgba(244,114,182,.2)}
+.block-db h3{color:#f9a8d4}
+.block-db .tag{background:rgba(244,114,182,.12);color:#f472b6}
+.block-cache{background:linear-gradient(135deg,rgba(250,204,21,.08),rgba(250,204,21,.03));border:1px solid rgba(250,204,21,.2)}
+.block-cache h3{color:#fde68a}
+.block-cache .tag{background:rgba(250,204,21,.12);color:#facc15}
+
+/* FUNCTIONS GRID */
+.section-title{text-align:center;font-size:1.5rem;font-weight:700;margin:56px 0 8px;background:linear-gradient(135deg,#6ee7b7,#818cf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.section-sub{text-align:center;color:#64748b;font-size:.85rem;margin-bottom:32px}
+.fn-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:20px;max-width:1100px;margin:0 auto}
+.fn-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:22px 24px;transition:transform .2s,border-color .3s}
+.fn-card:hover{transform:translateY(-2px);border-color:rgba(99,102,241,.3)}
+.fn-card h4{font-size:.95rem;font-weight:700;color:#e2e8f0;margin-bottom:4px}
+.fn-card .fn-name{font-size:.78rem;font-family:'Fira Code','Courier New',monospace;color:#818cf8;margin-bottom:8px;display:block}
+.fn-card p{font-size:.8rem;color:#94a3b8;line-height:1.55}
+.fn-card .fn-type{display:inline-block;margin-top:10px;padding:2px 10px;border-radius:6px;font-size:.68rem;font-weight:600}
+.fn-type.write{background:rgba(251,146,60,.12);color:#fb923c}
+.fn-type.read{background:rgba(16,185,129,.12);color:#34d399}
+.fn-io{margin-top:10px;font-size:.72rem;color:#64748b;line-height:1.5}
+.fn-io strong{color:#94a3b8}
+
+/* DATA FLOW */
+.flow-row{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:10px 0}
+.flow-chip{padding:6px 16px;border-radius:10px;font-size:.78rem;font-weight:600;white-space:nowrap}
+.flow-arrow{color:#4b5563;font-size:1.1rem}
+.fc-sections{background:rgba(99,102,241,.12);color:#a5b4fc;border:1px solid rgba(99,102,241,.2)}
+.fc-labels{background:rgba(16,185,129,.12);color:#6ee7b7;border:1px solid rgba(16,185,129,.2)}
+.fc-quiz{background:rgba(244,114,182,.12);color:#f9a8d4;border:1px solid rgba(244,114,182,.2)}
+.fc-files{background:rgba(250,204,21,.12);color:#fde68a;border:1px solid rgba(250,204,21,.2)}
+
+footer{text-align:center;padding:32px;color:#475569;font-size:.78rem;border-top:1px solid rgba(255,255,255,.04)}
+@media(max-width:640px){header h1{font-size:1.5rem}.block{padding:20px}.fn-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="bg-glow"></div>
+<div class="bg-glow-2"></div>
+
+<header>
+<h1>🔌 My WebServices — Architecture Diagram</h1>
+<p>Plugin: <strong>local_my_webservices</strong> · Custom Moodle REST API for automated course content management</p>
+<span class="badge">Moodle 4.1+ · Version 2025100625</span>
+</header>
+
+<div class="container">
+
+<!-- ===== BLOCK DIAGRAM ===== -->
+<div class="diagram">
+
+<div class="block block-external">
+<h3><span class="icon">🌐</span> External System (Caller)</h3>
+<p>AI Pipeline, Admin Dashboard, Automation Script, or any HTTP client that calls the Moodle REST API using a valid web-service token.</p>
+<span class="tag">ENTRY POINT</span>
+</div>
+
+<div class="arrow-down"></div>
+<p class="arrow-label">REST / SOAP + Token Authentication</p>
+
+<div class="block block-moodle" style="margin-top:18px">
+<h3><span class="icon">🛡️</span> Moodle Web Service Layer</h3>
+<p>Moodle core intercepts the request, validates the token, resolves the function name from <code>db/services.php</code>, checks user capabilities, and routes to the correct handler in <code>externallib.php</code>.</p>
+<span class="tag">AUTH · CAPABILITY CHECK · ROUTING</span>
+</div>
+
+<div class="arrow-down"></div>
+<p class="arrow-label">Parameter Validation → Function Dispatch</p>
+
+<div class="block block-services" style="margin-top:18px">
+<h3><span class="icon">⚙️</span> externallib.php — Service Functions</h3>
+<p>Single class <code>local_create_sections_external</code> implements <strong>8 API functions</strong> covering Sections, Labels, Media Labels, Quizzes, and Quiz Questions. Each follows the Moodle trio: <em>_parameters()</em>, <em>function()</em>, <em>_returns()</em>.</p>
+<div class="flow-row" style="margin-top:14px">
+<span class="flow-chip fc-sections">Sections (1)</span>
+<span class="flow-chip fc-labels">Labels (4)</span>
+<span class="flow-chip fc-quiz">Quizzes (3)</span>
+</div>
+<span class="tag">CORE LOGIC · 8 ENDPOINTS · 930 LINES</span>
+</div>
+
+<div style="display:flex;gap:24px;width:100%;max-width:700px;margin-top:18px;justify-content:center;flex-wrap:wrap">
+<div style="flex:1;min-width:200px">
+<div class="arrow-down" style="height:30px"></div>
+<div class="block block-db" style="margin-top:18px">
+<h3><span class="icon">🗄️</span> Moodle Database</h3>
+<p><code>course_sections</code> · <code>label</code> · <code>course_modules</code> · <code>quiz</code> · <code>question_categories</code> · <code>question_bank_entries</code> · <code>question_versions</code> · <code>question</code> · <code>question_answers</code></p>
+<span class="tag">PERSISTENT STORAGE</span>
+</div>
+</div>
+<div style="flex:1;min-width:200px">
+<div class="arrow-down" style="height:30px"></div>
+<div class="block block-cache" style="margin-top:18px">
+<h3><span class="icon">📁</span> File Storage & Cache</h3>
+<p>Moodle File API stores uploaded media (audio/video). <code>rebuild_course_cache()</code> is called after every write to sync the UI.</p>
+<span class="tag">FILES · CACHE REBUILD</span>
+</div>
+</div>
+</div>
+
+</div>
+
+<!-- ===== API FUNCTIONS DETAIL ===== -->
+<h2 class="section-title">API Function Map</h2>
+<p class="section-sub">All 8 web service endpoints exposed by this plugin</p>
+
+<div class="fn-grid">
+<div class="fn-card">
+<h4>📂 Create Sections</h4>
+<span class="fn-name">local_create_sections</span>
+<p>Creates one or more new topic sections in a course. Auto-increments section numbers from the current maximum.</p>
+<div class="fn-io"><strong>In:</strong> courseid, names[] &nbsp;→&nbsp; <strong>Out:</strong> [{id, name}]</div>
+<span class="fn-type write">WRITE</span>
+</div>
+<div class="fn-card">
+<h4>📝 Create Label</h4>
+<span class="fn-name">local_create_label</span>
+<p>Creates an HTML text/media label activity inside a specified course section.</p>
+<div class="fn-io"><strong>In:</strong> courseid, sectionnum, intro, labelname &nbsp;→&nbsp; <strong>Out:</strong> {cmid, instanceid}</div>
+<span class="fn-type write">WRITE</span>
+</div>
+<div class="fn-card">
+<h4>✏️ Update Label</h4>
+<span class="fn-name">local_update_label</span>
+<p>Updates the HTML content of an existing label using its course module ID.</p>
+<div class="fn-io"><strong>In:</strong> cmid, newintro &nbsp;→&nbsp; <strong>Out:</strong> {status, cmid, updated, updated_at}</div>
+<span class="fn-type write">WRITE</span>
+</div>
+<div class="fn-card">
+<h4>🎬 Create Media Label</h4>
+<span class="fn-name">local_create_empty_media_label</span>
+<p>Creates a label with an uploaded media file (audio/video/file). Handles file upload via $_FILES and auto-generates embed HTML.</p>
+<div class="fn-io"><strong>In:</strong> courseid, sectionnum, labelname, filename + file &nbsp;→&nbsp; <strong>Out:</strong> {cmid, instanceid, contextid, fileurl}</div>
+<span class="fn-type write">WRITE</span>
+</div>
+<div class="fn-card">
+<h4>🔄 Update Media Label</h4>
+<span class="fn-name">local_update_media_label</span>
+<p>Replaces the media file in an existing label. Deletes all old files first, then uploads and embeds the new file.</p>
+<div class="fn-io"><strong>In:</strong> cmid, filename + file &nbsp;→&nbsp; <strong>Out:</strong> {status, cmid, fileurl, updated_at}</div>
+<span class="fn-type write">WRITE</span>
+</div>
+<div class="fn-card">
+<h4>🧩 Create Quiz from XML</h4>
+<span class="fn-name">local_create_quiz_from_xml</span>
+<p>Atomic 3-step operation: creates quiz → imports XML questions → populates quiz slots. Uses DB transactions & user switching. Pre-configured with 50-min timer, 3 attempts, 70% pass.</p>
+<div class="fn-io"><strong>In:</strong> courseid, sectionnum, quizname, categoryname, xmlfile, userid &nbsp;→&nbsp; <strong>Out:</strong> {quizid, cmid, categoryid, questioncount}</div>
+<span class="fn-type write">WRITE</span>
+</div>
+<div class="fn-card">
+<h4>♻️ Update Quiz from XML</h4>
+<span class="fn-name">local_update_quiz_from_xml</span>
+<p>Destructive update: deletes the existing quiz entirely, cleans up categories, then recreates from fresh XML. All student attempts are lost.</p>
+<div class="fn-io"><strong>In:</strong> cmid, sectionnum, xmlfile, categoryname, userid, quizname? &nbsp;→&nbsp; <strong>Out:</strong> {status, quizid, cmid, categoryid, questioncount}</div>
+<span class="fn-type write">WRITE</span>
+</div>
+<div class="fn-card">
+<h4>🔍 Fetch Quiz Questions</h4>
+<span class="fn-name">local_fetch_quiz_questions</span>
+<p>Read-only. Retrieves all questions & answer options from a quiz using Moodle 4.0+ question bank tables. Identifies correct answers.</p>
+<div class="fn-io"><strong>In:</strong> quizid &nbsp;→&nbsp; <strong>Out:</strong> {status, message, questions[{id, name, text, options[], correct}]}</div>
+<span class="fn-type read">READ</span>
+</div>
+</div>
+
+</div>
+
+<footer>
+<p>DevLearn Platform · local_my_webservices Architecture · Auto-generated 2026-05-14</p>
+</footer>
+</body>
+</html>

@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Codebase Architecture — Block Diagrams</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #0f172a;
+    color: #e2e8f0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    padding: 40px 60px;
+  }
+  h1 {
+    text-align: center;
+    font-size: 36px;
+    margin-bottom: 50px;
+    color: #38bdf8;
+    letter-spacing: 1px;
+    border-bottom: 2px solid #1e3a5f;
+    padding-bottom: 20px;
+  }
+  .diagram-section {
+    margin-bottom: 60px;
+    background: #1e293b;
+    border-radius: 16px;
+    padding: 30px 40px;
+    border: 1px solid #334155;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  }
+  .diagram-section h2 {
+    font-size: 22px;
+    color: #7dd3fc;
+    margin-bottom: 24px;
+    border-left: 4px solid #38bdf8;
+    padding-left: 14px;
+  }
+  .mermaid {
+    display: flex;
+    justify-content: center;
+    background: #0f172a;
+    border-radius: 12px;
+    padding: 30px;
+    overflow: auto;
+  }
+  .mermaid svg {
+    max-width: 100%;
+  }
+</style>
+</head>
+<body>
+
+<h1>🏗️ Codebase Architecture — Block Diagrams</h1>
+
+<!-- Diagram 1 -->
+<div class="diagram-section">
+  <h2>1. High-Level System Architecture</h2>
+  <div class="mermaid">
+graph TB
+    subgraph Internet["🌐 Internet"]
+        Browser["🖥️ User Browser"]
+        Agent["🤖 External Agent / MCP"]
+    end
+
+    subgraph Nginx["⚡ NGINX Reverse Proxy 443/80"]
+        SSL["SSL Termination<br/>devlearn.hitloop.com"]
+    end
+
+    subgraph Moodle["📚 Moodle 5.0.4 — /var/www/html/moodle"]
+        Core["🧱 Moodle Core<br/>PHP-FPM"]
+        Veda["🤖 Veda Plugin<br/>local/veda"]
+        Dashboard["📊 Course Dashboard<br/>mod/coursedashboard"]
+        Playground["💻 Coding Playground<br/>mod/codingplayground"]
+        WebSvc["🔌 My Webservices<br/>local/my_webservices"]
+    end
+
+    subgraph Storage["💾 Data Layer"]
+        MySQL[("🐬 MySQL<br/>DB: moodle")]
+        Redis[("🔴 Redis<br/>:6379<br/>Sessions + Cache")]
+        MoodleData["📁 /var/www/moodledata<br/>Files, Cache, Sessions"]
+    end
+
+    subgraph Backend["⚙️ Backend Services"]
+        FastAPI_Veda["🧠 Veda FastAPI<br/>localhost:9099"]
+        FastAPI_Code["⚡ Code Exec FastAPI<br/>localhost:8001"]
+        LiveKit["🎙️ LiveKit Agent<br/>veda-dev-agent"]
+    end
+
+    Browser --> SSL
+    Agent --> SSL
+    SSL --> Core
+    Core --> MySQL
+    Core --> Redis
+    Core --> MoodleData
+    Veda -->|"cURL"| FastAPI_Veda
+    Playground -->|"cURL proxy"| FastAPI_Code
+    FastAPI_Veda --> LiveKit
+    WebSvc --> MySQL
+    Dashboard --> MySQL
+  </div>
+</div>
+
+<!-- Diagram 2 -->
+<div class="diagram-section">
+  <h2>2. Moodle Directory Structure Map</h2>
+  <div class="mermaid">
+graph LR
+    subgraph Root["/var/www"]
+        HTML["html/"]
+        Data["moodledata/"]
+    end
+
+    subgraph Moodle["html/moodle/"]
+        Config["⚙️ config.php"]
+        Lib["📚 lib/"]
+        Admin["🔧 admin/"]
+        Course["📖 course/"]
+        Mod["🧩 mod/"]
+        Local["📦 local/"]
+        Blocks["🧱 blocks/"]
+        Theme["🎨 theme/"]
+        AI["🤖 ai/"]
+        Auth["🔐 auth/"]
+        Enrol["📋 enrol/"]
+        Repo["📂 repository/"]
+        Question["❓ question/"]
+        Grade["📊 grade/"]
+        Report["📈 report/"]
+        WebSvc2["🌐 webservice/"]
+        User["👤 user/"]
+    end
+
+    subgraph DataDir["moodledata/"]
+        FileDir["filedir/<br/>Uploaded Files"]
+        Cache["cache/<br/>App Cache"]
+        Sessions["sessions/<br/>PHP Sessions"]
+        Temp["temp/<br/>Temp Files"]
+        VPLData["vpl_data/<br/>VPL Execution"]
+        Lang["lang/<br/>Language Packs"]
+    end
+
+    HTML --> Moodle
+    Root --> HTML
+    Root --> Data
+    Data --> DataDir
+  </div>
+</div>
+
+<!-- Diagram 3 -->
+<div class="diagram-section">
+  <h2>3. Custom Plugins Architecture</h2>
+  <div class="mermaid">
+graph TB
+    subgraph VedaPlugin["🤖 local/veda — AI Assistant and Proctoring"]
+        VedaLib["lib.php<br/>before_footer hook<br/>Injects React on all pages"]
+        VedaAPI["api/index.php<br/>JSON Router"]
+        VedaEndpoints["api/endpoints/<br/>11 endpoint files"]
+        VedaHandlers["classes/api/<br/>11 handler classes"]
+        VedaHelpers["classes/helpers/<br/>course_catalog<br/>course_progress<br/>user_activity"]
+        VedaServices["classes/services/<br/>course_progress_service"]
+        VedaStatic["static/build/assets/<br/>React Bundle"]
+    end
+
+    VedaLib -->|"glob scan"| VedaStatic
+    VedaAPI -->|"route by action"| VedaEndpoints
+    VedaEndpoints --> VedaHandlers
+    VedaHandlers --> VedaHelpers
+    VedaHandlers --> VedaServices
+    VedaHandlers -->|"cURL"| ExtVeda["🧠 FastAPI :9099"]
+
+    subgraph DashPlugin["📊 mod/coursedashboard — Analytics Dashboard"]
+        DashView["view.php<br/>window.COURSEDASHBOARD<br/>Load React Bundle"]
+        DashAPI["api/index.php<br/>Switch Router"]
+        DashHandlers["api/handlers/<br/>11 handler files"]
+        DashClient["client/src/<br/>React + TS + Tailwind"]
+        DashDist["dist/assets/<br/>Compiled Bundle"]
+    end
+
+    DashView -->|"loads"| DashDist
+    DashClient -->|"npm build"| DashDist
+    DashAPI -->|"switch/case"| DashHandlers
+    DashHandlers -->|"direct queries"| DB[("MySQL")]
+
+    subgraph PlayPlugin["💻 mod/codingplayground — Code IDE"]
+        PlayView["view.php<br/>window.CODINGPLAYGROUND<br/>Load React Bundle"]
+        PlayProxy["proxy.php<br/>PHP Reverse Proxy"]
+        PlayDist["dist/assets/<br/>Compiled Bundle"]
+    end
+
+    PlayView -->|"loads"| PlayDist
+    PlayProxy -->|"cURL + headers"| ExtCode["⚡ FastAPI :8001"]
+
+    subgraph WSPlugin["🔌 local/my_webservices — Web Service API"]
+        WSServices["db/services.php<br/>8 function registrations"]
+        WSExternal["externallib.php<br/>930 lines<br/>8 functions"]
+    end
+
+    WSServices --> WSExternal
+    WSExternal --> DB
+  </div>
+</div>
+
+<!-- Diagram 4 -->
+<div class="diagram-section">
+  <h2>4. Veda AI Data Flow</h2>
+  <div class="mermaid">
+sequenceDiagram
+    participant User as 🖥️ Browser
+    participant React as ⚛️ Veda React App
+    participant PHP as 🐘 local/veda/api
+    participant Handler as 📋 Handler Class
+    participant FastAPI as 🧠 FastAPI :9099
+    participant LLM as 🤖 LLM Service
+
+    Note over User,React: React injected via before_footer hook on EVERY page
+
+    User->>React: Types message
+    React->>PHP: POST /local/veda/api/index.php<br/>{action: "text_message", message: "..."}
+    PHP->>PHP: require_login + parse JSON
+    PHP->>Handler: require endpoints/text_message.php<br/>text_message_handler
+    Handler->>FastAPI: cURL POST to localhost:9099
+    FastAPI->>LLM: Process with context
+    LLM-->>FastAPI: AI Response
+    FastAPI-->>Handler: JSON Response
+    Handler-->>PHP: echo json_encode
+    PHP-->>React: JSON Response
+    React-->>User: Display chat bubble
+  </div>
+</div>
+
+<!-- Diagram 5 -->
+<div class="diagram-section">
+  <h2>5. Course Dashboard Data Flow</h2>
+  <div class="mermaid">
+sequenceDiagram
+    participant User as 🖥️ Browser
+    participant React as ⚛️ Dashboard React App
+    participant API as 🐘 coursedashboard/api
+    participant Handler as 📋 Handler PHP
+    participant DB as 🐬 MySQL
+
+    User->>React: Opens Course Dashboard activity
+    Note over React: window.COURSEDASHBOARD loaded<br/>with userId, courseId, isTeacher, students
+
+    React->>API: POST {action: "get_course_progress", courseId: 5}
+    API->>API: require_login + switch action
+    API->>Handler: require handlers/get_course_progress.php
+    Handler->>DB: SELECT from mdl_course_completions, mdl_grade_grades...
+    DB-->>Handler: Result rows
+    Handler-->>API: JSON response
+    API-->>React: {progress: [...]}
+    React-->>User: Render charts and tables
+  </div>
+</div>
+
+<!-- Diagram 6 -->
+<div class="diagram-section">
+  <h2>6. Coding Playground Data Flow</h2>
+  <div class="mermaid">
+sequenceDiagram
+    participant User as 🖥️ Browser
+    participant React as ⚛️ Playground React App
+    participant Proxy as 🐘 proxy.php
+    participant FastAPI as ⚡ FastAPI :8001
+    participant Judge0 as 🏗️ Judge0 Engine
+
+    User->>React: Writes code + clicks Run
+    React->>Proxy: POST /mod/codingplayground/proxy.php/api/v1/submissions
+    Note over Proxy: Adds X-Moodle-User-Id header<br/>Forwards all headers
+    Proxy->>FastAPI: cURL POST to localhost:8001/api/v1/submissions
+    FastAPI->>Judge0: Execute in sandbox
+    Judge0-->>FastAPI: stdout, stderr, exit_code
+    FastAPI-->>Proxy: JSON result
+    Proxy-->>React: JSON result
+    React-->>User: Display output panel
+  </div>
+</div>
+
+<!-- Diagram 7 -->
+<div class="diagram-section">
+  <h2>7. Web Services Flow (MCP / External Agent)</h2>
+  <div class="mermaid">
+sequenceDiagram
+    participant Agent as 🤖 MCP Agent
+    participant WS as 🌐 webservice/rest/server.php
+    participant Ext as 📋 externallib.php
+    participant DB as 🐬 MySQL
+
+    Agent->>WS: POST wsfunction=local_create_quiz_from_xml<br/>wstoken=xxx courseid=5 xmlfile=...
+    WS->>WS: Token validation
+    WS->>Ext: create_quiz_from_xml
+    Note over Ext: 1. Create quiz module<br/>2. Configure settings<br/>3. Create question category<br/>4. Import XML questions<br/>5. Add to quiz<br/>6. Update grades
+    Ext->>DB: INSERT quiz, questions, course_modules
+    DB-->>Ext: IDs
+    Ext-->>WS: quizid, cmid, categoryid, questioncount
+    WS-->>Agent: JSON Response
+  </div>
+</div>
+
+<!-- Diagram 8 -->
+<div class="diagram-section">
+  <h2>8. Plugin Integration Map</h2>
+  <div class="mermaid">
+graph TB
+    subgraph PageLoad["Every Moodle Page Load"]
+        Setup["lib/setup.php<br/>Bootstrap"]
+        Login["require_login"]
+        ProfileCheck["profile_enforcer<br/>after_require_login hook"]
+        Render["Page Render"]
+        Footer["before_footer hook"]
+        VedaInject["Veda React Injection<br/>CSS + JS via glob"]
+    end
+
+    Setup --> Login
+    Login --> ProfileCheck
+    ProfileCheck -->|"No profile pic?"| Redirect["Redirect to profile edit"]
+    ProfileCheck -->|"OK"| Render
+    Render --> Footer
+    Footer --> VedaInject
+
+    subgraph CourseView["Course Page"]
+        Activities["Activity Modules"]
+        CD["📊 coursedashboard"]
+        CP["💻 codingplayground"]
+        Quiz["📝 quiz"]
+        Assign["📄 assign"]
+        VPL["🖥️ vpl"]
+        VT["🎬 videotime"]
+        JN["📓 jupyternotebook"]
+    end
+
+    subgraph Sidebar["Sidebar Blocks"]
+        AIC["🤖 ai_chat block"]
+        OAI["🤖 openai_chat block"]
+        SC["📋 sharing_cart block"]
+        Nav["🧭 navigation block"]
+    end
+
+    Render --> CourseView
+    Render --> Sidebar
+  </div>
+</div>
+
+<!-- Diagram 9 -->
+<div class="diagram-section">
+  <h2>9. Theme Layer</h2>
+  <div class="mermaid">
+graph LR
+    subgraph Themes["🎨 Theme Hierarchy"]
+        Boost["boost/<br/>Base Bootstrap Theme<br/>Moodle Default"]
+        Classic["classic/<br/>Classic Layout"]
+        Moove["moove/<br/>ACTIVE THEME<br/>Premium Design"]
+    end
+
+    Boost -->|"extends"| Moove
+    
+    subgraph MooveFiles["Moove Theme Structure"]
+        MConfig["config.php — Theme config"]
+        MLayout["layout/ — Page layouts"]
+        MTemplates["templates/ — Mustache overrides"]
+        MSCSS["scss/ — Custom styles"]
+        MFonts["fonts/ — Web fonts"]
+        MSettings["settings.php — 18KB of options"]
+        MPix["pix/ — Theme images"]
+    end
+
+    Moove --> MooveFiles
+  </div>
+</div>
+
+<!-- Diagram 10 -->
+<div class="diagram-section">
+  <h2>10. Storage and Caching Architecture</h2>
+  <div class="mermaid">
+graph TB
+    subgraph App["Moodle Application"]
+        PHP["PHP-FPM"]
+    end
+
+    subgraph Cache["Caching Layer"]
+        RedisSession["🔴 Redis DB 0<br/>Session Store<br/>prefix: moodle_sess_<br/>igbinary serializer"]
+        RedisMUC["🔴 Redis<br/>MUC Cache Store"]
+        LocalCache["📁 localcache/<br/>File-based Cache"]
+        MUCFile["📁 muc/<br/>MUC File Store"]
+    end
+
+    subgraph Persistent["Persistent Storage"]
+        MySQL2[("🐬 MySQL<br/>DB: moodle<br/>prefix: mdl_<br/>utf8mb4_unicode_ci<br/>persistent connections")]
+        FileStore["📁 moodledata/filedir/<br/>Content-addressed<br/>File Storage"]
+    end
+
+    PHP -->|"sessions"| RedisSession
+    PHP -->|"app cache"| RedisMUC
+    PHP -->|"local cache"| LocalCache
+    PHP -->|"fallback cache"| MUCFile
+    PHP -->|"data"| MySQL2
+    PHP -->|"files"| FileStore
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'dark',
+    themeVariables: {
+      primaryColor: '#1e40af',
+      primaryTextColor: '#e2e8f0',
+      primaryBorderColor: '#3b82f6',
+      lineColor: '#60a5fa',
+      secondaryColor: '#1e3a5f',
+      tertiaryColor: '#0f172a',
+      fontSize: '14px',
+      fontFamily: 'Segoe UI, Tahoma, Geneva, Verdana, sans-serif'
+    },
+    flowchart: {
+      htmlLabels: true,
+      curve: 'basis',
+      useMaxWidth: true
+    },
+    sequence: {
+      useMaxWidth: true,
+      mirrorActors: false,
+      messageAlign: 'center'
+    }
+  });
+</script>
+
+</body>
+</html>

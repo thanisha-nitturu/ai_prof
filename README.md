@@ -9,7 +9,7 @@ Since several plugins are maintained in separate repositories, you must initiali
 ```bash
 git clone [YOUR_REPO_URL]
 git submodule update --init --recursive
-```
+```789897897
 
 ### 2. Configure Moodle
 Copy the distribution config and fill in your database and Veda credentials:

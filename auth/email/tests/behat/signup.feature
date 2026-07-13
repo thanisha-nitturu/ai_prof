@@ -83,7 +83,7 @@ Feature: User must accept policy when logging in and signing up
       | First name    | Jane    |
       | Last name     | Doe     |
     And I press "Create my new account"
-    Then I should <expect> "This email address is already registered. Perhaps you created an account in the past?"
+    Then I should <expect> "If you do not have an account, your registration will be processed. If you already have an account, please log in."
     And I should <expect2> "Invalid email address"
 
     Examples:

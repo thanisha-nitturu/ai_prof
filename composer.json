@@ -48,7 +48,9 @@
         "ext-json": "*",
         "ext-hash": "*",
         "ext-fileinfo": "*",
-        "ext-sodium": "*"
+        "ext-sodium": "*",
+        "infisical/php-sdk": "^0.0.2",
+        "vlucas/phpdotenv": "^5.6"
     },
     "suggest": {
         "ext-mysqli": "Needed when Moodle uses MySQL or MariaDB database.",

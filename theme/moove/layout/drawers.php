@@ -103,10 +103,43 @@ $header = $PAGE->activityheader;
 $headercontent = $header->export_for_template($renderer);
 
 $bodyattributes = $OUTPUT->body_attributes($extraclasses);
+
+// List of user emails that should NOT see Pathways, Playground, or Placement.
+$hide3pemails = [
+    'nalawseh2@huskers.unl.edu',
+    'woodarda@lopers.unk.edu',
+    'owilson-bahun2@huskers.unl.edu',
+    'npolicky2@huskers.unl.edu',
+    'allewellyn2@huskers.unl.edu',
+    'aklapp2@huskers.unl.edu',
+    'lgieselman2@huskers.unl.edu',
+    'gdalton4@huskers.unl.edu',
+    'kpetry3@huskers.unl.edu',
+    'mkiesel2@huskers.unl.edu',
+    'acohen6@huskers.unl.edu',
+    'pshields2@huskers.unl.edu',
+    'mliss2@huskers.unl.edu',
+    'kpriest2@huskers.unl.edu',
+    'canderjaska2@huskers.unl.edu',
+    'kmoody9@huskers.unl.edu',
+    'jfriesen7@huskers.unl.edu',
+    'jlowe22@huskers.unl.edu',
+    'pthutika2@huskers.unl.edu',
+    'kpatel17@huskers.unl.edu',
+    'bfentaw2@huskers.unl.edu',
+    'jschmitt9@huskers.unl.edu',
+    'nitturuthanisha@gmail.com',
+];
+$hide3p = false;
+if (isloggedin() && !empty($hide3pemails)) {
+    $hide3p = in_array(strtolower($USER->email), array_map('strtolower', $hide3pemails));
+}
+
 $templatecontext = [
     'sitename' => format_string($SITE->shortname, true, ['context' => \core\context\course::instance(SITEID), "escape" => false]),
     'output' => $OUTPUT,
     'is_siteadmin' => is_siteadmin(),
+    'hide_3p' => $hide3p,
     'sidepreblocks' => $blockshtml,
     'hasblocks' => $hasblocks,
     'bodyattributes' => $bodyattributes,

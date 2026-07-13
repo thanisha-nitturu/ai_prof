@@ -1,0 +1,161 @@
+diff --git a/grade/report/grader/lib.php b/grade/report/grader/lib.php
+index 9823bd45..a4b92e89 100644
+--- a/grade/report/grader/lib.php
++++ b/grade/report/grader/lib.php
+@@ -658,36 +658,48 @@ class grade_report_grader extends grade_report {
+ 
+         $colspan = 1 + count($extrafields);
+ 
+-        $levels = count($this->gtree->levels) - 1;
+-
+-        $fillercell = new html_table_cell();
+-        $fillercell->header = true;
+-        $fillercell->attributes['scope'] = 'col';
+-        $fillercell->attributes['class'] = 'cell topleft';
+-        $fillercell->text = html_writer::span(get_string('participants'), 'accesshide');
+-        $fillercell->colspan = $colspan;
+-        $fillercell->rowspan = $levels;
+-        $row = new html_table_row(array($fillercell));
+-        if ($levels >= 1) { // Do not display the filler cell if there are no levels as there will be nothing else in the row.
+-            $rows[] = $row;
++        $actual_levels = [];
++        foreach ($this->gtree->get_levels() as $level_row) {
++            $has_content = false;
++            foreach ($level_row as $element) {
++                $type = $element['type'];
++                if ($type === 'category') {
++                    if (grade_tree::can_output_item($element)) {
++                        $has_content = true;
++                        break;
++                    }
++                } else if ($type !== 'filler' && $type !== 'fillerfirst' && $type !== 'fillerlast') {
++                    $has_content = true;
++                    break;
++                }
++            }
++            if ($has_content) {
++                $actual_levels[] = $level_row;
++            }
+         }
+-
+-        for ($i = 1; $i < $levels; $i++) {
+-            $row = new html_table_row();
+-            $rows[] = $row;
++        
++        if (count($actual_levels) > 2) {
++            $actual_levels = [
++                $actual_levels[0],
++                $actual_levels[1]
++            ];
+         }
+ 
++        $levels = count($actual_levels) - 1;
++        $totalheaderrows = $levels + 1;
++
+         $headerrow = new html_table_row();
+-        $headerrow->attributes['class'] = 'heading';
++        $headerrow->attributes['class'] = 'heading_name_row';
+ 
+         $studentheader = new html_table_cell();
+         // The browser's scrollbar may partly cover (in certain operative systems) the content in the student header
+         // when horizontally scrolling through the table contents (most noticeable when in RTL mode).
+         // Therefore, add slight padding on the left or right when using RTL mode.
+-        $studentheader->attributes['class'] = "header ps-3";
++        $studentheader->attributes['class'] = "header ps-3 align-middle";
+         $studentheader->scope = 'col';
+         $studentheader->header = true;
+         $studentheader->id = 'studentheader';
++        $studentheader->rowspan = $levels + 1;
+         $element = ['type' => 'userfield', 'name' => 'fullname'];
+         $studentheader->text = $arrows['studentname'] .
+             $this->gtree->get_cell_action_menu($element, 'gradeitem', $this->gpr, $this->baseurl);
+@@ -695,10 +707,11 @@ class grade_report_grader extends grade_report {
+ 
+         foreach ($extrafields as $field) {
+             $fieldheader = new html_table_cell();
+-            $fieldheader->attributes['class'] = 'userfield user' . $field;
++            $fieldheader->attributes['class'] = 'userfield user' . $field . ' align-middle';
+             $fieldheader->attributes['data-col'] = $field;
+             $fieldheader->scope = 'col';
+             $fieldheader->header = true;
++            $fieldheader->rowspan = $levels + 1;
+ 
+             $collapsecontext = [
+                 'field' => $field,
+@@ -717,6 +730,14 @@ class grade_report_grader extends grade_report {
+ 
+         $rows[] = $headerrow;
+ 
++        // Add the remaining empty rows for the left side to match the right side levels
++        // These rows get NO cells because the rowspan above covers them!
++        for ($i = 0; $i < $levels; $i++) {
++            $row = new html_table_row();
++            $row->attributes['class'] = 'heading';
++            $rows[] = $row;
++        }
++
+         $suspendedstring = null;
+ 
+         $usercount = 0;
+@@ -835,7 +856,34 @@ class grade_report_grader extends grade_report {
+             $cache->set(get_class($this), $scalesarray);
+         }
+ 
+-        foreach ($this->gtree->get_levels() as $row) {
++        $actual_levels = [];
++        foreach ($this->gtree->get_levels() as $level_row) {
++            $has_content = false;
++            foreach ($level_row as $element) {
++                $type = $element['type'];
++                if ($type === 'category') {
++                    if (grade_tree::can_output_item($element)) {
++                        $has_content = true;
++                        break;
++                    }
++                } else if ($type !== 'filler' && $type !== 'fillerfirst' && $type !== 'fillerlast') {
++                    $has_content = true;
++                    break;
++                }
++            }
++            if ($has_content) {
++                $actual_levels[] = $level_row;
++            }
++        }
++
++        if (count($actual_levels) > 2) {
++            $actual_levels = [
++                $actual_levels[0],
++                $actual_levels[1]
++            ];
++        }
++
++        foreach ($actual_levels as $row) {
+             $headingrow = new html_table_row();
+             $headingrow->attributes['class'] = 'heading_name_row';
+ 
+@@ -1298,6 +1346,7 @@ class grade_report_grader extends grade_report {
+ 
+         $fulltable = new html_table();
+         $fulltable->attributes['class'] = 'gradereport-grader-table d-none';
++        $fulltable->attributes['style'] = 'margin-bottom: 81px;';
+         $fulltable->id = 'user-grades';
+         $fulltable->caption = get_string('summarygrader', 'gradereport_grader');
+         $fulltable->captionhide = true;
+@@ -1398,7 +1447,7 @@ class grade_report_grader extends grade_report {
+                 $groupavgrow = new html_table_row();
+                 $groupavgrow->attributes['class'] = 'groupavg r'.$this->rowcount++;
+                 $groupavgcell = new html_table_cell();
+-                $groupavgcell->attributes['class'] = 'header range';
++                $groupavgcell->attributes['class'] = 'header range text-center align-middle';
+                 $groupavgcell->colspan = $colspan;
+                 $groupavgcell->header = true;
+                 $groupavgcell->scope = 'row';
+@@ -1413,7 +1462,7 @@ class grade_report_grader extends grade_report {
+                 $avgrow = new html_table_row();
+                 $avgrow->attributes['class'] = 'avg r'.$this->rowcount++;
+                 $avgcell = new html_table_cell();
+-                $avgcell->attributes['class'] = 'header range';
++                $avgcell->attributes['class'] = 'header range text-center align-middle';
+                 $avgcell->colspan = $colspan;
+                 $avgcell->header = true;
+                 $avgcell->scope = 'row';

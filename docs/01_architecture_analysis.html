@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Part 1: Current Architecture Analysis — Hitloop Moodle Platform</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: #f8fafc; color: #1e293b; line-height: 1.7; padding: 0; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 40px 48px; background: #fff; min-height: 100vh; box-shadow: 0 0 60px rgba(0,0,0,0.06); }
+  h1 { font-size: 2rem; font-weight: 800; color: #0f172a; margin-bottom: 8px; border-bottom: 3px solid #3b82f6; padding-bottom: 16px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #1e40af; margin-top: 48px; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid #e2e8f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #334155; margin-top: 28px; margin-bottom: 14px; }
+  hr { border: none; border-top: 1px solid #e2e8f0; margin: 36px 0; }
+  p { margin-bottom: 14px; }
+  table { width: 100%; border-collapse: collapse; margin: 18px 0 28px; font-size: 0.88rem; }
+  thead { background: linear-gradient(135deg, #1e40af, #3b82f6); color: #fff; }
+  th { padding: 12px 16px; text-align: left; font-weight: 600; white-space: nowrap; }
+  td { padding: 10px 16px; border-bottom: 1px solid #e2e8f0; }
+  tbody tr:nth-child(even) { background: #f8fafc; }
+  tbody tr:hover { background: #eff6ff; }
+  td strong { color: #1e293b; }
+  code { font-family: 'JetBrains Mono', monospace; background: #f1f5f9; padding: 2px 7px; border-radius: 4px; font-size: 0.85em; color: #be185d; }
+  pre { background: #1e293b; color: #e2e8f0; padding: 20px 24px; border-radius: 10px; overflow-x: auto; margin: 18px 0 28px; font-size: 0.85rem; line-height: 1.6; }
+  pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+  .mermaid { background: #fafbff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 24px; margin: 24px 0; text-align: center; }
+  ul, ol { margin: 10px 0 18px 28px; }
+  li { margin-bottom: 6px; }
+  .caution { background: linear-gradient(135deg, #fef2f2, #fff1f2); border-left: 4px solid #ef4444; padding: 16px 20px; border-radius: 0 8px 8px 0; margin: 20px 0; }
+  .caution strong { color: #dc2626; }
+  .badge-critical { background: #ef4444; color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 0.78em; font-weight: 600; }
+  .badge-high { background: #f59e0b; color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 0.78em; font-weight: 600; }
+  .badge-medium { background: #f97316; color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 0.78em; font-weight: 600; }
+  .header-bar { background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #1e40af 100%); color: #fff; padding: 40px 48px; margin: -40px -48px 36px; }
+  .header-bar h1 { color: #fff; border-bottom-color: rgba(255,255,255,0.3); }
+  .header-bar .subtitle { color: #93c5fd; font-size: 0.95rem; margin-top: 6px; }
+  .tag { display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
+  .tag-yes { background: #dcfce7; color: #16a34a; }
+  .tag-no { background: #fee2e2; color: #dc2626; }
+  @media print { body { background: #fff; } .container { box-shadow: none; padding: 20px; } .header-bar { margin: -20px -20px 24px; padding: 28px; } }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header-bar">
+    <h1>Part 1: Current Architecture Analysis</h1>
+    <div class="subtitle">Hitloop Moodle Platform — Deep Codebase Analysis Report</div>
+  </div>
+
+  <h2>1.1 Project Identity</h2>
+  <table>
+    <thead><tr><th>Property</th><th>Value</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Platform</strong></td><td>Moodle 5.0.4 (Build: 20251208)</td></tr>
+      <tr><td><strong>Branch</strong></td><td><code>500</code> (Stable)</td></tr>
+      <tr><td><strong>PHP Requirement</strong></td><td>>= 8.2.0</td></tr>
+      <tr><td><strong>Database</strong></td><td>MySQL/MariaDB (<code>mysqli</code>) — <code>utf8mb4_unicode_ci</code></td></tr>
+      <tr><td><strong>Domain</strong></td><td><code>https://devlearn.hitloop.com</code></td></tr>
+      <tr><td><strong>Data Root</strong></td><td><code>/var/www/moodledata</code></td></tr>
+      <tr><td><strong>Web Root</strong></td><td><code>/var/www/html/moodle</code></td></tr>
+      <tr><td><strong>Session Handler</strong></td><td>Redis (<code>127.0.0.1:6379</code>) with igbinary serializer</td></tr>
+      <tr><td><strong>Git Hosting</strong></td><td>GitHub (<code>hitloop-ai</code> organisation)</td></tr>
+      <tr><td><strong>Existing CI</strong></td><td>GitHub Actions (Moodle upstream defaults — Grunt, PHPUnit)</td></tr>
+    </tbody>
+  </table>
+
+  <hr>
+
+  <h2>1.2 Complete Plugin Inventory</h2>
+  <h3>Custom Hitloop Plugins (YOUR code — must be in CI/CD scope)</h3>
+  <table>
+    <thead><tr><th>Plugin</th><th>Type</th><th>Path</th><th>Version</th><th>Maturity</th><th>Submodule?</th><th>Frontend?</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Veda AI Assistant</strong></td><td><code>local</code></td><td><code>local/veda</code></td><td>v0.1 (2026020901)</td><td>ALPHA</td><td><span class="tag tag-yes">✅ Yes</span></td><td>Next.js iframe + legacy React</td></tr>
+      <tr><td><strong>Custom Webservices</strong></td><td><code>local</code></td><td><code>local/my_webservices</code></td><td>2025100625</td><td>—</td><td><span class="tag tag-no">❌ No</span></td><td><span class="tag tag-no">❌ No</span></td></tr>
+      <tr><td><strong>AI Manager</strong></td><td><code>local</code></td><td><code>local/ai_manager</code></td><td>v2.5 (2026020600)</td><td>STABLE</td><td><span class="tag tag-no">❌ No</span></td><td>AMD JS</td></tr>
+      <tr><td><strong>Coding Playground</strong></td><td><code>mod</code></td><td><code>mod/codingplayground</code></td><td>v1.0 (2026040400)</td><td>ALPHA</td><td><span class="tag tag-yes">✅ Yes</span></td><td>Vite (dist/)</td></tr>
+      <tr><td><strong>Course Dashboard</strong></td><td><code>mod</code></td><td><code>mod/coursedashboard</code></td><td>v1.0 (2025122200)</td><td>ALPHA</td><td><span class="tag tag-yes">✅ Yes</span></td><td>Vite+React+TailwindCSS</td></tr>
+      <tr><td><strong>Easy Custom Menu</strong></td><td><code>local</code></td><td><code>local/easycustmenu</code></td><td>—</td><td>—</td><td><span class="tag tag-no">❌ No</span></td><td>AMD JS</td></tr>
+      <tr><td><strong>Placement</strong></td><td><code>local</code></td><td><code>local/placement</code></td><td>—</td><td>—</td><td><span class="tag tag-no">❌ No</span></td><td><span class="tag tag-no">❌ No</span></td></tr>
+    </tbody>
+  </table>
+
+  <h3>Third-Party Plugins (installed but NOT your code)</h3>
+  <table>
+    <thead><tr><th>Plugin</th><th>Type</th><th>Path</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Moove Theme</strong></td><td><code>theme</code></td><td><code>theme/moove</code></td><td>v5.0.3 — depends on <code>theme_boost</code></td></tr>
+      <tr><td><strong>VPL</strong></td><td><code>mod</code></td><td><code>mod/vpl</code></td><td>Virtual Programming Lab — code execution</td></tr>
+      <tr><td><strong>VideoTime</strong></td><td><code>mod</code></td><td><code>mod/videotime</code></td><td>Video player integration</td></tr>
+      <tr><td><strong>JupyterNotebook</strong></td><td><code>mod</code></td><td><code>mod/jupyternotebook</code></td><td>Jupyter integration</td></tr>
+      <tr><td><strong>Reengagement</strong></td><td><code>mod</code></td><td><code>mod/reengagement</code></td><td>Student engagement triggers</td></tr>
+      <tr><td><strong>Course Certificate</strong></td><td><code>mod</code></td><td><code>mod/coursecertificate</code></td><td>Certificate generation</td></tr>
+      <tr><td><strong>Download Center</strong></td><td><code>local</code></td><td><code>local/downloadcenter</code></td><td>Bulk file downloads</td></tr>
+      <tr><td><strong>Reminders</strong></td><td><code>local</code></td><td><code>local/reminders</code></td><td>Calendar/event reminders</td></tr>
+    </tbody>
+  </table>
+
+  <hr>
+
+  <h2>1.3 External Service Dependencies</h2>
+  <div class="mermaid">
+graph LR
+    subgraph Hitloop_Platform["Hitloop Platform"]
+        MOODLE["Moodle 5.0&lt;br/&gt;PHP 8.2+"]
+        REDIS["Redis&lt;br/&gt;Sessions + Cache"]
+        MYSQL["MySQL/MariaDB&lt;br/&gt;Primary DB"]
+    end
+    subgraph Microservices
+        VEDA_API["Veda FastAPI&lt;br/&gt;:8066"]
+        JUDGE0["Judge0 / FastAPI&lt;br/&gt;:8001"]
+        NEXTJS["Veda Next.js&lt;br/&gt;:3000"]
+        LIVEKIT["LiveKit Server&lt;br/&gt;Voice/Video"]
+    end
+    MOODLE -->|"Sessions + Cache"| REDIS
+    MOODLE -->|"Data"| MYSQL
+    MOODLE -->|"AI Chat/Proctoring"| VEDA_API
+    MOODLE -->|"Code Execution Proxy"| JUDGE0
+    MOODLE -->|"AI Frontend iframe"| NEXTJS
+    VEDA_API -->|"Voice Tokens"| LIVEKIT
+  </div>
+
+  <table>
+    <thead><tr><th>Service</th><th>URL</th><th>Purpose</th><th>Protocol</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Veda FastAPI</strong></td><td><code>http://localhost:8066</code></td><td>AI chat, proctoring, face embeddings, LiveKit tokens</td><td>REST/JSON via cURL</td></tr>
+      <tr><td><strong>Judge0 Backend</strong></td><td><code>http://localhost:8001</code></td><td>Code compilation &amp; execution for Coding Playground</td><td>REST via <code>proxy.php</code></td></tr>
+      <tr><td><strong>Veda Next.js</strong></td><td><code>http://localhost:3000</code></td><td>AI assistant frontend (embedded via iframe)</td><td>HTTP iframe</td></tr>
+      <tr><td><strong>LiveKit</strong></td><td>via Veda FastAPI</td><td>Real-time voice/video for AI tutor</td><td>WebRTC</td></tr>
+      <tr><td><strong>Redis</strong></td><td><code>127.0.0.1:6379</code></td><td>Session handling + Moodle cache store</td><td>TCP</td></tr>
+    </tbody>
+  </table>
+
+  <hr>
+
+  <h2>1.4 Frontend Build Architecture</h2>
+  <p>Three distinct frontend build pipelines exist:</p>
+  <table>
+    <thead><tr><th>Frontend</th><th>Source</th><th>Build Tool</th><th>Output</th><th>Integration Method</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Veda Legacy</strong></td><td>External repo</td><td>Vite/React</td><td><code>local/veda/static/build/assets/</code></td><td><code>glob()</code> injection via <code>before_footer</code> hook</td></tr>
+      <tr><td><strong>Veda Next.js</strong></td><td>External repo</td><td>Next.js</td><td>Runs as service on <code>:3000</code></td><td>iframe embedding</td></tr>
+      <tr><td><strong>Course Dashboard</strong></td><td><code>mod/coursedashboard/client/</code></td><td>Vite+React+TailwindCSS</td><td><code>mod/coursedashboard/dist/</code></td><td><code>html_writer</code> in <code>view.php</code></td></tr>
+      <tr><td><strong>Coding Playground</strong></td><td>External repo (submodule)</td><td>Vite</td><td><code>mod/codingplayground/dist/</code></td><td>Script/CSS injection in <code>view.php</code></td></tr>
+      <tr><td><strong>AI Manager</strong></td><td>In-tree</td><td>Moodle AMD (Grunt)</td><td><code>local/ai_manager/amd/build/</code></td><td>Standard Moodle AMD loading</td></tr>
+    </tbody>
+  </table>
+
+  <hr>
+
+  <h2>1.5 Existing CI/CD State</h2>
+  <h3>What Exists (from upstream Moodle)</h3>
+  <ul>
+    <li><code>.github/workflows/push.yml</code> — Grunt lint + PHPUnit (MySQL 8.4 + PostgreSQL 14)</li>
+    <li><code>.github/workflows/config-template.php</code> — CI config template for test environments</li>
+    <li><code>.github/workflows/close-pull-requests.yml</code> — Auto-close PRs to protected branches</li>
+    <li><code>.github/workflows/onebyone.yml</code> / <code>windows.yml</code> — Matrix test workflows</li>
+  </ul>
+
+  <h3>What Does NOT Exist</h3>
+  <ul>
+    <li>❌ No deployment pipeline</li>
+    <li>❌ No staging/production environment separation</li>
+    <li>❌ No custom plugin testing</li>
+    <li>❌ No frontend build pipeline for custom plugins</li>
+    <li>❌ No artifact management</li>
+    <li>❌ No rollback mechanism</li>
+    <li>❌ No security scanning</li>
+    <li>❌ No secrets management (passwords hardcoded in <code>config.php</code>)</li>
+    <li>❌ No health checks or smoke tests</li>
+    <li>❌ No monitoring or alerting integration</li>
+  </ul>
+
+  <hr>
+
+  <h2>1.6 Critical Security Gaps</h2>
+  <div class="caution">
+    <strong>⚠️ CAUTION:</strong> These are production-blocking security issues found in the current codebase.
+  </div>
+  <table>
+    <thead><tr><th>#</th><th>Issue</th><th>Severity</th><th>Location</th><th>Detail</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td><strong>Database password in Git</strong></td><td><span class="badge-critical">🔴 CRITICAL</span></td><td><code>config.php</code> (line 12)</td><td><code>Hitloop@123</code> is hardcoded. Although <code>.gitignore</code> excludes <code>config.php</code>, it may have been committed historically.</td></tr>
+      <tr><td>2</td><td><strong>Directory permissions 0777</strong></td><td><span class="badge-critical">🔴 CRITICAL</span></td><td><code>config.php</code> (line 43)</td><td>World-writable directories = any process can modify files</td></tr>
+      <tr><td>3</td><td><strong>Default tool_generator password</strong></td><td><span class="badge-high">🟡 HIGH</span></td><td><code>config.php</code> (line 54)</td><td><code>moodle</code> — allows generating test users in production</td></tr>
+      <tr><td>4</td><td><strong>No CSRF on proxy.php</strong></td><td><span class="badge-high">🟡 HIGH</span></td><td><code>mod/codingplayground/proxy.php</code></td><td>Forwards arbitrary requests to backend with user headers</td></tr>
+      <tr><td>5</td><td><strong>Debug logs in production</strong></td><td><span class="badge-high">🟡 HIGH</span></td><td><code>local/veda/handler_debug.log</code> (3MB)</td><td>Debug logs with user data sitting in web-accessible directory</td></tr>
+      <tr><td>6</td><td><strong>Backup files in repo</strong></td><td><span class="badge-medium">🟠 MEDIUM</span></td><td><code>local/veda/lib.php.backup</code></td><td>Backup files may expose code history</td></tr>
+      <tr><td>7</td><td><strong>$_FILES direct access</strong></td><td><span class="badge-medium">🟠 MEDIUM</span></td><td><code>externallib.php</code> (lines 280-283)</td><td>Bypasses Moodle's file API security for uploads</td></tr>
+      <tr><td>8</td><td><strong>No rate limiting on API</strong></td><td><span class="badge-medium">🟠 MEDIUM</span></td><td><code>local/veda/api/</code></td><td>All Veda API endpoints lack rate limiting</td></tr>
+    </tbody>
+  </table>
+
+  <hr>
+
+  <h2>1.7 Architectural Risks &amp; Problems</h2>
+  <h3>Deployment Risks</h3>
+  <ol>
+    <li><strong>Manual deployment</strong> — No automated deployment process; changes are likely pushed directly to the server via SSH/git pull</li>
+    <li><strong>No rollback capability</strong> — If a deployment breaks production, there's no automated way to revert</li>
+    <li><strong>Submodule complexity</strong> — 3 Git submodules (<code>veda</code>, <code>codingplayground</code>, <code>coursedashboard</code>) pointing to separate repos; version pinning is fragile</li>
+    <li><strong>No database migration safety</strong> — Moodle upgrade runs <code>upgrade.php</code> which is destructive and non-reversible</li>
+    <li><strong>Coupled microservices</strong> — Veda FastAPI, Judge0, Next.js all on <code>localhost</code> — single server architecture with no failover</li>
+  </ol>
+
+  <h3>Development Risks</h3>
+  <ol>
+    <li><strong>No branch protection</strong> — Nothing prevents force-pushes or direct commits to main</li>
+    <li><strong>No code review enforcement</strong> — No required reviewers on PRs</li>
+    <li><strong>ALPHA maturity plugins in production</strong> — Veda, Coding Playground, and Course Dashboard are all marked <code>MATURITY_ALPHA</code></li>
+    <li><strong>No automated testing for custom plugins</strong> — PHPUnit config only covers Moodle core test suites</li>
+    <li><strong>Frontend builds not in CI</strong> — <code>dist/</code> folders are committed as build artifacts rather than built in pipeline</li>
+  </ol>
+
+  <h3>Scalability Risks</h3>
+  <ol>
+    <li><strong>Single-server architecture</strong> — All services (Moodle, Redis, MySQL, FastAPI, Judge0, Next.js) on one machine</li>
+    <li><strong>No CDN</strong> — Static assets served directly from the application server</li>
+    <li><strong>No load balancing</strong> — Redis sessions are local; no session sharing across multiple web servers</li>
+    <li><strong>No cron monitoring</strong> — Moodle cron jobs run without supervision or alerting</li>
+  </ol>
+
+</div>
+<script>mermaid.initialize({ startOnLoad: true, theme: 'default', securityLevel: 'loose' });</script>
+</body>
+</html>

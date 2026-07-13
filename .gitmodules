@@ -4,9 +4,6 @@
 [submodule "local/veda"]
 	path = local/veda
 	url = git@github.com:hitloop-ai/veda.git
-[submodule "mod/mod/codingplayground"]
-	path = mod/mod/codingplayground
-	url = git@github.com:hitloop-ai/coding_playground_plugin.git
 [submodule "mod/codingplayground"]
 	path = mod/codingplayground
 	url = git@github.com:hitloop-ai/coding_playground_plugin.git

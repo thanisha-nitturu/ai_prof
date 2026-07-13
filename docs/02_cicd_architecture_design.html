@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Part 2: CI/CD Architecture Design &amp; Technology Stack</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: #f8fafc; color: #1e293b; line-height: 1.7; padding: 0; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 40px 48px; background: #fff; min-height: 100vh; box-shadow: 0 0 60px rgba(0,0,0,0.06); }
+  h1 { font-size: 2rem; font-weight: 800; color: #0f172a; margin-bottom: 8px; border-bottom: 3px solid #3b82f6; padding-bottom: 16px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #1e40af; margin-top: 48px; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid #e2e8f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #334155; margin-top: 28px; margin-bottom: 14px; }
+  hr { border: none; border-top: 1px solid #e2e8f0; margin: 36px 0; }
+  p { margin-bottom: 14px; }
+  table { width: 100%; border-collapse: collapse; margin: 18px 0 28px; font-size: 0.88rem; }
+  thead { background: linear-gradient(135deg, #1e40af, #3b82f6); color: #fff; }
+  th { padding: 12px 16px; text-align: left; font-weight: 600; }
+  td { padding: 10px 16px; border-bottom: 1px solid #e2e8f0; }
+  tbody tr:nth-child(even) { background: #f8fafc; }
+  tbody tr:hover { background: #eff6ff; }
+  td strong { color: #1e293b; }
+  code { font-family: 'JetBrains Mono', monospace; background: #f1f5f9; padding: 2px 7px; border-radius: 4px; font-size: 0.85em; color: #be185d; }
+  pre { background: #1e293b; color: #e2e8f0; padding: 20px 24px; border-radius: 10px; overflow-x: auto; margin: 18px 0 28px; font-size: 0.85rem; line-height: 1.6; }
+  pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+  .mermaid { background: #fafbff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 24px; margin: 24px 0; text-align: center; }
+  ul, ol { margin: 10px 0 18px 28px; }
+  li { margin-bottom: 6px; }
+  .header-bar { background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #1e40af 100%); color: #fff; padding: 40px 48px; margin: -40px -48px 36px; }
+  .header-bar h1 { color: #fff; border-bottom-color: rgba(255,255,255,0.3); }
+  .header-bar .subtitle { color: #93c5fd; font-size: 0.95rem; margin-top: 6px; }
+  .tag { display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
+  .tag-yes { background: #dcfce7; color: #16a34a; }
+  @media print { body { background: #fff; } .container { box-shadow: none; padding: 20px; } .header-bar { margin: -20px -20px 24px; padding: 28px; } }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header-bar">
+    <h1>Part 2: CI/CD Architecture Design &amp; Technology Stack</h1>
+    <div class="subtitle">Hitloop Moodle Platform — Pipeline Architecture &amp; Strategy</div>
+  </div>
+
+  <h2>2.1 Recommended Technology Stack</h2>
+  <table>
+    <thead><tr><th>Category</th><th>Recommendation</th><th>Rationale</th></tr></thead>
+    <tbody>
+      <tr><td><strong>CI/CD Platform</strong></td><td><strong>GitHub Actions</strong></td><td>Already on GitHub (<code>hitloop-ai</code> org); existing workflows; free minutes for private repos; native submodule support</td></tr>
+      <tr><td><strong>Hosting</strong></td><td><strong>Azure VM → Azure App Service</strong></td><td>Current single-VM works for now; migrate to PaaS when scaling</td></tr>
+      <tr><td><strong>Secrets Management</strong></td><td><strong>GitHub Secrets + Azure Key Vault</strong></td><td>GitHub Secrets for CI; Key Vault for production runtime secrets</td></tr>
+      <tr><td><strong>Artifact Storage</strong></td><td><strong>GitHub Artifacts + Azure Blob</strong></td><td>Build artifacts cached in Actions; release artifacts in Blob Storage</td></tr>
+      <tr><td><strong>Container Registry</strong></td><td><strong>GitHub Container Registry (ghcr.io)</strong></td><td>Free with GitHub; stores Docker images for sidecar services</td></tr>
+      <tr><td><strong>Monitoring</strong></td><td><strong>Azure Monitor + Application Insights + UptimeRobot</strong></td><td>Native Azure integration; free tier covers most needs</td></tr>
+      <tr><td><strong>Static Analysis</strong></td><td><strong>PHPStan (Level 5) + PHPCS</strong></td><td>PHPStan catches bugs; PHPCS enforces Moodle coding standards</td></tr>
+      <tr><td><strong>Security Scanning</strong></td><td><strong>Trivy + Dependabot</strong></td><td>Trivy scans dependencies; Dependabot auto-creates PRs</td></tr>
+      <tr><td><strong>Testing</strong></td><td><strong>PHPUnit + Behat + Jest</strong></td><td>PHPUnit for PHP; Behat for integration; Jest for React/Next.js</td></tr>
+    </tbody>
+  </table>
+
+  <hr>
+
+  <h2>2.2 Git Branching Strategy</h2>
+  <div class="mermaid">
+gitGraph
+    commit id: "Initial"
+    branch develop
+    checkout develop
+    commit id: "Feature work"
+    branch feature/veda-chat-v2
+    checkout feature/veda-chat-v2
+    commit id: "Add chat feature"
+    commit id: "Add tests"
+    checkout develop
+    merge feature/veda-chat-v2 id: "PR merged"
+    branch release/1.2.0
+    checkout release/1.2.0
+    commit id: "Bump versions"
+    commit id: "QA fixes"
+    checkout main
+    merge release/1.2.0 id: "v1.2.0" tag: "v1.2.0"
+    checkout develop
+    merge release/1.2.0 id: "Back-merge"
+    checkout main
+    branch hotfix/security-patch
+    commit id: "Fix XSS"
+    checkout main
+    merge hotfix/security-patch id: "v1.2.1" tag: "v1.2.1"
+    checkout develop
+    merge hotfix/security-patch id: "Back-merge hotfix"
+  </div>
+
+  <h3>Branch Naming Standards</h3>
+  <table>
+    <thead><tr><th>Branch Type</th><th>Pattern</th><th>Example</th><th>Deploys To</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Main</strong></td><td><code>main</code></td><td><code>main</code></td><td>Production (manual approval)</td></tr>
+      <tr><td><strong>Develop</strong></td><td><code>develop</code></td><td><code>develop</code></td><td>Staging (auto)</td></tr>
+      <tr><td><strong>Feature</strong></td><td><code>feature/&lt;ticket&gt;-&lt;desc&gt;</code></td><td><code>feature/HL-42-veda-voice-mode</code></td><td>Dev (on PR)</td></tr>
+      <tr><td><strong>Bugfix</strong></td><td><code>bugfix/&lt;ticket&gt;-&lt;desc&gt;</code></td><td><code>bugfix/HL-99-quiz-import-fix</code></td><td>Dev (on PR)</td></tr>
+      <tr><td><strong>Hotfix</strong></td><td><code>hotfix/&lt;description&gt;</code></td><td><code>hotfix/security-csrf-proxy</code></td><td>Production (fast-track)</td></tr>
+      <tr><td><strong>Release</strong></td><td><code>release/&lt;version&gt;</code></td><td><code>release/1.2.0</code></td><td>Staging → Production</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Commit Message Convention</h3>
+  <pre><code>&lt;type&gt;(&lt;scope&gt;): &lt;subject&gt;
+
+Types: feat, fix, docs, style, refactor, test, chore, perf, security
+Scopes: veda, playground, dashboard, webservices, ai-manager, theme, core
+
+Examples:
+feat(playground): add Python 3.12 language support
+fix(veda): resolve LiveKit token expiry race condition
+security(webservices): add CSRF validation to file upload endpoint
+chore(ci): add PHPStan level 5 analysis step</code></pre>
+
+  <hr>
+
+  <h2>2.3 Environment Strategy</h2>
+  <div class="mermaid">
+graph LR
+    subgraph Development
+        DEV_PR["PR Environment&lt;br/&gt;Ephemeral&lt;br/&gt;Auto-created on PR"]
+    end
+    subgraph Staging
+        STG["Staging Server&lt;br/&gt;staging.hitloop.com&lt;br/&gt;Auto-deploy from develop"]
+    end
+    subgraph Production
+        PROD["Production Server&lt;br/&gt;devlearn.hitloop.com&lt;br/&gt;Manual approval required"]
+    end
+    DEV_PR -->|"PR merged to develop"| STG
+    STG -->|"Release branch + approval"| PROD
+  </div>
+
+  <table>
+    <thead><tr><th>Environment</th><th>Purpose</th><th>URL</th><th>Deploy Trigger</th><th>DB</th><th>Approval</th></tr></thead>
+    <tbody>
+      <tr><td><strong>PR/Dev</strong></td><td>Feature validation, automated tests</td><td>N/A (CI only)</td><td>On every PR</td><td>Ephemeral MySQL in CI</td><td>None (auto)</td></tr>
+      <tr><td><strong>Staging</strong></td><td>Integration testing, QA, UAT</td><td><code>staging.hitloop.com</code></td><td>Push to <code>develop</code></td><td>Clone of production (sanitised)</td><td>None (auto)</td></tr>
+      <tr><td><strong>Production</strong></td><td>Live platform</td><td><code>devlearn.hitloop.com</code></td><td>Tag <code>v*</code> on <code>main</code></td><td>Production MySQL</td><td><span class="tag tag-yes">✅ Required</span></td></tr>
+    </tbody>
+  </table>
+
+  <hr>
+
+  <h2>2.4 Complete Pipeline Architecture</h2>
+  <div class="mermaid">
+flowchart TD
+    subgraph TRIGGER
+        PR["Pull Request"]
+        MERGE["Merge to develop"]
+        TAG["Tag v*.*.*"]
+        HOTFIX["Hotfix branch"]
+    end
+    subgraph BUILD_STAGE["BUILD STAGE"]
+        CHECKOUT["Checkout + Submodules"]
+        PHP_SETUP["Setup PHP 8.2"]
+        COMPOSER["Composer Install"]
+        NODE["Node.js Setup"]
+        GRUNT["Grunt Build"]
+        FE_DASH["Build Dashboard Client"]
+        FE_PLAY["Build Playground Client"]
+    end
+    subgraph TEST_STAGE["TEST STAGE"]
+        LINT["PHP Lint"]
+        PHPCS_RUN["PHPCS Moodle Standards"]
+        PHPSTAN["PHPStan Level 5"]
+        UNIT["PHPUnit"]
+        JEST["Jest"]
+        SEC_SCAN["Security Scan - Trivy"]
+    end
+    subgraph QUALITY_GATE["QUALITY GATE"]
+        GATE{"All checks passed?"}
+    end
+    subgraph DEPLOY_STAGE["DEPLOY STAGE"]
+        ARTIFACT["Create Release Artifact"]
+        DEPLOY_STG["Deploy to Staging"]
+        SMOKE_STG["Smoke Test Staging"]
+        APPROVAL{"Manual Approval?"}
+        DEPLOY_PROD["Deploy to Production"]
+        SMOKE_PROD["Smoke Test Production"]
+        MOODLE_UPGRADE["Moodle Upgrade CLI"]
+        CACHE_PURGE["Purge All Caches"]
+    end
+    PR --> CHECKOUT
+    MERGE --> CHECKOUT
+    TAG --> CHECKOUT
+    HOTFIX --> CHECKOUT
+    CHECKOUT --> PHP_SETUP --> COMPOSER
+    CHECKOUT --> NODE --> GRUNT
+    NODE --> FE_DASH & FE_PLAY
+    COMPOSER --> LINT & PHPCS_RUN & PHPSTAN & UNIT
+    GRUNT --> GATE
+    FE_DASH --> JEST
+    FE_PLAY --> JEST
+    LINT --> GATE
+    PHPCS_RUN --> GATE
+    PHPSTAN --> GATE
+    UNIT --> GATE
+    JEST --> GATE
+    SEC_SCAN --> GATE
+    GATE -->|"Yes"| ARTIFACT
+    GATE -->|"No"| FAIL["Block Merge"]
+    ARTIFACT --> DEPLOY_STG --> SMOKE_STG --> APPROVAL
+    APPROVAL -->|"Approved"| DEPLOY_PROD --> MOODLE_UPGRADE --> CACHE_PURGE --> SMOKE_PROD
+    APPROVAL -->|"Rejected"| ROLLBACK["Rollback Staging"]
+  </div>
+
+  <hr>
+
+  <h2>2.5 Deployment Flow (Detailed)</h2>
+  <div class="mermaid">
+sequenceDiagram
+    participant DEV as Developer
+    participant GH as GitHub Actions
+    participant STG as Staging Server
+    participant APPROVER as Release Manager
+    participant PROD as Production Server
+    DEV->>GH: Push to develop / Tag release
+    GH->>GH: Checkout code + submodules
+    GH->>GH: Build PHP (composer install)
+    GH->>GH: Build frontends (npm run build)
+    GH->>GH: Run all tests and scans
+    GH->>GH: Create deployment artifact (.tar.gz)
+    rect rgb(235, 245, 255)
+    Note over GH,STG: Deploy to Staging
+    GH->>STG: SSH: Upload artifact
+    GH->>STG: SSH: Enable maintenance mode
+    GH->>STG: SSH: Extract to release directory
+    GH->>STG: SSH: Symlink current to new release
+    GH->>STG: SSH: php admin/cli/upgrade.php
+    GH->>STG: SSH: php admin/cli/purge_caches.php
+    GH->>STG: SSH: Disable maintenance mode
+    GH->>STG: SSH: Run smoke tests
+    GH-->>APPROVER: Notify: Staging ready for review
+    end
+    rect rgb(240, 253, 244)
+    Note over APPROVER,PROD: Deploy to Production
+    APPROVER->>GH: Approve deployment
+    GH->>PROD: SSH: Create DB backup
+    GH->>PROD: SSH: Enable maintenance mode
+    GH->>PROD: SSH: Upload and extract artifact
+    GH->>PROD: SSH: Symlink current to new release
+    GH->>PROD: SSH: php admin/cli/upgrade.php
+    GH->>PROD: SSH: php admin/cli/purge_caches.php
+    GH->>PROD: SSH: Disable maintenance mode
+    GH->>PROD: SSH: Run smoke tests
+    GH-->>DEV: Notify: Production deployed
+    end
+  </div>
+
+  <hr>
+
+  <h2>2.6 Rollback Strategy</h2>
+  <div class="mermaid">
+flowchart LR
+    A["Smoke Test Failed?"] -->|Yes| B["Keep maintenance mode ON"]
+    B --> C["Repoint symlink to previous release"]
+    C --> D["Restore DB backup if schema changed"]
+    D --> E["Purge caches"]
+    E --> F["Disable maintenance mode"]
+    F --> G["Verify rollback"]
+    G --> H["Alert team via Slack/Email"]
+  </div>
+  <p>The symlink-based deployment enables <strong>instant rollback</strong> — simply repoint the <code>current</code> symlink to the previous release directory. The server directory structure:</p>
+  <pre><code>/var/www/html/moodle/
+├── releases/
+│   ├── 2026-05-10_v1.1.0/    ← previous
+│   ├── 2026-05-15_v1.2.0/    ← current (symlinked)
+│   └── 2026-05-20_v1.3.0/    ← next (being deployed)
+├── current -> releases/2026-05-15_v1.2.0/  ← nginx points here
+├── shared/
+│   ├── config.php             ← generated from template + env vars
+│   └── .htaccess</code></pre>
+
+  <hr>
+
+  <h2>2.7 Secrets Management Architecture</h2>
+  <div class="mermaid">
+flowchart TD
+    subgraph GH_SECRETS["GitHub Secrets - CI/CD"]
+        GH_DB["DB_PASSWORD"]
+        GH_SSH["SSH_PRIVATE_KEY"]
+        GH_HOST["DEPLOY_HOST"]
+        GH_REDIS["REDIS_PASSWORD"]
+        GH_VEDA["VEDA_API_KEY"]
+    end
+    subgraph AKV["Azure Key Vault - Runtime"]
+        AKV_DB["moodle-db-password"]
+        AKV_REDIS["redis-auth-token"]
+        AKV_VEDA["veda-api-secret"]
+        AKV_LIVEKIT["livekit-api-key"]
+    end
+    subgraph SERVER["Server - Runtime"]
+        ENV["/etc/moodle/env.conf"]
+        CONFIG["config.php generated from template"]
+    end
+    GH_DB -->|"Deployment"| ENV
+    AKV_DB -->|"Azure CLI fetch"| ENV
+    ENV -->|"envsubst"| CONFIG
+  </div>
+  <p><strong>config.php template</strong> (secrets replaced at deploy time):</p>
+  <pre><code>$CFG->dbpass    = getenv('MOODLE_DB_PASSWORD');
+$CFG->session_redis_host = getenv('REDIS_HOST');
+$CFG->veda_fastapi_url = getenv('VEDA_FASTAPI_URL');
+$CFG->wwwroot   = getenv('MOODLE_WWWROOT');</code></pre>
+
+</div>
+<script>mermaid.initialize({ startOnLoad: true, theme: 'default', securityLevel: 'loose' });</script>
+</body>
+</html>

@@ -1,0 +1,1494 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Flowchart</title>
+    <style>
+        body {
+            display: grid;
+            justify-content: center;
+            place-items: center;
+            /* Center both horizontally and vertically */
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            padding: 100px;
+            /* Adjust as needed */
+            overflow: hidden;
+            /* Prevents scrollbars */
+            background-color: #f2f3f7 !important;
+            /* Optional background color */
+        }
+
+        .node {
+            fill: #00e5ac;
+            cursor: pointer;
+            stroke: rgb(171, 192, 209);
+            transition: transform 0.2s;
+            stroke-width: 2px;
+            rx: 10;
+            ry: 10;
+        }
+
+        .node.hand-cursor {
+            cursor: pointer;
+            /* Hand cursor for specific nodes */
+        }
+
+        .node.pointer {
+            cursor: pointer;
+        }
+
+        .node.special {
+            cursor: pointer;
+            /* Make sure the cursor changes to pointer */
+        }
+
+        .node.special:hover {
+            transform: scale(1);
+            fill: #ffa500;
+            /* Change color on hover */
+        }
+
+        .node.highlighted {
+            cursor: pointer;
+            /* Hand cursor for highlighted nodes */
+        }
+
+        .label {
+            text-anchor: middle;
+            font-size: 12px;
+            font-family: "Georgia, serif";
+            cursor: pointer;
+            pointer-events: none;
+        }
+
+        .link {
+            fill: none;
+            stroke: grey;
+            stroke-width: 2px;
+            stroke-dasharray: 5, 5;
+            /* Dotted line */
+            stroke-dashoffset: 100;
+            /* Start with offset to hide the line */
+            transition: stroke 0.2s;
+        }
+
+        .link:hover {
+            stroke: #ff4500;
+            /* Change link color on hover */
+            stroke-width: 3px;
+            /* Increase stroke width on hover */
+        }
+
+        .arrow {
+            fill: rgb(111, 145, 219);
+        }
+
+        .highlighted {
+            fill: rgb(236,
+                    239,
+                    76) !important;
+            /* Background color for highlighted nodes */
+            stroke: #000000 !important;
+            /* Outline for highlighted nodes */
+        }
+
+        .highlighted-label {
+            fill: #000000;
+            /* Text color */
+            /* No stroke here */
+        }
+
+        .highlighted text {
+            font-size: 13px !important;
+            /* Increase font size */
+            stroke: none !important;
+            /* Ensure no stroke is applied to text */
+        }
+
+        .hidden {
+            visibility: hidden;
+        }
+
+        svg {
+            width: 100%;
+            /* Set the width to 100% of the viewport */
+            height: 100vh;
+            /* Set the height to 100% of the viewport */
+            display: block;
+            /* Ensures the SVG behaves as a block element */
+            position: absolute;
+            top: 80%;
+            left: 80%;
+            transform: translate(-80%, -80%);
+            /* Center it */
+        }
+
+        #center-background {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0.05;
+            max-width: 250vw;
+            max-height: 100vh;
+        }
+    </style>
+</head>
+
+<body>
+    <img id="center-background" src="ai_prof.png" alt="HL Background Image" />
+    <svg id="flowchart" width="1200" height="1600" viewBox="0 0 1200 1600" style="display: block; margin: auto"></svg>
+    <div id="tooltip" style="
+        position: absolute;
+        visibility: hidden;
+        background: white;
+        border: 1px solid #ccc;
+        padding: 10px;
+        border-radius: 5px;
+        z-index: 10;
+      "></div>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script>
+        const svg = d3.select("#flowchart");
+        const width = svg.attr("width");
+        const height = svg.attr("height");
+
+        const zoom = d3
+            .zoom()
+            .scaleExtent([0.5, 3.5])
+            .on("zoom", zoomed)
+            .on("start", () => {
+                svg.style("cursor", "move"); // Change cursor to pointer when dragging starts
+            })
+            .on("end", () => {
+                svg.style("cursor", "default"); // Reset cursor when dragging ends
+            });
+
+        svg.call(zoom);
+
+        function zoomed(event) {
+            svg.selectAll("g").attr("transform", event.transform);
+        }
+
+        function zoomIn() {
+            svg.transition().duration(750).call(zoom.scaleBy, 1.2);
+        }
+
+        function zoomOut() {
+            svg.transition().duration(750).call(zoom.scaleBy, 0.8);
+        }
+
+        function resetZoom() {
+            svg.transition().duration(750).call(zoom.transform, d3.zoomIdentity);
+        }
+        const nodes = [
+            {
+                id: 1,
+                name: "Start Your Journey with ai.prof!",
+                x: 545,
+                y: 50,
+                width: 260,
+                height: 50,
+            },
+            {
+                id: 2,
+                name: "Python Programming",
+                x: 550,
+                y: 145,
+                width: 250,
+                height: 50,
+            },
+
+            // # Left Branch - Math Foundations to AI Software Engineer
+            {
+                id: 3,
+                name: "Math Foundations for AI",
+                x: 550,
+                y: 240,
+                width: 250,
+                height: 50,
+            },
+            {
+                id: 4,
+                name: "Statistical Methods for AI",
+                x: 550,
+                y: 330,
+                width: 250,
+                height: 50,
+            },
+            {
+                id: 5,
+                name: "Artificial Intelligence",
+                x: 550,
+                y: 420,
+                width: 250,
+                height: 50,
+            },
+            {
+                id: 6,
+                name: "Machine Learning",
+                x: 550,
+                y: 510,
+                width: 250,
+                height: 50,
+            },
+            { id: 7, name: "ML Ops", x: 840, y: 596, width: 200, height: 50 },
+            {
+                id: 8,
+                name: "ML Ops Engineer",
+                x: 930,
+                y: 690,
+                width: 200,
+                height: 50,
+            },
+            {
+                id: 9,
+                name: "Mastering TensorFlow and PyTorch",
+                x: 180,
+                y: 600,
+                width: 300,
+                height: 50,
+            },
+            {
+                id: 10,
+                name: "AI Software Engineering",
+                x: 80,
+                y: 680,
+                width: 250,
+                height: 50,
+            },
+            {
+                id: 11,
+                name: "AI Software Engineer",
+                x: -50,
+                y: 760,
+                width: 250,
+                height: 50,
+            },
+
+            // # Middle Branch - Statistical Methods to Data Analyst
+            {
+                id: 12,
+                name: "Statistical Methods for AI",
+                x: 1085,
+                y: 230,
+                width: 250,
+                height: 50,
+            },
+            {
+                id: 13,
+                name: "Transforming Data: Visualization, Processing, and Statistics",
+                x: 980,
+                y: 320,
+                width: 460,
+                height: 50,
+            },
+            {
+                id: 14,
+                name: "Data Management for AI",
+                x: 1085,
+                y: 410,
+                width: 250,
+                height: 50,
+            },
+            {
+                id: 15,
+                name: "Machine Learning",
+                x: 1085,
+                y: 500,
+                width: 250,
+                height: 50,
+            },
+            {
+                id: 16,
+                name: "Data Analyst",
+                x: 1085,
+                y: 595,
+                width: 250,
+                height: 50,
+            },
+
+            // # Right Branch - Intro to ML to Data Engineer & Annotator
+            // {
+            //   id: 17,
+            //   name: "Intro to Machine Learning",
+            //   x: 100,
+            //   y: 230,
+            //   width: 250,
+            //   height: 50,
+            // },
+            {
+                id: 18,
+                name: "Data Annotation for AI",
+                x: 100,
+                y: 235,
+                width: 250,
+                height: 50,
+            },
+            {
+                id: 19,
+                name: "Data Annotator",
+                x: 100,
+                y: 350,
+                width: 250,
+                height: 50,
+            },
+            // { "id": 20, name: "Data Management for AI", "x": 1200, "y": 280, "width": 250, "height": 50 },
+            {
+                id: 21,
+                name: "Data Engineering and Big Data",
+                x: 1410,
+                y: 595,
+                width: 250,
+                height: 50,
+            },
+            {
+                id: 22,
+                name: "Data Engineer",
+                x: 1413,
+                y: 710,
+                width: 250,
+                height: 50,
+            },
+
+            //deep learning
+            // Deep Learning core (shifted down and left)
+            {
+                id: 23,
+                name: "Deep Learning",
+                x: 575,
+                y: 675,
+                width: 200,
+                height: 50,
+            },
+
+            // Level 1 branches from Deep Learning (shifted down and left)
+            {
+                id: 58,
+                name: "Deep Reinforcement Learning",
+                x: -700,
+                y: 990,
+                width: 250,
+                height: 50,
+            },
+            {
+                id: 39,
+                name: "Transformers",
+                x: 575,
+                y: 820,
+                width: 200,
+                height: 50,
+            },
+            {
+                id: 24,
+                name: "Time Series Forecasting",
+                x: 1550,
+                y: 990,
+                width: 250,
+                height: 50,
+            },
+
+            // Level 2 branches (shifted down and left)
+            { id: 60, name: "Robotics", x: -520, y: 1090, width: 150, height: 50 },
+            {
+                id: 59,
+                name: "Reinforcement Learning Engineer",
+                x: -800,
+                y: 1090,
+                width: 260,
+                height: 50,
+            },
+            // {
+            //   id: 53,
+            //   name: "Intro to Speech Processing",
+            //   x: -315,
+            //   y: 990,
+            //   width: 210,
+            //   height: 50,
+            // },
+            // {
+            //   id: 48,
+            //   name: "Intro to Natural Language Processing",
+            //   x: -70,
+            //   y: 990,
+            //   width: 285,
+            //   height: 50,
+            // },
+            {
+                id: 40,
+                name: "Generative AI",
+                x: 705,
+                y: 990,
+                width: 200,
+                height: 50,
+            },
+            // {
+            //   id: 30,
+            //   name: "Intro to Computer Vision",
+            //   x: 1200,
+            //   y: 990,
+            //   width: 200,
+            //   height: 50,
+            // },
+            {
+                id: 28,
+                name: "Problem Solving and ML Life Cycle",
+                x: 235,
+                y: 990,
+                width: 280,
+                height: 50,
+            },
+            {
+                id: 25,
+                name: "Explainable AI",
+                x: 300,
+                y: 1090,
+                width: 150,
+                height: 50,
+            },
+
+            // Level 3 branches (shifted down and left)
+            {
+                id: 61,
+                name: "Robotics Engineer",
+                x: -520,
+                y: 1190,
+                width: 150,
+                height: 50,
+            },
+            {
+                id: 54,
+                name: "Speech Technology Systems",
+                x: -320,
+                y: 990,
+                width: 220,
+                height: 50,
+            },
+            {
+                id: 49,
+                name: "Natural Language Processing",
+                x: -52,
+                y: 990,
+                width: 250,
+                height: 50,
+            },
+            { id: 41, name: "LLMs/VLMs", x: 705, y: 1090, width: 200, height: 50 },
+            {
+                id: 31,
+                name: "Computer Vision",
+                x: 1200,
+                y: 990,
+                width: 200,
+                height: 50,
+            },
+            {
+                id: 29,
+                name: "AI Engineer / ML Engineer / Data Scientist",
+                x: 205,
+                y: 1190,
+                width: 340,
+                height: 50,
+            },
+            {
+                id: 26,
+                name: "Algorithms and Optimization AI",
+                x: 1600,
+                y: 1090,
+                width: 250,
+                height: 50,
+            },
+
+            // Level 4 branches (shifted down and left)
+            {
+                id: 55,
+                name: "Speech Engineer",
+                x: -310,
+                y: 1090,
+                width: 200,
+                height: 50,
+            },
+            {
+                id: 50,
+                name: "NLP Engineer",
+                x: -1,
+                y: 1090,
+                width: 150,
+                height: 50,
+            },
+            {
+                id: 45,
+                name: "Reasoning Models",
+                x: 570,
+                y: 1190,
+                width: 150,
+                height: 50,
+            },
+            {
+                id: 42,
+                name: "Multimodal AI Systems",
+                x: 850,
+                y: 1190,
+                width: 200,
+                height: 50,
+            },
+            {
+                id: 35,
+                name: "Visual Intelligence",
+                x: 1100,
+                y: 1090,
+                width: 150,
+                height: 50,
+            },
+            {
+                id: 32,
+                name: "Computer Graphics/3D",
+                x: 1390,
+                y: 1090,
+                width: 200,
+                height: 50,
+            },
+            {
+                id: 27,
+                name: "Algorithms and Optimization Engineer",
+                x: 1630,
+                y: 1190,
+                width: 300,
+                height: 50,
+            },
+
+            // Level 5 branches (shifted down and left)
+            {
+                id: 56,
+                name: "Applied AI Research", // Speech Engineer
+                x: -310,
+                y: 1190,
+                width: 200,
+                height: 50,
+            },
+            {
+                id: 51,
+                name: "Applied AI Research", // NLP Engineer
+                x: -25,
+                y: 1190,
+                width: 200,
+                height: 50,
+            },
+            {
+                id: 46,
+                name: "Web API Integration for AI and LLMs",
+                x: 500,
+                y: 1290,
+                width: 290,
+                height: 50,
+            },
+            {
+                id: 43,
+                name: "Applied AI Research",
+                x: 850,
+                y: 1290,
+                width: 200,
+                height: 50,
+            },
+            {
+                id: 36,
+                name: "Computer Vision Engineer",
+                x: 1072,
+                y: 1190,
+                width: 210,
+                height: 50,
+            },
+            {
+                id: 33,
+                name: "Applied AI Research", // Computer Graphics/3D
+                x: 1393,
+                y: 1190,
+                width: 200,
+                height: 50,
+            },
+
+            // Level 6 branches (shifted down and left)
+            {
+                id: 57,
+                name: "Applied Scientist (Speech)",
+                x: -315,
+                y: 1290,
+                width: 210,
+                height: 50,
+            },
+            {
+                id: 52,
+                name: "Applied Scientist (NLP)",
+                x: -19,
+                y: 1290,
+                width: 190,
+                height: 50,
+            },
+            {
+                id: 47,
+                name: "Gen AI Engineer",
+                x: 522,
+                y: 1390,
+                width: 250,
+                height: 50,
+            },
+            {
+                id: 44,
+                name: "Applied Scientist (Multimodal)",
+                x: 825,
+                y: 1390,
+                width: 250,
+                height: 50,
+            },
+            {
+                id: 37,
+                name: "Applied AI Research", // Computer Vision Engineer
+                x: 1099,
+                y: 1290,
+                width: 160,
+                height: 50,
+            },
+            {
+                id: 34,
+                name: "Applied Scientist (Computer Graphics/3D)",
+                x: 1333,
+                y: 1290,
+                width: 325,
+                height: 50,
+            },
+
+            // Level 7 branch (shifted down and left)
+            {
+                id: 38,
+                name: "Applied Scientist (CV)",
+                x: 1081,
+                y: 1390,
+                width: 200,
+                height: 50,
+            },
+        ];
+
+        const links = [
+            { sourceId: nodes[0].id, targetId: nodes[1].id }, // Start -> Python Programming
+            // Left Branch - Math Foundations to AI Software Engineer
+            { sourceId: nodes[1].id, targetId: nodes[2].id }, // Python Programming -> Math Foundations for AI
+            { sourceId: nodes[2].id, targetId: nodes[3].id }, // Math Foundations -> Statistical Methods for AI
+            { sourceId: nodes[3].id, targetId: nodes[4].id }, // Statistical Methods -> Artificial Intelligence
+            { sourceId: nodes[4].id, targetId: nodes[5].id }, // Artificial Intelligence -> Machine Learning
+            { sourceId: nodes[5].id, targetId: nodes[6].id }, // Machine Learning -> ML Ops
+            { sourceId: nodes[6].id, targetId: nodes[7].id }, // ML Ops -> ML Ops Engineer
+            { sourceId: nodes[5].id, targetId: nodes[8].id }, // Machine Learning -> Mastering TensorFlow and PyTorch
+            { sourceId: nodes[8].id, targetId: nodes[9].id }, // Mastering TensorFlow and PyTorch -> AI Software Engineering
+            { sourceId: nodes[9].id, targetId: nodes[10].id }, // AI Software Engineering -> AI Software Engineer
+
+            // Middle Branch - Statistical Methods to Data Analyst
+            { sourceId: nodes[1].id, targetId: nodes[11].id }, // Python Programming -> Statistical Methods for AI
+            { sourceId: nodes[11].id, targetId: nodes[12].id }, // Statistical Methods -> Transforming Data
+            { sourceId: nodes[12].id, targetId: nodes[13].id }, // Transforming Data -> Data Management for AI
+            { sourceId: nodes[13].id, targetId: nodes[14].id }, // Data Management for AI -> Intro to Machine Learning
+            { sourceId: nodes[14].id, targetId: nodes[15].id }, // Intro to Machine Learning -> Data Analyst
+
+            // Right Branch - Intro to ML to Data Engineer & Annotator
+            // { sourceId: nodes[1].id, targetId: nodes[16].id }, // Python Programming -> Intro to Machine Learning (Right)
+            { sourceId: 2, targetId: 18 }, // Python programing -> Data Annotation for AI
+            { sourceId: 18, targetId: 19 }, // Data Annotation for AI -> Data Annotator
+
+            { sourceId: 15, targetId: 21 }, // Intro to machine learning -> Data Engineering and Big Data
+            { sourceId: 21, targetId: 22 }, // Data Engineering and Big Data -> Data Engineer
+            // { sourceId: nodes[20].id, targetId: nodes[21].id }, // Data Engineering and Big Data -> Data Engineer
+
+            // Deep Learning as the root node with three main branches
+            { sourceId: 6, targetId: 23 }, // Machine Learning -> Deep Learning
+            { sourceId: 23, targetId: 58 }, // Deep Learning -> Deep Reinforcement Learning
+            { sourceId: 23, targetId: 39 }, // Deep Learning -> Transformers
+            { sourceId: 23, targetId: 24 }, // Deep Learning -> Time Series Forecasting
+
+            // Deep Reinforcement Learning branch
+            { sourceId: 58, targetId: 60 }, // Deep Reinforcement Learning -> Robotics
+            { sourceId: 58, targetId: 59 }, // Deep Reinforcement Learning -> Reinforcement Learning Engineer
+            { sourceId: 60, targetId: 61 }, // Robotics -> Robotics Engineer
+
+            // Transformers branch - centrally positioned with multiple child nodes
+            { sourceId: 39, targetId: 54 }, // Transformers -> Speech technology systems
+            { sourceId: 39, targetId: 49 }, // Transformers -> Natural language processing
+            { sourceId: 39, targetId: 40 }, // Transformers -> Generative AI
+            { sourceId: 39, targetId: 31 }, // Transformers -> Computer Vision
+            { sourceId: 39, targetId: 28 }, // Transformers -> Problem Solving and ML Life Cycle
+
+            // Speech Processing path
+            // { sourceId: 53, targetId: 54 }, // Intro to Speech Processing -> Speech Technology Systems
+            { sourceId: 54, targetId: 55 }, // Speech Technology Systems -> Speech Engineer
+            { sourceId: 55, targetId: 56 }, // Speech Engineer -> Applied AI Research
+            { sourceId: 56, targetId: 57 }, // Applied AI Research -> Applied Scientist (Speech)
+
+            // Natural Language Processing path
+            // { sourceId: 48, targetId: 49 }, // Intro to Natural Language Processing -> Natural Language Processing
+            { sourceId: 49, targetId: 50 }, // Natural Language Processing -> NLP Engineer
+            { sourceId: 50, targetId: 51 }, // NLP Engineer -> Applied AI Research
+            { sourceId: 51, targetId: 52 }, // Applied AI Research -> Applied Scientist (NLP)
+
+            // Generative AI path
+            { sourceId: 40, targetId: 41 }, // Generative AI -> LLMs/VLMs
+            { sourceId: 41, targetId: 45 }, // LLMs/VLMs -> Reasoning Models
+            { sourceId: 41, targetId: 42 }, // LLMs/VLMs -> Multimodal AI Systems
+            { sourceId: 45, targetId: 46 }, // Reasoning Models -> Web API Integration for AI and LLMs
+            { sourceId: 46, targetId: 47 }, // Web API Integration -> Gen AI Engineer
+            { sourceId: 42, targetId: 43 }, // Multimodal AI Systems -> Applied AI Research
+            { sourceId: 43, targetId: 44 }, // Applied AI Research -> Applied Scientist (Multimodal)
+
+            // Computer Vision path
+            // { sourceId: 30, targetId: 31 }, // Intro to Computer Vision -> Computer Vision
+            { sourceId: 31, targetId: 35 }, // Computer Vision -> Visual Intelligence
+            { sourceId: 31, targetId: 32 }, // Computer Vision -> Computer Vision Engineer
+            { sourceId: 35, targetId: 36 }, // Visual Intelligence -> Computer Graphics/3D
+            { sourceId: 36, targetId: 37 }, // Computer Graphics/3D -> Applied AI Research
+            { sourceId: 37, targetId: 38 }, // Applied AI Research -> Applied Scientist (Computer Graphics/3D)
+            { sourceId: 32, targetId: 33 }, // Computer Vision Engineer -> Applied AI Research
+            { sourceId: 33, targetId: 34 }, // Applied AI Research -> Applied Scientist (CV)
+
+            // Problem Solving and ML Life Cycle path
+            { sourceId: 28, targetId: 25 }, // Problem Solving and ML Life Cycle -> AI Engineer/ML Engineer/Data Scientist
+            { sourceId: 25, targetId: 29 }, // Problem Solving and ML Life Cycle -> AI Engineer/ML Engineer/Data Scientist
+
+            // Time Series Forecasting branch
+            { sourceId: 24, targetId: 26 }, // Time Series Forecasting -> Algorithms and Optimization AI
+            // { sourceId: 25, targetId: 26 }, // Explainable AI -> Algorithms and Optimization AI
+            { sourceId: 26, targetId: 27 }, // Algorithms and Optimization AI -> Algorithms and Optimization Engineer
+        ];
+
+        // Arrow definition for links
+        svg
+            .append("defs")
+            .append("marker")
+            .attr("id", "arrow")
+            .attr("viewBox", "0 -5 10 10")
+            .attr("refX", "10")
+            .attr("refY", "0")
+            .attr("markerWidth", "6")
+            .attr("markerHeight", "6")
+            .attr("orient", "auto")
+            .append("path")
+            .attr("d", "M0,-5 L10,0 L0,5")
+            .attr("class", "arrow");
+
+        // Curved paths generator function
+        function curvePath(d) {
+            const source = nodes.find((n) => n.id === d.sourceId);
+            const target = nodes.find((n) => n.id === d.targetId);
+            if (!source || !target) {
+                console.error(
+                    `Error: Source or target node not found for link from ${d.sourceId} to ${d.targetId}`
+                );
+                return ""; // Return empty string if source or target is not found
+            }
+
+            // Return a straight line path (no curve)
+            return `M${source.x + source.width / 2},${source.y + source.height} 
+            L${target.x + target.width / 2},${target.y}`;
+        }
+
+        // Add hover effects for all nodes
+        svg
+            .selectAll(".node")
+            .on("mouseover", function (event, d) {
+                // Apply hover effects
+                d3.select(this)
+                    .transition()
+                    .duration(200) // Smooth transition
+                    .attr("width", d.width + 20) // Increase width
+                    .attr("height", d.height + 20) // Increase height
+                    .attr("x", d.x - 10) // Adjust x position to center the expansion
+                    .attr("y", d.y - 10) // Adjust y position to center the expansion
+                    .style("fill", "#FFCCE0") // Change fill color
+                    .style("filter", "drop-shadow(0px 0px 10px #FFCCE0)"); // Add glowing effect
+
+                // Add dynamic label
+                svg
+                    .append("text")
+                    .attr("id", `hover-label-${d.id}`)
+                    .attr("x", d.x + d.width / 2) // Center horizontally
+                    .attr("y", d.y - 20) // Position above the node
+                    .attr("text-anchor", "middle") // Center align text
+                    .attr("font-size", "10px")
+                    .attr("fill", "#333333")
+                    .text(d.name);
+            })
+            .on("mouseout", function (event, d) {
+                // Reset hover effects
+                d3.select(this)
+                    .transition()
+                    .duration(200) // Smooth transition
+                    .attr("width", d.width) // Reset width
+                    .attr("height", d.height) // Reset height
+                    .attr("x", d.x) // Reset x position
+                    .attr("y", d.y) // Reset y position
+                    .style("fill", () => {
+                        const index = [
+                            1, 11, 8, 16, 19, 22, 59, 61, 29, 55, 50, 27, 36, 47, 34, 38,
+                            57, 52, 44,
+                        ].indexOf(d.id);
+                        return index >= 0 ? specialColors[index] : "#9CF3C6"; // Reset to original color
+                    })
+                    .style("filter", "none"); // Remove glowing effect
+
+                // Remove dynamic label
+                svg.select(`#hover-label-${d.id}`).remove();
+            });
+
+        // const specialColors = [
+        //     "#27ED3E", // Color for node 1
+        //     "#FAC4FF", // Color for node 11 data scientist
+        //     "#69FFFC", // Color for node 17 data engineer
+        //     "#D8FFB8", // Color for node 19 algorithm and optimization
+        //     "#EDFFF7", // Color for node 24 MLOps engineer
+        //     "#FDFFC9", // Color for node 26 Robotics
+        //     "#D9D2C1", // Color for node 27 AI engineer
+        //     "#FFE8F8", // Color for node 29 ML Engineer
+        //     "#FFE2E0", // Color for node 31 AI researcher
+        //     "#EBF9FF", // Color for node 37 Applied AI scientist
+        //     "#F5E0B3", // Color for node 38 Applied scientist speech
+        //     "#C1D9C6", // Color for node 39 NLP
+        //     "#CCFFE0", // Color for node 40 CV
+        //     "#5CC3FF", // Color for node 41 Data Analyst
+        //     "#FFCCE0", // Color for node 42 Deep Learning Engineer
+        //     "#FFF0B3", // New lighter color for node 44 Data Engineer (replaced #FFA500)
+        //     "#E6FFFA", // New lighter color for node 45 Data Annotator (replaced #8A2BE2)
+        //     "#FFD1DC", // New lighter color for node 46 applied scient speech (replaced #FF4500)
+        //     "#E6F7FF", // New lighter color for node 47 applied scientist nlp (replaced #1E90FF)
+        // ];
+
+        const specialColors = [
+            "#27ED3E", // Color for node 1
+            "#FAFCC6", // Color for node 11 data scientist
+            "#FAFCC6", // Color for node 17 data engineer
+            "#FAFCC6", // Color for node 19 algorithm and optimization
+            "#FAFCC6", // Color for node 24 MLOps engineer
+            "#FAFCC6", // Color for node 26 Robotics
+            "#FAFCC6", // Color for node 27 AI engineer
+            "#FAFCC6", // Color for node 29 ML Engineer
+            "#FAFCC6", // Color for node 31 AI researcher
+            "#FAFCC6", // Color for node 37 Applied AI scientist
+            "#FAFCC6", // Color for node 38 Applied scientist speech
+            "#FAFCC6", // Color for node 39 NLP
+            "#FAFCC6", // Color for node 40 CV
+            "#FAFCC6", // Color for node 41 Data Analyst
+            "#FAFCC6", // Color for node 42 Deep Learning Engineer
+            "#FAFCC6", // New lighter color for node 44 Data Engineer (replaced #FFA500)
+            "#FAFCC6", // New lighter color for node 45 Data Annotator (replaced #8A2BE2)
+            "#FAFCC6", // New lighter color for node 46 applied scient speech (replaced #FF4500)
+            "#FAFCC6", // New lighter color for node 47 applied scientist nlp (replaced #1E90FF)
+        ];
+
+        const link = svg
+            .append("g")
+            .attr("class", "links")
+            .selectAll("path")
+            .data(links)
+            .enter()
+            .append("path")
+            .attr("class", "link")
+            .attr("marker-end", "url(#arrow)") // Ensure arrow marker is applied here
+            .attr("d", curvePath); // Use the curvePath function for path generation
+
+        const node = svg
+            .append("g")
+            .attr("class", "nodes")
+            .selectAll("rect")
+            .data(nodes)
+            .enter()
+            .append("rect")
+            .attr("class", (d) => {
+                if (
+                    [1, 11, 17, 19, 24, 26, 27, 29, 31, 37, 38, 39, 40, 41, 42].includes(
+                        d.id
+                    )
+                ) {
+                    return "node special hand-cursor";
+                }
+                return "node";
+            })
+            .attr("data-id", (d) => d.id)
+            .attr("x", (d) => d.x)
+            .attr("y", (d) => d.y)
+            .attr("width", (d) => d.width)
+            .attr("height", (d) => d.height)
+            .style("fill", (d) => {
+                const index = [
+                    1, 11, 8, 16, 19, 22, 59, 61, 29, 55, 50, 27, 36, 47, 34, 38, 57,
+                    52, 44,
+                ].indexOf(d.id);
+                return index >= 0 ? specialColors[index] : "#9CF3C6"; // Default color for non-special nodes
+            })
+            .on("click", function (event, d) {
+                if (
+                    [
+                        1, 11, 8, 16, 19, 22, 59, 61, 29, 55, 50, 27, 36, 47, 34, 38, 57,
+                        52, 44,
+                    ].includes(d.id)
+                ) {
+                    toggleHighlight(d.id);
+                }
+            });
+
+        const text = svg
+            .append("g")
+            .attr("class", "labels")
+            .selectAll("text")
+            .data(nodes)
+            .enter()
+            .append("text")
+            .attr("class", "label")
+            .attr("x", (d) => d.x + d.width / 2)
+            .attr("y", (d) => d.y + d.height / 2)
+            .attr("dy", ".35em")
+            .text((d) => d.name)
+            .style("text-anchor", "middle")
+            .style("font-size", "17px") // Set a new size for all nodes
+            .style("font-family", "Georgia, serif") // Replace 'Georgia' with your desired font
+            .style("text-anchor", "middle")
+            .attr("width", (d) => d.width)
+            .on("click", function (event, d) {
+                // Call the toggleHighlight function when the label is clicked
+                if (
+                    [11, 17, 19, 24, 26, 27, 29, 31, 37, 38, 39, 40, 41, 42].includes(
+                        d.id
+                    )
+                ) {
+                    toggleHighlight(d.id);
+                }
+            });
+
+        function animateLinks() {
+            link
+                .transition()
+                .duration(2000)
+                .style("stroke-dashoffset", "0")
+                .on("end", function () {
+                    d3.select(this).style("stroke-dashoffset", "100");
+                    animateLinks();
+                })
+                .ease(d3.easeLinear);
+        }
+
+        animateLinks();
+
+        // Add tooltip functionality
+        svg
+            .append("defs")
+            .append("clipPath")
+            .attr("id", "tooltip-clip")
+            .append("circle")
+            .attr("r", 5);
+
+        svg.append("style").text(`
+#tooltip {
+    position: absolute;
+    visibility: hidden;
+    background: white;
+    border: 1px solid #ccc;
+    padding: 10px;
+    border-radius: 5px;
+    z-index: 10;
+    pointer-events: none;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    max-width: 300px;
+    font-size: 12px;
+    font-family: Serif;
+    word-wrap: break-word;
+    white-space: normal;
+}
+#tooltip::after {
+    content: "";
+    position: absolute;
+    left: -15px; /* Move the arrow further to the left */
+    top: 50%; /* Center the arrow vertically */
+    margin-top: -5px; /* Adjust for arrow height */
+    border-width: 5px;
+    border-style: solid;
+    border-color: transparent #fff transparent transparent; /* Arrow pointing right */
+}
+`);
+
+        // Define special nodes (no links for these nodes)
+        const specialNodes = [
+            0, 11, 8, 16, 19, 22, 59, 61, 29, 55, 50, 27, 36, 47, 34, 38, 57, 52,
+            44,
+        ];
+
+        // Define node links
+        const nodeLinks = {
+            1: "https://app.aiprof.com/?redirect=0",
+            2: "https://app.aiprof.com/course/view.php?id=13",
+            3: "https://app.aiprof.com/course/view.php?id=14",
+            4: "https://app.aiprof.com/course/view.php?id=15",
+            5: "https://app.aiprof.com/course/view.php?id=20",
+            6: "https://app.aiprof.com/course/view.php?id=34",
+            7: "https://app.aiprof.com/course/view.php?id=43",
+            9: "https://app.aiprof.com/course/view.php?id=39",
+            10: "https://app.aiprof.com/course/view.php?id=6",
+            12: "https://app.aiprof.com/course/view.php?id=15",
+            13: "https://app.aiprof.com/course/view.php?id=19",
+            14: "https://app.aiprof.com/course/view.php?id=17",
+            15: "https://app.aiprof.com/course/view.php?id=34",
+            17: "https://app.aiprof.com/course/view.php?id=3",
+            18: "https://app.aiprof.com/course/view.php?id=18",
+            21: "https://app.aiprof.com/course/view.php?id=22",
+            23: "https://app.aiprof.com/course/view.php?id=37",
+            58: "https://app.aiprof.com/course/view.php?id=36",
+            39: "https://app.aiprof.com/course/view.php?id=45",
+            24: "https://app.aiprof.com/course/view.php?id=31",
+            60: "https://app.aiprof.com/course/view.php?id=35",
+            53: "https://app.aiprof.com/course/view.php?id=5",
+            48: "https://app.aiprof.com/course/view.php?id=2",
+            40: "https://app.aiprof.com/course/view.php?id=60",
+            30: "https://app.aiprof.com/course/view.php?id=4",
+            28: "https://app.aiprof.com/course/view.php?id=29",
+            25: "https://app.aiprof.com/course/view.php?id=26",
+            54: "https://app.aiprof.com/course/view.php?id=47",
+            49: "https://app.aiprof.com/course/view.php?id=48",
+            41: "https://app.aiprof.com/course/view.php?id=41",
+            31: "https://app.aiprof.com/course/view.php?id=46",
+            26: "https://app.aiprof.com/course/view.php?id=40",
+            45: "https://app.aiprof.com/course/view.php?id=9",
+            42: "https://app.aiprof.com/course/view.php?id=38",
+            35: "https://app.aiprof.com/course/view.php?id=44",
+            32: "https://app.aiprof.com/course/view.php?id=23",
+            46: "https://app.aiprof.com/course/view.php?id=27",
+        };
+
+        // Default link for nodes without specific links
+        const defaultLink = "https://app.aiprof.com/?redirect=0";
+
+        const tooltip = d3
+            .select("body")
+            .append("div")
+            .attr("id", "tooltip")
+            .style("position", "absolute")
+            .style("visibility", "hidden");
+
+        // Attach event listeners to existing nodes (rects)
+        svg
+            .selectAll(".node") // Select all existing node rectangles
+            .on("mouseover", function (event, d) {
+                // Display tooltip with custom content or node name for specific nodes
+                const isSpecialNode =
+                    specialNodes.includes(d.id) ||
+                    [1, 33, 43, 51, 56, 37].includes(d.id);
+                tooltip
+                    .html(
+                        isSpecialNode
+                            ? d.name // Special nodes: just the name
+                            : `<strong>${d.name}</strong><br>${d.tooltipContent || d.name}` // Non-special nodes: bold name + content
+                    )
+                    .style("left", `${event.pageX + 30}px`) // Move the tooltip slightly to the right
+                    .style("top", `${event.pageY - tooltip.node().offsetHeight / 2}px`) // Center vertically
+                    .style("visibility", "visible");
+
+                // Apply hover effects
+                d3.select(this)
+                    .transition()
+                    .duration(200) // Smooth transition
+                    .attr("width", d.width + 20) // Increase width
+                    .attr("height", d.height + 20) // Increase height
+                    .attr("x", d.x - 10) // Adjust x position to center the expansion
+                    .attr("y", d.y - 10) // Adjust y position to center the expansion
+                    .style("fill", "#FFCCE0") // Change fill color
+                    .style("filter", "drop-shadow(0px 0px 10px #FFCCE0)"); // Add glowing effect
+            })
+            .on("mousemove", function (event, d) {
+                // Update tooltip position based on mouse movement
+                tooltip
+                    .style("left", `${event.pageX + 30}px`) // Move the tooltip slightly to the right
+                    .style("top", `${event.pageY - tooltip.node().offsetHeight / 2}px`); // Center vertically
+            })
+            .on("mouseout", function (event, d) {
+                // Reset hover effects
+                d3.select(this)
+                    .transition()
+                    .duration(200) // Smooth transition
+                    .attr("width", d.width) // Reset width
+                    .attr("height", d.height) // Reset height
+                    .attr("x", d.x) // Reset x position
+                    .attr("y", d.y) // Reset y position
+                    .style("fill", function () {
+                        // Reset to special color if it's a special node
+                        if (specialNodes.includes(d.id)) {
+                            return specialColors[specialNodes.indexOf(d.id)]; // Color for special nodes
+                        } else {
+                            // Default color for non-special nodes
+                            return "#9CF3C6"; // Default color when the node is ot special
+                        }
+                    })
+                    .style("filter", "none"); // Remove glowing effect
+
+                // Hide tooltip
+                tooltip.style("visibility", "hidden");
+            })
+            .on("click", function (event, d) {
+                // Check if the node is a special node
+                if (specialNodes.includes(d.id)) {
+                    // Call the toggleHighlight function for special nodes
+                    toggleHighlight(d.id);
+                } else {
+                    // Redirect to the link for non-special nodes
+                    const link = nodeLinks[d.id] || defaultLink;
+
+                    if (event.ctrlKey || event.metaKey) {
+                        window.open(link, "_blank"); // Open in new tab
+                    } else {
+                        //window.top.location.href = link; // Open in the same tab
+                        window.top.location.href = 'pathways.php?redirect=' + encodeURIComponent(link);
+                    }
+                }
+            });
+
+        // Set tooltip content for each node based on node id
+        nodes.forEach(function (d) {
+            switch (d.id) {
+                case 1:
+                    d.tooltipContent =
+                        "Welcome to the start of your AI journey with ai.prof! Begin your learning adventure here.";
+                    break;
+                case 2:
+                    d.tooltipContent =
+                        "This Python course covers programming basics, control flow, data structures, file handling, OOP, and data science libraries, preparing students with essential skills for coding, data analysis, and AI development.";
+                    break;
+                case 3:
+                    d.tooltipContent =
+                        "This Math for AI course covers linear algebra, calculus, vector calculus, and optimization techniques, equipping students with essential skills for AI model development, data analysis, and real-world machine learning applications.";
+                    break;
+                case 4:
+                    d.tooltipContent =
+                        "This Statistics course covers probability, distributions, hypothesis testing, regression, Bayesian inference, and Markov Chains, equipping students with essential skills for data analysis, forecasting, and AI model evaluation.";
+                    break;
+                case 5:
+                    d.tooltipContent =
+                        "This AI course explores foundational concepts, intelligent agents, search strategies, game theory, knowledge representation, probabilistic reasoning, and real-world applications, empowering students to build and implement effective AI solutions through hands-on projects.";
+                    break;
+                case 6:
+                    d.tooltipContent =
+                        "This Machine Learning course covers supervised and unsupervised learning, feature engineering, ensemble methods, evaluation metrics, and practical ML tools, empowering students to build, evaluate, and deploy effective models.";
+                    break;
+                case 7:
+                    d.tooltipContent = "This MLOps course covers ML lifecycle, deployment, and monitoring strategies. Students will explore CI/CD practices, Docker, Kubernetes, and tools like MLFlow to manage and scale ML models efficiently.";
+                    break;
+                case 9:
+                    d.tooltipContent =
+                        "This Deep Learning course covers TensorFlow, PyTorch, GPU setup, MLP models, and practical applications. Students will build, train, and tune models, gaining skills for AI development through hands-on projects and case studies.";
+                    break;
+                case 10:
+                    d.tooltipContent =
+                        "Explore the future of technology with our AI Software Engineering course - dive into cutting-edge techniques and hands-on projects to master the art of building intelligent systems. Enroll now to unlock your potential and shape the next generation of AI solutions.";
+                    break;
+
+                case 12:
+                    d.tooltipContent =
+                        "This Statistics course covers probability, distributions, hypothesis testing, regression, Bayesian inference, and Markov Chains, equipping students with essential skills for data analysis, forecasting, and AI model evaluation.";
+                    break;
+                case 13:
+                    d.tooltipContent =
+                        "This data manipulation and visualization course covers Pandas, NumPy, Seaborn, and Scikit-learn, along with data collection, EDA, normalization, and real-world dataset handling, preparing students for effective data analysis.";
+                    break;
+                case 14:
+                    d.tooltipContent =
+                        "This Data Management for AI course covers data governance, engineering, feature preparation, and pipeline orchestration, equipping students with skills to manage, process, and monitor data effectively for AI applications.";
+                    break;
+                case 15:
+                    d.tooltipContent =
+                        "This course covers fundamental concepts and techniques in machine learning, including supervised and unsupervised learning, model evaluation, and practical applications. The course emphasizes understanding algorithms, implementing models, and applying ML to real-world problems.";
+                    break;
+                case 16:
+                    d.tooltipContent =
+                        "This Transformers course covers model evolution, encoder-decoder architecture, attention mechanisms, GANs, and key models like BERT and GPT. Students apply concepts in NLP, vision, and time series forecasting projects.";
+                    break;
+                case 17:
+                    d.tooltipContent =
+                        "This course covers fundamental concepts and techniques in machine learning, including supervised and unsupervised learning, model evaluation, and practical applications. The course emphasizes understanding algorithms, implementing models, and applying ML to real-world problems.";
+                    break;
+                case 18:
+                    d.tooltipContent =
+                        "This Data Annotation course covers techniques for text, image, audio, and video labeling, exploring tools, quality control, ethics, and evaluation to prepare students for real-world AI model development.";
+                    break;
+                case 19:
+                    d.tooltipContent =
+                        "This Computer Vision course covers image processing, segmentation, object detection, and face recognition using deep learning techniques. Students gain hands-on experience with CNNs, YOLO, and transfer learning for practical applications.";
+                    break;
+                case 20:
+                    d.tooltipContent =
+                        "This Video Analytics course covers motion detection, video restoration, segmentation, tracking, and deep learning techniques, preparing students with practical skills for surveillance, traffic monitoring, and real-time video analysis applications.";
+                    break;
+                case 21:
+                    d.tooltipContent =
+                        "This SQL course covers database fundamentals, SQL commands, advanced queries, data preparation, and integration with ML tools, equipping students with essential skills for data analysis, engineering, and project implementation.";
+                    break;
+                case 22:
+                    d.tooltipContent =
+                        "This Multimodal AI course covers integrating text, image, and audio data using advanced techniques like attention mechanisms, joint embeddings, and feature extraction, preparing students for real-world AI applications and projects.";
+                    break;
+                case 23:
+                    d.tooltipContent =
+                        "This Deep Learning course covers neural networks, MLPs, optimization techniques, advanced topics, data preparation, model tuning, and validation, empowering students with practical skills to develop and deploy deep learning models effectively.";
+                    break;
+                case 24:
+                    d.tooltipContent =
+                        "This Time Series Forecasting course covers data collection, preprocessing, EDA, forecasting models (ARIMA, LSTM, Prophet), and real-time applications, equipping students with skills to build and evaluate predictive models for business insights.";
+                    break;
+                case 25:
+                    d.tooltipContent =
+                        "This XAI course explores model transparency, interpretability techniques like LIME and SHAP, Graph Neural Networks, AI ethics, industry applications, and future trends, equipping students to build accountable and effective AI systems.";
+                    break;
+                case 26:
+                    d.tooltipContent =
+                        "This course covers algorithms, optimization, model training, and distributed computing, equipping students with skills in gradient descent, parallel computing, and ML deployment for scalable and efficient AI solutions.";
+                    break;
+                case 27:
+                    d.tooltipContent =
+                        "This AI course introduces real-world applications like recommender systems, face recognition, and self-driving cars, while covering ML/DL techniques, model evaluation, and collaborative projects to build practical AI solutions.";
+                    break;
+                case 28:
+                    d.tooltipContent =
+                        "This course equips students with practical skills in ML problem framing, model development, team management, deployment, and monitoring, blending theory with real-world case studies and a hands-on capstone project.";
+                    break;
+                case 29:
+                    d.tooltipContent =
+                        "This AI Research course explores AI history, innovation strategies, problem-solving methods, research documentation, and publication processes, empowering students to conduct impactful research and present findings effectively through practical projects.";
+                    break;
+                case 30:
+                    d.tooltipContent =
+                        "This Computer Vision course covers image processing, segmentation, object detection, and face recognition using deep learning techniques. Students gain hands-on experience with CNNs, YOLO, and transfer learning for practical applications.";
+                    break;
+                case 31:
+                    d.tooltipContent =
+                        "This Computer Vision course covers image processing, segmentation, object detection, and face recognition using deep learning techniques. Students gain hands-on experience with CNNs, YOLO, and transfer learning for practical applications.";
+                    break;
+                case 32:
+                    d.tooltipContent =
+                        "This Computer Graphics course introduces 3D modeling, sculpting, texturing, lighting, rendering, and animation, integrating AI tools for enhanced creativity, procedural modeling, and immersive AR/VR experiences, preparing students for real-world applications.";
+                    break;
+                case 33:
+                    d.tooltipContent = "Applied AI Research";
+                    break;
+                case 34:
+                    d.tooltipContent =
+                        "This course covers fundamental concepts and techniques in machine learning, including supervised and unsupervised learning, model evaluation, and practical applications. The course emphasizes understanding algorithms, implementing models, and applying ML to real-world problems.";
+                    break;
+                case 35:
+                    d.tooltipContent =
+                        "This Video Analytics course covers motion detection, video restoration, segmentation, tracking, and deep learning techniques, preparing students with practical skills for surveillance, traffic monitoring, and real-time video analysis applications.";
+                    break;
+                case 36:
+                    d.tooltipContent =
+                        "Speech processing involves the analysis and manipulation of speech signals to enable tasks like speech recognition, synthesis, and enhancement. It combines techniques from signal processing, machine learning, and linguistics to allow computers to understand and generate human speech.";
+                    break;
+                case 37:
+                    d.tooltipContent = "Applied AI Research";
+                    break;
+                case 38:
+                    d.tooltipContent =
+                        "Explore the future of technology with our AI Software Engineering course - dive into cutting-edge techniques and hands-on projects to master the art of building intelligent systems. Enroll now to unlock your potential and shape the next generation of AI solutions.";
+                    break;
+                case 39:
+                    d.tooltipContent =
+                        "This Transformers course covers model evolution, encoder-decoder architecture, attention mechanisms, GANs, and key models like BERT and GPT. Students apply concepts in NLP, vision, and time series forecasting projects.";
+                    break;
+                case 40:
+                    d.tooltipContent =
+                        "This Generative AI course covers chatbot design, NLU techniques, deep learning models, and ethical considerations, preparing students to build, optimize, and evaluate AI-driven dialogue systems with real-world applications.";
+                    break;
+                case 41:
+                    d.tooltipContent =
+                        "This course introduces Large Language Models (LLMs) and Vision Language Models (VLMs), covering architecture, training, evaluation, applications, and ethical considerations, with hands-on workshops to build, fine-tune, and deploy models effectively.";
+                    break;
+
+                case 42:
+                    d.tooltipContent =
+                        "This Multimodal AI course covers integrating text, image, and audio data using advanced techniques like attention mechanisms, joint embeddings, and feature extraction, preparing students for real-world AI applications and projects.";
+                    break;
+                case 43:
+                    d.tooltipContent = "Applied AI Research";
+                    break;
+                case 44:
+                    d.tooltipContent =
+                        "This Conversational AI course covers chatbot design, NLU techniques, deep learning models, and ethical considerations, preparing students to build, optimize, and evaluate AI-driven dialogue systems with real-world applications.";
+                    break;
+                case 45:
+                    d.tooltipContent =
+                        "Reasoning AI models mimic human thought processes, enabling machines to analyze data and make decisions. Using techniques like symbolic reasoning and neural networks, they solve complex problems across various fields. These models enhance automation in areas such as healthcare, finance, and robotics.";
+                    break;
+                case 46:
+                    d.tooltipContent =
+                        "This Web API course equips students with skills to integrate APIs in AI projects, covering tools, frameworks, error handling, and best practices, culminating in hands-on projects using popular AI APIs.";
+                    break;
+                case 47:
+                    d.tooltipContent =
+                        "This Conversational AI course covers chatbot design, NLU techniques, deep learning models, and ethical considerations, preparing students to build, optimize, and evaluate AI-driven dialogue systems with real-world applications.";
+                    break;
+                case 48:
+                    d.tooltipContent =
+                        "This course, delves into the core concepts and techniques of Natural Language Processing. It covers linguistic theory, machine learning methods, and practical applications, equipping students with the skills to develop and apply NLP systems.";
+                    break;
+                case 49:
+                    d.tooltipContent =
+                        "This NLP course covers language understanding, N-gram modeling, neural networks, POS tagging, topic modeling, parsing, and advanced techniques like transformers and BERT, preparing students for real-world NLP applications.";
+                    break;
+                case 50:
+                    d.tooltipContent =
+                        "This Conversational AI course covers chatbot design, NLU techniques, deep learning models, and ethical considerations, preparing students to build, optimize, and evaluate AI-driven dialogue systems with real-world applications.";
+                    break;
+                case 51:
+                    d.tooltipContent = "Applied AI Research";
+                    break;
+                case 52:
+                    d.tooltipContent =
+                        "This Conversational AI course covers chatbot design, NLU techniques, deep learning models, and ethical considerations, preparing students to build, optimize, and evaluate AI-driven dialogue systems with real-world applications.";
+                    break;
+                case 53:
+                    d.tooltipContent =
+                        "Speech processing involves the analysis and manipulation of speech signals to enable tasks like speech recognition, synthesis, and enhancement. It combines techniques from signal processing, machine learning, and linguistics to allow computers to understand and generate human speech.";
+                    break;
+                case 54:
+                    d.tooltipContent =
+                        "This Speech Processing course covers signals, acoustic features, HMMs, ASR, TTS, neural networks, and end-to-end models, equipping students with practical skills for speech recognition, synthesis, and speaker verification.";
+                    break;
+                case 55:
+                    d.tooltipContent =
+                        "This Conversational AI course covers chatbot design, NLU techniques, deep learning models, and ethical considerations, preparing students to build, optimize, and evaluate AI-driven dialogue systems with real-world applications.";
+                    break;
+                case 56:
+                    d.tooltipContent = "Applied AI Research";
+                    break;
+                case 57:
+                    d.tooltipContent =
+                        "This Conversational AI course covers chatbot design, NLU techniques, deep learning models, and ethical considerations, preparing students to build, optimize, and evaluate AI-driven dialogue systems with real-world applications.";
+                    break;
+                case 58:
+                    d.tooltipContent =
+                        "This Reinforcement Learning course covers RL fundamentals, MDP frameworks, dynamic programming, Monte Carlo methods, deep RL models, and real-world applications, preparing students to build intelligent systems through the ai.prof platform.";
+                    break;
+                case 59:
+                    d.tooltipContent =
+                        "This Conversational AI course covers chatbot design, NLU techniques, deep learning models, and ethical considerations, preparing students to build, optimize, and evaluate AI-driven dialogue systems with real-world applications.";
+                    break;
+                case 60:
+                    d.tooltipContent =
+                        "This Robotics course covers fundamental concepts, ROS programming, self-driving car technologies, and hands-on projects, equipping students with practical skills for building, simulating, and developing advanced robotic systems using cutting-edge tools.";
+                    break;
+                case 61:
+                    d.tooltipContent =
+                        "This Conversational AI course covers chatbot design, NLU techniques, deep learning models, and ethical considerations, preparing students to build, optimize, and evaluate AI-driven dialogue systems with real-world applications.";
+                    break;
+                case 62:
+                    d.tooltipContent =
+                        "This Conversational AI course covers chatbot design, NLU techniques, deep learning models, and ethical considerations, preparing students to build, optimize, and evaluate AI-driven dialogue systems with real-world applications.";
+                    break;
+                case 63:
+                    d.tooltipContent =
+                        "This Conversational AI course covers chatbot design, NLU techniques, deep learning models, and ethical considerations, preparing students to build, optimize, and evaluate AI-driven dialogue systems with real-world applications.";
+                    break;
+                case 64:
+                    d.tooltipContent =
+                        "This Conversational AI course covers chatbot design, NLU techniques, deep learning models, and ethical considerations, preparing students to build, optimize, and evaluate AI-driven dialogue systems with real-world applications.";
+                    break;
+
+                default:
+                    d.tooltipContent = "No description available for this node."; // Default text for other nodes
+                    break;
+            }
+        });
+
+        let highlightedNodes = new Set();
+        const predefinedPaths = {
+            24: [1, 2, 3, 4, 5, 7, 9, 10, 12, 8, 15, 16, 18, 23, 24],
+            17: [1, 2, 3, 4, 5, 8, 15, 16, 17],
+            // 27: [1, 2, 3, 4, 5, 7, 9, 10, 12, 14, 20, 22, 21, 27],
+        };
+
+        function toggleHighlight(selectedId) {
+            const isHighlighted = highlightedNodes.has(selectedId);
+
+            if (isHighlighted) {
+                // Reset to normal state
+                svg.selectAll(".link").attr("class", "link"); // Reset paths
+                svg.selectAll(".node").attr("class", "node"); // Reset nodes
+                svg.selectAll(".label").attr("class", "label"); // Reset labels
+                highlightedNodes.clear();
+            } else {
+                const pathNodes = predefinedPaths[selectedId] || []; // Get predefined path nodes
+                const pathsToHighlight = []; // Store links to highlight
+
+                if (pathNodes.length > 0) {
+                    // If there are predefined paths, gather the links for them
+                    pathNodes.forEach((nodeId, index) => {
+                        if (index < pathNodes.length - 1) {
+                            const link = links.find(
+                                (l) =>
+                                    l.sourceId === nodeId && l.targetId === pathNodes[index + 1]
+                            );
+                            if (link) {
+                                pathsToHighlight.push(link); // Store the link for highlighting
+                            }
+                        }
+                    });
+                } else {
+                    // If no predefined path, collect all incoming links to the selected node
+                    let currentId = selectedId;
+
+                    while (currentId) {
+                        const link = links.find((l) => l.targetId === currentId);
+                        if (link) {
+                            pathsToHighlight.unshift(link); // Add to the start to maintain order
+                            currentId = link.sourceId; // Move to the source
+                        } else {
+                            currentId = null; // Stop if no link is found
+                        }
+                    }
+                }
+
+                // Hide all nodes, links, and labels
+                svg.selectAll(".link").attr("class", "link hidden"); // Hide all paths
+                svg.selectAll(".node").attr("class", "node hidden"); // Hide all nodes
+                svg.selectAll(".label").attr("class", "label hidden"); // Hide all labels
+
+                // Highlight the relevant links and nodes
+                pathsToHighlight.forEach((link) => {
+                    svg
+                        .selectAll(".link")
+                        .filter(
+                            (d) =>
+                                d.sourceId === link.sourceId && d.targetId === link.targetId
+                        )
+                        .attr("class", "link"); // Keep relevant paths visible
+                });
+
+                // Highlight the nodes and their labels along the path
+                const highlightedNodeIds = new Set();
+                pathsToHighlight.forEach((link) => {
+                    highlightedNodeIds.add(link.sourceId);
+                    highlightedNodeIds.add(link.targetId);
+                });
+
+                highlightedNodeIds.forEach((nodeId) => {
+                    svg
+                        .selectAll(".node")
+                        .filter((d) => d.id === nodeId)
+                        .attr("class", "node highlighted"); // Highlight nodes
+
+                    // Highlight labels
+                    svg
+                        .selectAll(".label")
+                        .filter((d) => d.id === nodeId)
+                        .attr("class", "label highlighted-label"); // Use the new class for labels
+                });
+
+                highlightedNodes.add(selectedId);
+            }
+        }
+    </script>
+</body>
+
+</html>

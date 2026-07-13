@@ -384,7 +384,7 @@ class assign_grading_table extends table_sql implements renderable {
         if (!$this->is_downloading() && $this->hasgrade) {
             $columns[] = 'select';
             // The displayed text for the column header. Hidden to assistive technologies.
-            $visibleheader = html_writer::span(get_string('select'), '', ['aria-hidden' => 'true']);
+            $visibleheader = '';
             // The actual accessible name for the column header which provides more context about the column's purpose to
             // screen reader users.
             $bulkactionsselection = html_writer::span(get_string('bulkactionsselection', 'assign'), 'visually-hidden');
@@ -411,7 +411,7 @@ class assign_grading_table extends table_sql implements renderable {
 
             // Fullname.
             $columns[] = 'fullname';
-            $headers[] = get_string('fullname');
+            $headers[] = 'STUDENT';
             // Participant # details if can view real identities.
             if ($this->assignment->is_blind_marking()) {
                 if (!$this->is_downloading()) {
@@ -421,6 +421,9 @@ class assign_grading_table extends table_sql implements renderable {
             }
 
             foreach ($extrauserfields as $extrafield) {
+                if ($extrafield === 'email') {
+                    continue; // Skip email as a separate column, it's merged with fullname.
+                }
                 $columns[] = $extrafield;
                 $headers[] = \core_user\fields::get_display_name($extrafield);
             }
@@ -435,17 +438,10 @@ class assign_grading_table extends table_sql implements renderable {
         $headers[] = get_string('status', 'assign');
 
         if ($hasoverrides || $inrelativedatesmode) {
-            // Allowsubmissionsfromdate.
-            $columns[] = 'allowsubmissionsfromdate';
-            $headers[] = get_string('allowsubmissionsfromdate', 'assign');
-
-            // Duedate.
+            // Duedate (Merged with Open date).
             $columns[] = 'duedate';
-            $headers[] = get_string('duedate', 'assign');
-
-            // Cutoffdate.
-            $columns[] = 'cutoffdate';
-            $headers[] = get_string('cutoffdate', 'assign');
+            $headers[] = 'Due';
+            // Cutoffdate column deliberately omitted for a cleaner table layout.
         }
 
         // Team submission columns.
@@ -487,11 +483,11 @@ class assign_grading_table extends table_sql implements renderable {
 
         // Submission plugins.
         if ($assignment->is_any_submission_plugin_enabled()) {
-            $columns[] = 'timesubmitted';
-            $headers[] = get_string('lastmodifiedsubmission', 'assign');
+            if ($this->is_downloading()) {
+                $columns[] = 'timesubmitted';
+                $headers[] = get_string('lastmodifiedsubmission', 'assign');
 
-            foreach ($this->assignment->get_submission_plugins() as $plugin) {
-                if ($this->is_downloading()) {
+                foreach ($this->assignment->get_submission_plugins() as $plugin) {
                     if ($plugin->is_visible() && $plugin->is_enabled()) {
                         foreach ($plugin->get_editor_fields() as $field => $description) {
                             $index = 'plugin' . count($this->plugincache);
@@ -500,20 +496,28 @@ class assign_grading_table extends table_sql implements renderable {
                             $headers[] = $plugin->get_name();
                         }
                     }
-                } else {
+                }
+            } else {
+                // For web view, we use a single consolidated column named 'timesubmitted' to retain automatic sorting,
+                // but we label it 'SUBMISSION DETAILS' and render everything inside it.
+                $columns[] = 'timesubmitted';
+                $headers[] = 'Submission Details';
+
+                foreach ($this->assignment->get_submission_plugins() as $plugin) {
                     if ($plugin->is_visible() && $plugin->is_enabled() && $plugin->has_user_summary()) {
                         $index = 'plugin' . count($this->plugincache);
                         $this->plugincache[$index] = array($plugin);
-                        $columns[] = $index;
-                        $headers[] = $plugin->get_name();
+                        // We intentionally do NOT add these to $columns, so they don't render as separate table columns.
                     }
                 }
             }
         }
 
         // Time marked.
-        $columns[] = 'timemarked';
-        $headers[] = get_string('lastmodifiedgrade', 'assign');
+        if ($this->is_downloading()) {
+            $columns[] = 'timemarked';
+            $headers[] = get_string('lastmodifiedgrade', 'assign');
+        }
 
         // Feedback plugins.
         foreach ($this->assignment->get_feedback_plugins() as $plugin) {
@@ -530,7 +534,8 @@ class assign_grading_table extends table_sql implements renderable {
                 $index = 'plugin' . count($this->plugincache);
                 $this->plugincache[$index] = array($plugin);
                 $columns[] = $index;
-                $headers[] = $plugin->get_name();
+                // Use a short "Feedback" label instead of the full plugin name ("Feedback comments")
+                $headers[] = 'Feedback';
             }
         }
 
@@ -915,8 +920,23 @@ class assign_grading_table extends table_sql implements renderable {
     public function col_fullname($row) {
         if (!$this->is_downloading()) {
             $courseid = $this->assignment->get_course()->id;
-            $fullname = $this->output->render(\core_user::get_profile_picture($row, null,
-                ['courseid' => $courseid, 'includefullname' => true]));
+            
+            // Get just the picture
+            $picture = $this->output->render(\core_user::get_profile_picture($row, null,
+                ['courseid' => $courseid, 'includefullname' => false]));
+            
+            // Build the name and email wrapper
+            $name = html_writer::tag('strong', $this->assignment->fullname($row), ['style' => 'display: block; color: #1d2125; font-weight: 600; font-size: 15px;']);
+            $email = '';
+            if (isset($row->email)) {
+                $email = html_writer::tag('span', $row->email, ['style' => 'color: #5c6c75; font-size: 0.9em;']);
+            }
+            
+            $details = html_writer::div($name . $email, '', ['style' => 'margin-left: 12px; line-height: 1.3;']);
+            
+            // Combine picture and details using flexbox
+            $fullname = html_writer::div($picture . $details, 'student-profile-wrapper', ['style' => 'display: flex; align-items: center; text-align: left;']);
+            
         } else {
             $fullname = $this->assignment->fullname($row);
         }
@@ -1038,10 +1058,26 @@ class assign_grading_table extends table_sql implements renderable {
             // The contextual menu container.
             $contextualmenucontainer = $this->output->container($this->output->render($menu), 'd-flex');
 
-            return $this->output->container($gradecontainer . $contextualmenucontainer, ['class' => 'd-flex']);
+            $grade_html = $this->output->container($gradecontainer . $contextualmenucontainer, ['class' => 'd-flex justify-content-center']);
+        } else {
+            $grade_html = $displaygrade;
         }
-        // The table data is being downloaded, or the user cannot grade; therefore, only the formatted grade for display
-        // is returned.
+
+        if (!$this->is_downloading()) {
+            // Add Last Modified Grade if it exists.
+            $timemarked_html = '';
+            if ($row->timemarked && $row->grade !== null && $row->grade >= 0) {
+                $time = userdate($row->timemarked);
+                $timemarked_html = '<div class="grade-last-modified" style="font-size: 0.85em; color: #6c757d; border-top: 1px dashed #e1e4e8; padding-top: 4px; margin-top: 6px; width: 100%; white-space: normal;">
+                         <div style="font-size: 0.7rem; font-weight: 700; color: #8a9499; letter-spacing: 0.5px; margin-bottom: 2px; white-space: nowrap;">LAST MODIFIED GRADE</div>
+                         ' . $time . '
+                       </div>';
+            }
+            
+            return '<div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">' . $grade_html . $timemarked_html . '</div>';
+        }
+        
+        // The table data is being downloaded, so only the formatted grade for display is returned.
         return $displaygrade;
     }
 
@@ -1089,17 +1125,109 @@ class assign_grading_table extends table_sql implements renderable {
      * @return string
      */
     public function col_timesubmitted(stdClass $row) {
-        $o = '-';
+        if ($this->is_downloading()) {
+            $o = '-';
+            $group = false;
+            $submission = false;
+            $this->get_group_and_submission($row->id, $group, $submission, -1);
+            if ($submission && $submission->timemodified && $submission->status != ASSIGN_SUBMISSION_STATUS_NEW) {
+                $o = userdate($submission->timemodified);
+            } else if ($row->timesubmitted && $row->status != ASSIGN_SUBMISSION_STATUS_NEW) {
+                $o = userdate($row->timesubmitted);
+            }
+            return $o;
+        }
+        $o = '<div class="submission-details-container" style="display: flex; flex-direction: column; gap: 4px;">';
 
+        // 1. Build the correct submission object for the plugins
+        $submission = false;
+        if ($this->assignment->get_instance()->teamsubmission) {
+            $group = false;
+            $this->get_group_and_submission($row->id, $group, $submission, -1);
+            if ($submission && $submission->status == ASSIGN_SUBMISSION_STATUS_REOPENED) {
+                $this->get_group_and_submission($row->id, $group, $submission, $submission->attemptnumber-1);
+            }
+        } else if ($row->submissionid) {
+            if ($row->status == ASSIGN_SUBMISSION_STATUS_REOPENED) {
+                $submission = $this->assignment->get_user_submission($row->userid, false, $row->attemptnumber - 1);
+            } else {
+                $submission = new stdClass();
+                $submission->id = $row->submissionid;
+                $submission->timecreated = $row->firstsubmission;
+                $submission->timemodified = $row->timesubmitted;
+                $submission->assignment = $this->assignment->get_instance()->id;
+                $submission->userid = $row->userid;
+                $submission->attemptnumber = $row->attemptnumber;
+            }
+        }
+
+        // 2. Render Submission Plugins (except comments)
+        $comments_html = '';
+        if ($submission) {
+            foreach ($this->plugincache as $index => $plugininfo) {
+                $plugin = $plugininfo[0];
+                if ($plugin->get_subtype() !== 'assignsubmission') {
+                    continue; // Only process submission plugins here
+                }
+
+                $showviewlink = false;
+                $pluginoutput = $plugin->view_summary($submission, $showviewlink);
+                if (empty($pluginoutput)) {
+                    continue;
+                }
+
+                if ($plugin->get_type() === 'comments') {
+                    $comments_html = $pluginoutput;
+                } else {
+                    $o .= '<div class="plugin-item ' . $plugin->get_type() . '">' . $pluginoutput . '</div>';
+                }
+            }
+        }
+
+        // 2. Render Comments Modal if comments exist
+        if (!empty($comments_html)) {
+            $modalid = 'comments_modal_' . $row->id;
+            
+            $o .= '<button type="button" class="btn btn-outline-primary btn-sm" data-toggle="modal" data-bs-toggle="modal" data-target="#' . $modalid . '" data-bs-target="#' . $modalid . '" style="white-space: nowrap;">
+                     View Comments
+                   </button>';
+            
+            $o .= '<div class="modal fade submission-comments-modal" id="' . $modalid . '" tabindex="-1" role="dialog" aria-hidden="true">
+                     <div class="modal-dialog modal-dialog-centered" role="document" style="max-width: 600px;">
+                       <div class="modal-content" style="border-radius: 12px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.1); overflow: hidden;">
+                         <div class="modal-header" style="background-color: #f8f9fa; border-bottom: 1px solid #e1e4e8; border-left: 4px solid #4f46e5; padding: 15px 20px;">
+                           <h5 class="modal-title" style="font-weight: 600; color: #1d2125; margin: 0; font-size: 1.1rem;">Submission Comments</h5>
+                           <button type="button" class="close btn-close" data-dismiss="modal" data-bs-dismiss="modal" aria-label="Close" style="background: none; border: none; font-size: 1.5rem; line-height: 1; color: #5c6c75;">
+                             <span aria-hidden="true">&times;</span>
+                           </button>
+                         </div>
+                         <div class="modal-body custom-comments-body" style="padding: 20px;">
+                           ' . $comments_html . '
+                         </div>
+                       </div>
+                     </div>
+                   </div>';
+        }
+
+        // 3. Render Last Modified Time
         $group = false;
         $submission = false;
         $this->get_group_and_submission($row->id, $group, $submission, -1);
+        $time = '-';
         if ($submission && $submission->timemodified && $submission->status != ASSIGN_SUBMISSION_STATUS_NEW) {
-            $o = userdate($submission->timemodified);
+            $time = userdate($submission->timemodified);
         } else if ($row->timesubmitted && $row->status != ASSIGN_SUBMISSION_STATUS_NEW) {
-            $o = userdate($row->timesubmitted);
+            $time = userdate($row->timesubmitted);
+        }
+        
+        if ($time !== '-') {
+            $o .= '<div class="submission-last-modified" style="font-size: 0.85em; color: #6c757d; border-top: 1px dashed #e1e4e8; padding-top: 4px; margin-top: 2px;">
+                     <div style="font-size: 0.7rem; font-weight: 700; color: #8a9499; letter-spacing: 0.5px; margin-bottom: 2px;">LAST MODIFIED</div>
+                     ' . $time . '
+                   </div>';
         }
 
+        $o .= '</div>';
         return $o;
     }
 
@@ -1349,10 +1477,39 @@ class assign_grading_table extends table_sql implements renderable {
     public function col_duedate(stdClass $row) {
         $o = '';
 
-        if ($row->duedate) {
-            $userdate = userdate($row->duedate);
-            $o = ($this->is_downloading()) ? $userdate : $this->output->container($userdate, 'duedate');
+        if ($this->is_downloading()) {
+            if (!empty($row->allowsubmissionsfromdate)) {
+                $o .= 'Open: ' . userdate($row->allowsubmissionsfromdate) . ' - ';
+            }
+            if (!empty($row->duedate)) {
+                $o .= 'Due: ' . userdate($row->duedate);
+            }
+            return $o;
         }
+
+        $o .= '<div style="min-width: 130px; text-align: left;">';
+        
+        if (!empty($row->allowsubmissionsfromdate)) {
+            $open_date = userdate($row->allowsubmissionsfromdate, '%a, %d %b %Y');
+            $open_time = userdate($row->allowsubmissionsfromdate, '%I:%M %p');
+            $o .= '<div style="margin-bottom: 8px; border-bottom: 1px solid #e1e4e8; padding-bottom: 8px;">';
+            $o .= '<div style="font-size: 0.75rem; font-weight: 700; color: #5c6c75; letter-spacing: 0.5px; margin-bottom: 4px;">OPEN</div>';
+            $o .= '<div style="font-weight: 600; color: #1d2125; line-height: 1.2;">' . $open_date . '</div>';
+            $o .= '<div style="color: #5c6c75; font-size: 0.9rem;">' . $open_time . '</div>';
+            $o .= '</div>';
+        }
+
+        if (!empty($row->duedate)) {
+            $due_date = userdate($row->duedate, '%a, %d %b %Y');
+            $due_time = userdate($row->duedate, '%I:%M %p');
+            $o .= '<div>';
+            $o .= '<div style="font-size: 0.75rem; font-weight: 700; color: #5c6c75; letter-spacing: 0.5px; margin-bottom: 4px;">DUE</div>';
+            $o .= '<div style="font-weight: 600; color: #1d2125; line-height: 1.2;">' . $due_date . '</div>';
+            $o .= '<div style="color: #5c6c75; font-size: 0.9rem;">' . $due_time . '</div>';
+            $o .= '</div>';
+        }
+
+        $o .= '</div>';
 
         return $o;
     }
@@ -1945,8 +2102,6 @@ class assign_grading_table extends table_sql implements renderable {
         // Render the dynamic table header.
         echo $this->get_dynamic_table_html_start();
 
-        // Render button to allow user to reset table preferences.
-        echo $this->render_reset_button();
 
         // Do we need to print initial bars?
         $this->print_initials_bar();

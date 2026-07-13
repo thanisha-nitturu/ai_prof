@@ -1,0 +1,96 @@
+--- /var/www/html/moodle/grade/report/grader/lib.php
++++ /var/www/html/moodle/grade/report/grader/lib.php
+@@ -658,26 +658,35 @@
+ 
+         $colspan = 1 + count($extrafields);
+ 
+-        $levels = count($this->gtree->levels) - 1;
++        // Calculate actual levels to match right_rows exactly
++        $actual_levels = [];
++        foreach ($this->gtree->get_levels() as $level_row) {
++            $has_content = false;
++            foreach ($level_row as $element) {
++                $type = $element['type'];
++                if ($type === 'category') {
++                    if (grade_tree::can_output_item($element)) {
++                        $has_content = true;
++                        break;
++                    }
++                } else if ($type !== 'filler' && $type !== 'fillerfirst' && $type !== 'fillerlast') {
++                    $has_content = true;
++                    break;
++                }
++            }
++            if ($has_content) {
++                $actual_levels[] = $level_row;
++            }
++        }
++        $levels = count($actual_levels) - 1;
+ 
+-        $fillercell = new html_table_cell();
+-        $fillercell->header = true;
+-        $fillercell->attributes['scope'] = 'col';
+-        $fillercell->attributes['class'] = 'cell topleft';
+-        $fillercell->text = html_writer::span(get_string('participants'), 'accesshide');
+-        $fillercell->colspan = $colspan;
+-        $fillercell->rowspan = $levels;
+-        $row = new html_table_row(array($fillercell));
+-        if ($levels >= 1) { // Do not display the filler cell if there are no levels as there will be nothing else in the row.
+-            $rows[] = $row;
+-        }
+-
+-        for ($i = 1; $i < $levels; $i++) {
+-            $row = new html_table_row();
+-            $rows[] = $row;
+-        }
+-
+         $headerrow = new html_table_row();
+         $headerrow->attributes['class'] = 'heading';
+ 
+@@ -686,13 +695,14 @@
+         // when horizontally scrolling through the table contents (most noticeable when in RTL mode).
+         // Therefore, add slight padding on the left or right when using RTL mode.
+-        $studentheader->attributes['class'] = "header ps-3";
++        $studentheader->attributes['class'] = "header ps-3 align-middle";
+         $studentheader->scope = 'col';
+         $studentheader->header = true;
+         $studentheader->id = 'studentheader';
++        $studentheader->rowspan = $levels + 1;
+         $element = ['type' => 'userfield', 'name' => 'fullname'];
+         $studentheader->text = $arrows['studentname'] .
+             $this->gtree->get_cell_action_menu($element, 'gradeitem', $this->gpr, $this->baseurl);
+         $headerrow->cells[] = $studentheader;
+ 
+         foreach ($extrafields as $field) {
+             $fieldheader = new html_table_cell();
+-            $fieldheader->attributes['class'] = 'userfield user' . $field;
++            $fieldheader->attributes['class'] = 'userfield user' . $field . ' align-middle';
+             $fieldheader->attributes['data-col'] = $field;
+             $fieldheader->scope = 'col';
+             $fieldheader->header = true;
++            $fieldheader->rowspan = $levels + 1;
+ 
+             $collapsecontext = [
+                 'field' => $field,
+                 'name' => \core_user\fields::get_display_name($field),
+             ];
+ 
+             $collapsedicon = $OUTPUT->render_from_template('gradereport_grader/collapse/icon', $collapsecontext);
+             // Need to wrap the button into a div with our hooking element for user items, gradeitems already have this.
+             $collapsedicon = html_writer::div($collapsedicon, 'd-none', ['data-collapse' => 'expandbutton']);
+ 
+             $element = ['type' => 'userfield', 'name' => $field];
+             $fieldheader->text = $arrows[$field] .
+                 $this->gtree->get_cell_action_menu($element, 'gradeitem', $this->gpr, $this->baseurl) . $collapsedicon;
+             $headerrow->cells[] = $fieldheader;
+         }
+ 
+         $rows[] = $headerrow;
++
++        for ($i = 0; $i < $levels; $i++) {
++            $emptyrow = new html_table_row();
++            $emptyrow->attributes['class'] = 'heading';
++            $rows[] = $emptyrow;
++        }
+ 
+         $suspendedstring = null;

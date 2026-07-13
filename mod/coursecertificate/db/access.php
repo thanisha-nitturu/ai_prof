@@ -38,6 +38,7 @@ $capabilities = [
         ],
     ],
     'mod/coursecertificate:viewreport' => [
+        'riskbitmask' => RISK_PERSONAL,
         'captype' => 'read',
         'contextlevel' => CONTEXT_MODULE,
         'archetypes' => [
@@ -47,6 +48,7 @@ $capabilities = [
         ],
     ],
     'mod/coursecertificate:addinstance' => [
+        'riskbitmask' => RISK_XSS,
         'captype' => 'write',
         'contextlevel' => CONTEXT_COURSE,
         'archetypes' => [

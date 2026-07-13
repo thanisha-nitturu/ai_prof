@@ -36,3 +36,16 @@ local/veda/runs_samples/
 *.tmp
 *.bak
 *.swp
+
+### Config Backups ###
+config.php.backup_*
+config.php.save*
+*.backup
+
+### Local Dev Overrides ###
+docker-compose.override.yml
+docker-compose.local.yml
+
+### Moodledata (any path variation) ###
+moodledata-*/
+/var/www/moodledata*/

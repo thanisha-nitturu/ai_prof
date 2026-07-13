@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Coding Playground — Project Folder Structure</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:#0a0e1a;color:#e2e8f0;min-height:100vh}
+.page{max-width:1300px;margin:0 auto;padding:32px 20px 80px}
+h1{text-align:center;font-size:1.8rem;font-weight:900;background:linear-gradient(135deg,#818cf8,#38bdf8,#34d399);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-1px;margin-bottom:4px}
+.sub{text-align:center;font-size:.65rem;font-weight:700;color:#475569;letter-spacing:3px;text-transform:uppercase;margin-bottom:40px}
+/* Tree */
+.tree{position:relative;padding-left:0}
+.node{position:relative;margin-bottom:6px}
+.node-head{display:flex;align-items:center;gap:8px;padding:8px 14px;border-radius:10px;cursor:pointer;transition:background .15s}
+.node-head:hover{background:#1e293b}
+.node-icon{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:.8rem;flex-shrink:0}
+.node-name{font-family:'JetBrains Mono',monospace;font-size:.75rem;font-weight:700;color:#f1f5f9}
+.node-desc{font-size:.6rem;color:#64748b;margin-left:8px;font-weight:500}
+.node-tag{font-size:.5rem;font-weight:700;padding:2px 7px;border-radius:5px;letter-spacing:.5px;text-transform:uppercase;margin-left:auto;flex-shrink:0}
+/* Colors */
+.ic-root{background:linear-gradient(135deg,#6366f1,#8b5cf6)}
+.ic-fe{background:linear-gradient(135deg,#06b6d4,#0ea5e9)}
+.ic-be{background:linear-gradient(135deg,#10b981,#34d399)}
+.ic-dir{background:#1e293b;border:1px solid #334155}
+.ic-file{background:#0f172a;border:1px solid #1e293b}
+.ic-cfg{background:linear-gradient(135deg,#f59e0b,#fbbf24)}
+.ic-test{background:linear-gradient(135deg,#f43f5e,#fb7185)}
+.ic-data{background:linear-gradient(135deg,#ec4899,#f472b6)}
+.tg-fe{background:#083344;color:#22d3ee}
+.tg-be{background:#052e16;color:#4ade80}
+.tg-cfg{background:#451a03;color:#fbbf24}
+.tg-file{background:#1e293b;color:#94a3b8}
+.tg-test{background:#3f1219;color:#fda4af}
+.tg-data{background:#500724;color:#f9a8d4}
+/* Children */
+.children{margin-left:20px;padding-left:20px;border-left:2px solid #1e293b;display:none}
+.children.open{display:block}
+.node-head .chevron{transition:transform .2s;color:#475569;font-size:.7rem;width:16px;text-align:center;flex-shrink:0}
+.node-head .chevron.rotated{transform:rotate(90deg)}
+/* Separator */
+.sep{height:1px;background:#1e293b;margin:16px 0 16px 0}
+.sec-label{font-size:.55rem;font-weight:800;letter-spacing:3px;text-transform:uppercase;color:#334155;margin-bottom:8px;padding-left:14px}
+footer{text-align:center;margin-top:40px;padding-top:20px;border-top:1px solid #1e293b;font-size:.55rem;color:#334155;font-weight:600;letter-spacing:2px;text-transform:uppercase}
+</style>
+</head>
+<body>
+<div class="page">
+<h1>📂 Coding Playground</h1>
+<p class="sub">Project Folder Structure · Block Diagram</p>
+
+<div class="tree" id="tree"></div>
+
+<footer>Coding Playground · DevLearn Platform · HitLoop AI · May 2026</footer>
+</div>
+
+<script>
+const data = {
+  name: "coding_playground/", desc: "Project Root", icon: "🏠", ic: "ic-root", tag: "Root", tc: "",
+  children: [
+    { name: "README.md", desc: "Project overview, tech stack, setup guide", icon: "📄", ic: "ic-file", tag: "Docs", tc: "tg-file" },
+    { name: ".gitignore", desc: "Git ignore rules", icon: "⚙️", ic: "ic-file", tag: "Config", tc: "tg-cfg" },
+    {
+      name: "app/", desc: "Frontend — React + TypeScript + Vite SPA", icon: "🖥️", ic: "ic-fe", tag: "Frontend", tc: "tg-fe",
+      children: [
+        { name: "package.json", desc: "Dependencies, npm scripts (dev, build, test)", icon: "📦", ic: "ic-cfg", tag: "Config", tc: "tg-cfg" },
+        { name: "index.html", desc: "HTML entry — mounts React to #root div", icon: "🌐", ic: "ic-file", tag: "Entry", tc: "tg-fe" },
+        { name: "vite.config.ts", desc: "Dev server (port 8080), @ alias, SWC plugin", icon: "⚡", ic: "ic-cfg", tag: "Build", tc: "tg-cfg" },
+        { name: "vite.config.moodle.ts", desc: "Moodle build — deterministic filenames, dist-moodle/", icon: "🎓", ic: "ic-cfg", tag: "Moodle", tc: "tg-cfg" },
+        { name: "tailwind.config.ts", desc: "Tailwind theme, colors, animations, fonts", icon: "🎨", ic: "ic-cfg", tag: "Style", tc: "tg-cfg" },
+        { name: "tsconfig.json", desc: "Root TypeScript config (references app + node)", icon: "📘", ic: "ic-cfg", tag: "Config", tc: "tg-cfg" },
+        { name: "eslint.config.js", desc: "Linting rules — React hooks + refresh plugins", icon: "🔍", ic: "ic-cfg", tag: "Config", tc: "tg-cfg" },
+        { name: "vitest.config.ts", desc: "Unit test config (jsdom environment)", icon: "🧪", ic: "ic-cfg", tag: "Test", tc: "tg-test" },
+        { name: "postcss.config.js", desc: "PostCSS — enables Tailwind + Autoprefixer", icon: "⚙️", ic: "ic-cfg", tag: "Config", tc: "tg-cfg" },
+        { name: "components.json", desc: "Shadcn UI CLI configuration", icon: "⚙️", ic: "ic-cfg", tag: "Config", tc: "tg-cfg" },
+        {
+          name: "src/", desc: "Application source code", icon: "📁", ic: "ic-fe", tag: "Source", tc: "tg-fe",
+          children: [
+            { name: "main.tsx", desc: "React entry — renders <App/> into #root", icon: "🚀", ic: "ic-file", tag: "Entry", tc: "tg-fe" },
+            { name: "App.tsx", desc: "Root — QueryClient, HashRouter, routes, UserSync", icon: "⚛️", ic: "ic-file", tag: "Core", tc: "tg-fe" },
+            { name: "App.css", desc: "Minimal app-level CSS overrides", icon: "🎨", ic: "ic-file", tag: "Style", tc: "tg-fe" },
+            { name: "index.css", desc: "Global styles — Tailwind base, tokens, scrollbars", icon: "🎨", ic: "ic-file", tag: "Style", tc: "tg-fe" },
+            {
+              name: "pages/", desc: "Route-level page components (10 pages)", icon: "📄", ic: "ic-dir", tag: "Pages", tc: "tg-fe",
+              children: [
+                { name: "Index.tsx", desc: "Main 3-panel coding workspace (Description|Editor|Console)", icon: "💻", ic: "ic-file", tag: "Workspace", tc: "tg-fe" },
+                { name: "Login.tsx", desc: "Auth page — username/password, role-based redirect", icon: "🔐", ic: "ic-file", tag: "Auth", tc: "tg-fe" },
+                { name: "StudentCourses.tsx", desc: "Student dashboard — enrolled courses & modules", icon: "📚", ic: "ic-file", tag: "Student", tc: "tg-fe" },
+                { name: "Playgrounds.tsx", desc: "Multi-tab hub — snippets, companies, daily challenges", icon: "🎮", ic: "ic-file", tag: "Hub", tc: "tg-fe" },
+                { name: "PlainPlayground.tsx", desc: "Free-form code editor with stdin & auto-save", icon: "✏️", ic: "ic-file", tag: "Editor", tc: "tg-fe" },
+                { name: "CompanyQuestions.tsx", desc: "Company question set (Google, Amazon, etc.)", icon: "🏢", ic: "ic-file", tag: "Company", tc: "tg-fe" },
+                { name: "NotFound.tsx", desc: "404 page with link back home", icon: "❌", ic: "ic-file", tag: "Error", tc: "tg-fe" },
+                {
+                  name: "teacher/", desc: "Teacher dashboard pages", icon: "👨‍🏫", ic: "ic-dir", tag: "Teacher", tc: "tg-fe",
+                  children: [
+                    { name: "Questions.tsx", desc: "Question bank CRUD — search, filter, create/edit/delete", icon: "📝", ic: "ic-file", tag: "CRUD", tc: "tg-fe" },
+                    { name: "Courses.tsx", desc: "Course & module management with question linking", icon: "📚", ic: "ic-file", tag: "CRUD", tc: "tg-fe" },
+                    { name: "Submissions.tsx", desc: "Review all student submissions with filters", icon: "📊", ic: "ic-file", tag: "Review", tc: "tg-fe" }
+                  ]
+                }
+              ]
+            },
+            {
+              name: "components/", desc: "Reusable React components", icon: "🧩", ic: "ic-dir", tag: "Components", tc: "tg-fe",
+              children: [
+                { name: "NavLink.tsx", desc: "Router NavLink wrapper with active class support", icon: "🔗", ic: "ic-file", tag: "Nav", tc: "tg-fe" },
+                {
+                  name: "workspace/", desc: "Coding workspace building blocks (6 components)", icon: "🛠️", ic: "ic-dir", tag: "Workspace", tc: "tg-fe",
+                  children: [
+                    { name: "CodeEditor.tsx", desc: "Monaco Editor — 35+ languages, minimap, themes", icon: "💻", ic: "ic-file", tag: "Editor", tc: "tg-fe" },
+                    { name: "ActionBar.tsx", desc: "Language selector dropdown + Run/Submit buttons", icon: "▶️", ic: "ic-file", tag: "Controls", tc: "tg-fe" },
+                    { name: "ConsolePane.tsx", desc: "Test results — tabbed cases, status badges, SQL tables", icon: "📟", ic: "ic-file", tag: "Output", tc: "tg-fe" },
+                    { name: "DescriptionPane.tsx", desc: "Question display — markdown, examples, constraints", icon: "📖", ic: "ic-file", tag: "Display", tc: "tg-fe" },
+                    { name: "SubmissionsPane.tsx", desc: "Submission history — expand details, restore code", icon: "📋", ic: "ic-file", tag: "History", tc: "tg-fe" },
+                    { name: "TabIndicator.tsx", desc: "Animated tab underline indicator", icon: "〰️", ic: "ic-file", tag: "UI", tc: "tg-fe" }
+                  ]
+                },
+                {
+                  name: "modals/", desc: "Dialog/modal components", icon: "💬", ic: "ic-dir", tag: "Modals", tc: "tg-fe",
+                  children: [
+                    { name: "CreateQuestionModal.tsx", desc: "Full question builder — form, test cases, JSON import", icon: "➕", ic: "ic-file", tag: "Form", tc: "tg-fe" }
+                  ]
+                },
+                {
+                  name: "teacher/", desc: "Teacher-specific components", icon: "👨‍🏫", ic: "ic-dir", tag: "Teacher", tc: "tg-fe",
+                  children: [
+                    { name: "TeacherSidebar.tsx", desc: "Collapsible nav sidebar — role-aware, logout", icon: "📌", ic: "ic-file", tag: "Nav", tc: "tg-fe" }
+                  ]
+                },
+                { name: "ui/ (49 files)", desc: "Shadcn/Radix UI primitives — button, dialog, card, tabs, toast, table, etc.", icon: "🎨", ic: "ic-dir", tag: "49 Components", tc: "tg-fe" }
+              ]
+            },
+            {
+              name: "hooks/", desc: "Custom React hooks (5 hooks)", icon: "🪝", ic: "ic-dir", tag: "Hooks", tc: "tg-fe",
+              children: [
+                { name: "useApi.ts", desc: "TanStack Query wrappers for all API calls", icon: "🔄", ic: "ic-file", tag: "Data", tc: "tg-fe" },
+                { name: "useMoodleContext.ts", desc: "Reads window.CODINGPLAYGROUND from Moodle", icon: "🎓", ic: "ic-file", tag: "Moodle", tc: "tg-fe" },
+                { name: "useLocalStorage.ts", desc: "Typed localStorage read/write hook", icon: "💾", ic: "ic-file", tag: "State", tc: "tg-fe" },
+                { name: "use-mobile.tsx", desc: "Viewport mobile detection (< 768px)", icon: "📱", ic: "ic-file", tag: "Responsive", tc: "tg-fe" },
+                { name: "use-toast.ts", desc: "Toast notification state management", icon: "🔔", ic: "ic-file", tag: "UI", tc: "tg-fe" }
+              ]
+            },
+            {
+              name: "lib/", desc: "Shared libraries & utilities", icon: "📚", ic: "ic-dir", tag: "Lib", tc: "tg-fe",
+              children: [
+                { name: "api.ts", desc: "Centralized fetch client — all endpoints, Moodle-aware", icon: "🌐", ic: "ic-file", tag: "HTTP", tc: "tg-fe" },
+                { name: "utils.ts", desc: "cn() utility — clsx + tailwind-merge", icon: "🔧", ic: "ic-file", tag: "Util", tc: "tg-fe" }
+              ]
+            },
+            {
+              name: "data/", desc: "Type definitions & mock data", icon: "📊", ic: "ic-data", tag: "Data", tc: "tg-data",
+              children: [
+                { name: "mockData.ts", desc: "Interfaces (Question, Submission), boilerplate templates, sample data", icon: "📋", ic: "ic-file", tag: "Types", tc: "tg-data" },
+                { name: "teacherMockData.ts", desc: "Teacher interfaces (Course, Module), sample courses & submissions", icon: "📋", ic: "ic-file", tag: "Types", tc: "tg-data" }
+              ]
+            },
+            {
+              name: "layouts/", desc: "Page layout shells", icon: "📐", ic: "ic-dir", tag: "Layout", tc: "tg-fe",
+              children: [
+                { name: "TeacherLayout.tsx", desc: "Teacher shell — top tab nav, role-aware, <Outlet/>", icon: "🏗️", ic: "ic-file", tag: "Shell", tc: "tg-fe" }
+              ]
+            },
+            {
+              name: "test/", desc: "Unit test files", icon: "🧪", ic: "ic-test", tag: "Test", tc: "tg-test",
+              children: [
+                { name: "setup.ts", desc: "Test setup — jest-dom matchers for Vitest", icon: "⚙️", ic: "ic-file", tag: "Setup", tc: "tg-test" },
+                { name: "example.test.ts", desc: "Sanity test (1+1=2)", icon: "✅", ic: "ic-file", tag: "Test", tc: "tg-test" }
+              ]
+            }
+          ]
+        },
+        { name: "public/", desc: "Static assets — favicon, logo, robots.txt, images", icon: "🖼️", ic: "ic-dir", tag: "Static", tc: "tg-file" },
+        { name: "images/", desc: "Company logos — Google, Apple, Facebook, Microsoft, Amazon", icon: "🏢", ic: "ic-dir", tag: "Logos", tc: "tg-file" },
+        { name: "dist/", desc: "Standard Vite production build output", icon: "📦", ic: "ic-dir", tag: "Build", tc: "tg-cfg" },
+        { name: "dist-moodle/", desc: "Moodle-specific build (deterministic filenames)", icon: "🎓", ic: "ic-dir", tag: "Moodle", tc: "tg-cfg" },
+        { name: "assets/", desc: "Pre-built bundle for Moodle (index.js + index.css)", icon: "📦", ic: "ic-dir", tag: "Bundle", tc: "tg-cfg" }
+      ]
+    },
+    {
+      name: "server/", desc: "Backend — FastAPI + MongoDB + Judge0", icon: "⚙️", ic: "ic-be", tag: "Backend", tc: "tg-be",
+      children: [
+        { name: ".env", desc: "MongoDB credentials, host, DB name, CORS origins", icon: "🔑", ic: "ic-cfg", tag: "Secrets", tc: "tg-cfg" },
+        { name: "requirements.txt", desc: "Python deps — fastapi, motor, pydantic, httpx, bcrypt", icon: "📦", ic: "ic-file", tag: "Deps", tc: "tg-be" },
+        { name: "seed.py", desc: "Full DB seeder — questions, courses, companies, users", icon: "🌱", ic: "ic-file", tag: "Seed", tc: "tg-be" },
+        { name: "seed_companies.py", desc: "Company-only seeder with local image paths", icon: "🏢", ic: "ic-file", tag: "Seed", tc: "tg-be" },
+        {
+          name: "app/", desc: "Main FastAPI application", icon: "🚀", ic: "ic-be", tag: "App", tc: "tg-be",
+          children: [
+            { name: "main.py", desc: "FastAPI entry — CORS, static files, API router mount", icon: "🏁", ic: "ic-file", tag: "Entry", tc: "tg-be" },
+            {
+              name: "core/", desc: "Configuration & security", icon: "🔧", ic: "ic-dir", tag: "Core", tc: "tg-be",
+              children: [
+                { name: "config.py", desc: "Pydantic Settings — MongoDB URL assembly, CORS parsing", icon: "⚙️", ic: "ic-file", tag: "Config", tc: "tg-be" },
+                { name: "security.py", desc: "bcrypt password hashing & verification", icon: "🔐", ic: "ic-file", tag: "Auth", tc: "tg-be" }
+              ]
+            },
+            {
+              name: "db/", desc: "Database connection", icon: "🗄️", ic: "ic-dir", tag: "DB", tc: "tg-be",
+              children: [
+                { name: "mongodb.py", desc: "Async Motor client singleton, get_database() dependency", icon: "🍃", ic: "ic-file", tag: "Mongo", tc: "tg-be" }
+              ]
+            },
+            {
+              name: "schemas/", desc: "Pydantic data models (20 schemas)", icon: "📐", ic: "ic-dir", tag: "Schemas", tc: "tg-be",
+              children: [
+                { name: "schemas.py", desc: "All models — Question, Course, Submission, User, Snippet, Company, DailyChallenge, TestCase, Result, PlaygroundRun", icon: "📋", ic: "ic-file", tag: "20 Models", tc: "tg-be" }
+              ]
+            },
+            { name: "models/", desc: "Empty — uses Pydantic schemas directly (MongoDB pattern)", icon: "📂", ic: "ic-dir", tag: "Empty", tc: "tg-file" },
+            {
+              name: "api/api_v1/", desc: "Versioned API router", icon: "🌐", ic: "ic-dir", tag: "API v1", tc: "tg-be",
+              children: [
+                { name: "api.py", desc: "Central router — aggregates 8 endpoint routers", icon: "🔀", ic: "ic-file", tag: "Router", tc: "tg-be" },
+                {
+                  name: "endpoints/", desc: "REST endpoint handlers (8 files, 25 endpoints)", icon: "📡", ic: "ic-dir", tag: "Endpoints", tc: "tg-be",
+                  children: [
+                    { name: "questions.py", desc: "GET/ POST/ PUT/ DELETE — question CRUD", icon: "📝", ic: "ic-file", tag: "CRUD", tc: "tg-be" },
+                    { name: "courses.py", desc: "GET/ POST/ PUT/ DELETE — course management", icon: "📚", ic: "ic-file", tag: "CRUD", tc: "tg-be" },
+                    { name: "submissions.py", desc: "Run & Submit via Judge0 — batch, poll, compare (428 lines)", icon: "▶️", ic: "ic-file", tag: "Judge0", tc: "tg-be" },
+                    { name: "auth.py", desc: "POST /login — bcrypt verify, GET /me", icon: "🔐", ic: "ic-file", tag: "Auth", tc: "tg-be" },
+                    { name: "users.py", desc: "POST /sync-moodle — auto-create, role sync, enroll", icon: "👤", ic: "ic-file", tag: "Moodle", tc: "tg-be" },
+                    { name: "snippets.py", desc: "User code snippets CRUD with timestamps", icon: "💾", ic: "ic-file", tag: "CRUD", tc: "tg-be" },
+                    { name: "companies.py", desc: "Company profiles CRUD with linked questions", icon: "🏢", ic: "ic-file", tag: "CRUD", tc: "tg-be" },
+                    { name: "daily_challenges.py", desc: "Daily challenge create/list/delete", icon: "⚡", ic: "ic-file", tag: "CRUD", tc: "tg-be" }
+                  ]
+                }
+              ]
+            },
+            { name: "images/", desc: "Static company logos served at /images/", icon: "🖼️", ic: "ic-dir", tag: "Static", tc: "tg-file" }
+          ]
+        },
+        {
+          name: "— Load Tests —", desc: "Performance & benchmark scripts", icon: "🧪", ic: "ic-test", tag: "Testing", tc: "tg-test",
+          children: [
+            { name: "benchmark_users.py", desc: "10-90 concurrent users benchmark", icon: "📊", ic: "ic-file", tag: "Bench", tc: "tg-test" },
+            { name: "load_test_1000.py", desc: "1000 test cases single batch", icon: "🔥", ic: "ic-file", tag: "Load", tc: "tg-test" },
+            { name: "load_test_100_10.py", desc: "100 users × 10 cases", icon: "🔥", ic: "ic-file", tag: "Load", tc: "tg-test" },
+            { name: "load_test_50_10.py", desc: "50 users × 10 cases", icon: "🔥", ic: "ic-file", tag: "Load", tc: "tg-test" },
+            { name: "Other scripts", desc: "wildcard tests, question fetchers, exporters", icon: "📜", ic: "ic-file", tag: "Util", tc: "tg-test" }
+          ]
+        }
+      ]
+    }
+  ]
+};
+
+function renderNode(node, container) {
+  const el = document.createElement('div');
+  el.className = 'node';
+  const hasChildren = node.children && node.children.length > 0;
+  const head = document.createElement('div');
+  head.className = 'node-head';
+  head.innerHTML = `
+    ${hasChildren ? '<span class="chevron">▶</span>' : '<span class="chevron" style="opacity:.2">•</span>'}
+    <div class="node-icon ${node.ic}">${node.icon}</div>
+    <span class="node-name">${node.name}</span>
+    <span class="node-desc">${node.desc}</span>
+    ${node.tag ? `<span class="node-tag ${node.tc}">${node.tag}</span>` : ''}
+  `;
+  el.appendChild(head);
+  if (hasChildren) {
+    const ch = document.createElement('div');
+    ch.className = 'children';
+    node.children.forEach(c => renderNode(c, ch));
+    el.appendChild(ch);
+    head.addEventListener('click', () => {
+      const open = ch.classList.toggle('open');
+      head.querySelector('.chevron').classList.toggle('rotated', open);
+    });
+  }
+  container.appendChild(el);
+}
+
+const tree = document.getElementById('tree');
+renderNode(data, tree);
+// Auto-expand root
+tree.querySelector('.children').classList.add('open');
+tree.querySelector('.chevron').classList.add('rotated');
+</script>
+</body>
+</html>

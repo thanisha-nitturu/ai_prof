@@ -282,6 +282,21 @@ class local_create_sections_external extends external_api {
         }
         $tmpfile = $_FILES['filecontent']['tmp_name'];
 
+        // Sanitize the filename
+        $filename = clean_filename($params['filename']);
+
+        // Block double-extensions (prevent shell.php.png, exploit.php.html, etc.)
+        if (preg_match('/\.(php|phtml|php3|php4|php5|py|pl|sh|bat|exe|cmd|js|html|htm)\./i', $filename)) {
+            throw new moodle_exception('invalidfiletype', 'error');
+        }
+
+        // Restrict extensions to only allow expected media and document types
+        $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+        $allowed_extensions = ['mp3', 'wav', 'ogg', 'mp4', 'webm', 'pdf', 'png', 'jpg', 'jpeg', 'gif'];
+        if (!in_array($ext, $allowed_extensions)) {
+            throw new moodle_exception('invalidfiletype', 'error');
+        }
+
         $fs = get_file_storage();
         $file_record = [
             'contextid' => $modcontextid,
@@ -289,25 +304,24 @@ class local_create_sections_external extends external_api {
             'filearea'  => 'intro',
             'itemid'    => 0,
             'filepath'  => '/',
-            'filename'  => $params['filename']
+            'filename'  => $filename
         ];
 
         $fs->create_file_from_pathname($file_record, $tmpfile);
 
         $fileurl = moodle_url::make_pluginfile_url(
-            $modcontextid, 'mod_label', 'intro', 0, '/', $params['filename']
+            $modcontextid, 'mod_label', 'intro', 0, '/', $filename
         )->out(false);
 
         // 4️⃣ Update label intro
         $label = $DB->get_record('label', ['id' => $cm->instance], '*', MUST_EXIST);
-        $ext = strtolower(pathinfo($params['filename'], PATHINFO_EXTENSION));
 
         if (in_array($ext, ['mp3','wav','ogg'])) {
-            $label->intro = "<audio controls><source src=\"@@PLUGINFILE@@/{$params['filename']}\" type=\"audio/$ext\"></audio>";
+            $label->intro = "<audio controls><source src=\"@@PLUGINFILE@@/{$filename}\" type=\"audio/$ext\"></audio>";
         } elseif (in_array($ext, ['mp4','webm','ogg'])) {
-            $label->intro = "<video controls width='640'><source src=\"@@PLUGINFILE@@/{$params['filename']}\" type=\"video/$ext\"></video>";
+            $label->intro = "<video controls width='640'><source src=\"@@PLUGINFILE@@/{$filename}\" type=\"video/$ext\"></video>";
         } else {
-            $label->intro = "<a href=\"@@PLUGINFILE@@/{$params['filename']}\" target='_blank'>Download file</a>";
+            $label->intro = "<a href=\"@@PLUGINFILE@@/{$filename}\" target='_blank'>Download file</a>";
         }
         $label->introformat = FORMAT_HTML;
         $DB->update_record('label', $label);
@@ -383,6 +397,21 @@ class local_create_sections_external extends external_api {
         }
         $tmpfile = $_FILES['filecontent']['tmp_name'];
 
+        // Sanitize the filename
+        $filename = clean_filename($params['filename']);
+
+        // Block double-extensions (prevent shell.php.png, exploit.php.html, etc.)
+        if (preg_match('/\.(php|phtml|php3|php4|php5|py|pl|sh|bat|exe|cmd|js|html|htm)\./i', $filename)) {
+            throw new moodle_exception('invalidfiletype', 'error');
+        }
+
+        // Restrict extensions to only allow expected media and document types
+        $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+        $allowed_extensions = ['mp3', 'wav', 'ogg', 'mp4', 'webm', 'pdf', 'png', 'jpg', 'jpeg', 'gif'];
+        if (!in_array($ext, $allowed_extensions)) {
+            throw new moodle_exception('invalidfiletype', 'error');
+        }
+
         // Define the record for the new file
         $file_record = [
             'contextid' => $context->id,
@@ -390,22 +419,20 @@ class local_create_sections_external extends external_api {
             'filearea'  => 'intro',
             'itemid'    => 0,
             'filepath'  => '/',
-            'filename'  => $params['filename']
+            'filename'  => $filename
         ];
 
         // Store the new file in the designated file area
         $stored_file = $fs->create_file_from_pathname($file_record, $tmpfile);
 
         // 5. Update the label's intro content to embed the new file
-        $ext = strtolower(pathinfo($params['filename'], PATHINFO_EXTENSION));
-
         if (in_array($ext, ['mp3', 'wav', 'ogg'])) {
-            $label->intro = "<audio controls><source src=\"@@PLUGINFILE@@/{$params['filename']}\" type=\"audio/$ext\"></audio>";
+            $label->intro = "<audio controls><source src=\"@@PLUGINFILE@@/{$filename}\" type=\"audio/$ext\"></audio>";
         } elseif (in_array($ext, ['mp4', 'webm'])) {
-            $label->intro = "<video controls width='640'><source src=\"@@PLUGINFILE@@/{$params['filename']}\" type=\"video/$ext\"></video>";
+            $label->intro = "<video controls width='640'><source src=\"@@PLUGINFILE@@/{$filename}\" type=\"video/$ext\"></video>";
         } else {
             // Fallback for other file types like PDF, DOCX, etc.
-            $label->intro = "<a href=\"@@PLUGINFILE@@/{$params['filename']}\" target='_blank'>Download {$params['filename']}</a>";
+            $label->intro = "<a href=\"@@PLUGINFILE@@/{$filename}\" target='_blank'>Download {$filename}</a>";
         }
 
         $label->introformat = FORMAT_HTML;
@@ -418,7 +445,7 @@ class local_create_sections_external extends external_api {
 
         // Generate the URL for the newly uploaded file
         $fileurl = moodle_url::make_pluginfile_url(
-            $context->id, 'mod_label', 'intro', 0, '/', $params['filename']
+            $context->id, 'mod_label', 'intro', 0, '/', $filename
         )->out(false);
 
         return [
@@ -924,7 +951,232 @@ class local_create_sections_external extends external_api {
             )
         ]);
     }
-    
-    
 
-}                                                                                                                                  
+
+    // =========================================================
+    //  ASSIGNMENT: create_assignment
+    // =========================================================
+
+    /**
+     * Parameters for create_assignment.
+     */
+    public static function create_assignment_parameters() {
+        return new external_function_parameters([
+            'courseid'   => new external_value(PARAM_INT,  'Course ID'),
+            'sectionnum' => new external_value(PARAM_INT,  'Section number (0-based)'),
+            'name'       => new external_value(PARAM_TEXT, 'Assignment title'),
+            'intro'      => new external_value(PARAM_RAW,  'Assignment description (HTML)'),
+            'duedate'    => new external_value(PARAM_INT,  'Due date as Unix timestamp (0 = no due date)', VALUE_DEFAULT, 0),
+            'allowsubmissionsfromdate' => new external_value(PARAM_INT, 'Open date as Unix timestamp (0 = immediately)', VALUE_DEFAULT, 0),
+            'grade'      => new external_value(PARAM_INT,  'Maximum grade (e.g. 100)', VALUE_DEFAULT, 100),
+        ]);
+    }
+
+    /**
+     * Creates an assignment activity in a course section with HTML description.
+     * Uses Moodle core create_module() — no raw SQL needed.
+     *
+     * @param int    $courseid
+     * @param int    $sectionnum
+     * @param string $name
+     * @param string $intro        Full HTML for the description (same as label intro)
+     * @param int    $duedate
+     * @param int    $allowsubmissionsfromdate
+     * @param int    $grade
+     * @return array
+     */
+    public static function create_assignment($courseid, $sectionnum, $name, $intro,
+                                             $duedate = 0, $allowsubmissionsfromdate = 0, $grade = 100) {
+        global $DB, $CFG;
+        require_once($CFG->dirroot . '/course/modlib.php');
+        require_once($CFG->dirroot . '/mod/assign/lib.php');
+
+        // Validate parameters
+        $params = self::validate_parameters(self::create_assignment_parameters(), [
+            'courseid'   => $courseid,
+            'sectionnum' => $sectionnum,
+            'name'       => $name,
+            'intro'      => $intro,
+            'duedate'    => $duedate,
+            'allowsubmissionsfromdate' => $allowsubmissionsfromdate,
+            'grade'      => $grade,
+        ]);
+
+        // Validate context and capability
+        $context = context_course::instance($params['courseid'], MUST_EXIST);
+        self::validate_context($context);
+        require_capability('moodle/course:manageactivities', $context);
+
+        $course = $DB->get_record('course', ['id' => $params['courseid']], '*', MUST_EXIST);
+
+        // Build the module data object — mirrors what Moodle's mod_edit form submits
+        $moduledata = new stdClass();
+        $moduledata->course          = $course->id;
+        $moduledata->modulename      = 'assign';
+        $moduledata->section         = $params['sectionnum'];  // section NUMBER (not section DB id)
+        $moduledata->visible         = 1;
+        $moduledata->name            = $params['name'];
+
+        // ---- Description: HTML injected exactly like a label intro ----
+        $moduledata->introeditor = [
+            'text'   => $params['intro'],   // Raw HTML goes here
+            'format' => FORMAT_HTML,
+            'itemid' => 0,
+        ];
+        $moduledata->showdescription = 0;  // Do NOT show description on course page
+
+        // ---- Timing ----
+        $moduledata->allowsubmissionsfromdate            = $params['allowsubmissionsfromdate'];
+        $moduledata->duedate                             = $params['duedate'];
+        $moduledata->cutoffdate                          = 0;
+        $moduledata->gradingduedate                      = 0;
+
+        // ---- Submission settings (required NOT NULL fields) ----
+        $moduledata->submissiondrafts                    = 0; // Students submit immediately
+        $moduledata->requiresubmissionstatement          = 0;
+        $moduledata->nosubmissions                       = 0; // Allow submissions
+        $moduledata->preventsubmissionnotingroup         = 0;
+
+        // ---- Submission plugins ----
+        $moduledata->assignsubmission_onlinetext_enabled = 1;
+        $moduledata->assignsubmission_file_enabled       = 1;
+        $moduledata->assignsubmission_file_maxfiles      = 1;
+        $moduledata->assignsubmission_file_maxsizebytes  = 0; // 0 = course/site limit
+        $moduledata->assignsubmission_comments_enabled   = 0;
+
+        // ---- Feedback plugins ----
+        $moduledata->assignfeedback_comments_enabled       = 1;
+        $moduledata->assignfeedback_comments_commentinline = 0;
+        $moduledata->assignfeedback_editpdf_enabled        = 0;
+        $moduledata->assignfeedback_file_enabled           = 0;
+
+        // ---- Grading ----
+        $moduledata->grade                               = $params['grade'];
+        $moduledata->gradepass                           = 0;
+        $moduledata->teamsubmission                      = 0;
+        $moduledata->requireallteammemberssubmit         = 0;
+        $moduledata->blindmarking                        = 0;
+        $moduledata->hidegrader                          = 0;
+        $moduledata->attemptreopenmethod                 = 'none';
+        $moduledata->maxattempts                         = -1;
+        $moduledata->markingworkflow                     = 0;
+        $moduledata->markingallocation                   = 0;
+
+        // ---- Completion ----
+        $moduledata->completion                          = COMPLETION_TRACKING_AUTOMATIC;
+        $moduledata->completionsubmit                    = 1;  // Complete when student submits
+        $moduledata->completionusegrade                  = 0;
+
+        // ---- Notifications ----
+        $moduledata->sendnotifications                   = 0;
+        $moduledata->sendlatenotifications               = 0;
+        $moduledata->sendstudentnotifications            = 1;
+
+        // Create the module using Moodle core API — same as quiz
+        $moduleinfo = create_module($moduledata);
+
+        // Rebuild course cache so the UI updates immediately
+        rebuild_course_cache($course->id, true);
+
+        return [
+            'cmid'       => (int) $moduleinfo->coursemodule,
+            'instanceid' => (int) $moduleinfo->instance,
+        ];
+    }
+
+    /**
+     * Return structure for create_assignment.
+     */
+    public static function create_assignment_returns() {
+        return new external_single_structure([
+            'cmid'       => new external_value(PARAM_INT, 'Course module ID of the new assignment'),
+            'instanceid' => new external_value(PARAM_INT, 'Instance ID from the assign table'),
+        ]);
+    }
+
+
+    // =========================================================
+    //  ASSIGNMENT: update_assignment
+    // =========================================================
+
+    /**
+     * Parameters for update_assignment.
+     */
+    public static function update_assignment_parameters() {
+        return new external_function_parameters([
+            'cmid'  => new external_value(PARAM_INT, 'Course module ID of the assignment to update'),
+            'name'  => new external_value(PARAM_TEXT, 'New assignment title', VALUE_OPTIONAL),
+            'intro' => new external_value(PARAM_RAW,  'New HTML description', VALUE_OPTIONAL),
+        ]);
+    }
+
+    /**
+     * Updates an existing assignment's name and/or HTML description.
+     * Uses a direct DB update (same pattern as update_label) since
+     * Moodle's update_module() requires the full form state.
+     *
+     * @param int    $cmid
+     * @param string $name   Optional new title
+     * @param string $intro  Optional new HTML description
+     * @return array
+     */
+    public static function update_assignment($cmid, $name = null, $intro = null) {
+        global $DB, $CFG;
+        require_once($CFG->dirroot . '/course/lib.php');
+        require_once($CFG->dirroot . '/mod/assign/lib.php');
+
+        // Validate parameters
+        $params = self::validate_parameters(self::update_assignment_parameters(), [
+            'cmid'  => $cmid,
+            'name'  => $name,
+            'intro' => $intro,
+        ]);
+
+        // Get the course module and validate capability
+        $cm = get_coursemodule_from_id('assign', $params['cmid'], 0, false, MUST_EXIST);
+        $context = context_module::instance($cm->id);
+        self::validate_context($context);
+        require_capability('moodle/course:manageactivities', $context);
+
+        // Fetch the existing assign record
+        $assign = $DB->get_record('assign', ['id' => $cm->instance], '*', MUST_EXIST);
+
+        // Update only the fields that were provided
+        $changed = false;
+        if (!empty($params['name'])) {
+            $assign->name = $params['name'];
+            $changed = true;
+        }
+        if (isset($params['intro'])) {
+            $assign->intro       = $params['intro'];  // Raw HTML — same as update_label
+            $assign->introformat = FORMAT_HTML;
+            $changed = true;
+        }
+
+        if ($changed) {
+            $assign->timemodified = time();
+            $DB->update_record('assign', $assign);
+            rebuild_course_cache($cm->course, true);
+        }
+
+        return [
+            'status'     => 'success',
+            'cmid'       => $cm->id,
+            'updated'    => $changed,
+            'updated_at' => $assign->timemodified,
+        ];
+    }
+
+    /**
+     * Return structure for update_assignment.
+     */
+    public static function update_assignment_returns() {
+        return new external_single_structure([
+            'status'     => new external_value(PARAM_TEXT, 'success or no_change'),
+            'cmid'       => new external_value(PARAM_INT,  'Course module ID'),
+            'updated'    => new external_value(PARAM_BOOL, 'Whether any field was changed'),
+            'updated_at' => new external_value(PARAM_INT,  'Timestamp of update'),
+        ]);
+    }
+
+}

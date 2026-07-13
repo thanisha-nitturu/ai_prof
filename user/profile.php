@@ -78,6 +78,44 @@ if ((!$user = $DB->get_record('user', array('id' => $userid))) || ($user->delete
 $currentuser = ($user->id == $USER->id);
 $context = $usercontext = context_user::instance($userid, MUST_EXIST);
 
+// --- [START] CUSTOM IDOR PROTECTION: Task 5 ---
+// Strict Hierarchy enforcement for Certification (ISO 27001 / VAPT).
+// $userid = The ID from the URL (the Person being viewed).
+// $USER->id = The ID of you (the Logged-in user).
+if ($userid != $USER->id && !is_siteadmin()) {
+    $canview = false;
+
+    // 1. NON-ADMINS are strictly forbidden from viewing ADMINS.
+    if (is_siteadmin($userid)) { // if ($userid) is not admin , throw error
+        throw new \moodle_exception('usernotavailable', 'error');
+    }
+
+    // 2. Determine if the Viewer is a Teacher looking at their own Student.
+    $mycourses = enrol_get_users_courses($USER->id, true);
+    $targetcourses = enrol_get_users_courses($userid, true);
+    $sharedcourseids = array_intersect(array_keys($mycourses), array_keys($targetcourses));
+
+    foreach ($sharedcourseids as $courseid) {
+        $coursecontext = context_course::instance($courseid);
+        
+        // Viewer must have 'Teacher' privileges (moodle/course:update).
+        if (has_capability('moodle/course:update', $coursecontext)) {
+            // Target must NOT have 'Teacher' privileges (meaning they are a Student).
+            if (!has_capability('moodle/course:update', $coursecontext, $userid)) {
+                $canview = true;
+                break;
+            }
+        }
+    }
+
+    // 3. If no legitimate Teacher-Student relationship exists, BLOCK access.
+    if (!$canview) {
+        throw new \moodle_exception('usernotavailable', 'error');
+    }
+}
+// --- [END] CUSTOM IDOR PROTECTION ---
+
+
 if (!user_can_view_profile($user, null, $context)) {
 
     // Course managers can be browsed at site level. If not forceloginforprofiles, allow access (bug #4366).

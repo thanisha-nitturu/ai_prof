@@ -1,0 +1,702 @@
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+define(["jquery", "core/ajax", "jqueryui"], function ($, Ajax) {
+    var youtubeApiCallbacks = [];
+    var youtubeApiHooked = false;
+    var youtubeApiRequested = false;
+
+    var player_create = {
+
+        _youtube_when_ready: function(callback) {
+            if (window.YT && window.YT.Player) {
+                callback();
+                return;
+            }
+
+            youtubeApiCallbacks.push(callback);
+
+            if (!youtubeApiHooked) {
+                youtubeApiHooked = true;
+
+                var previousReady = window.onYouTubeIframeAPIReady;
+                window.onYouTubeIframeAPIReady = function() {
+                    if (typeof previousReady === "function") {
+                        previousReady();
+                    }
+
+                    var callbacks = youtubeApiCallbacks.slice(0);
+                    youtubeApiCallbacks = [];
+
+                    callbacks.forEach(function(cb) {
+                        cb();
+                    });
+                };
+            }
+
+            if (!youtubeApiRequested &&
+                !document.querySelector('script[src="https://www.youtube.com/iframe_api"]')) {
+                youtubeApiRequested = true;
+
+                var tag = document.createElement("script");
+                tag.src = "https://www.youtube.com/iframe_api";
+                document.head.appendChild(tag);
+            }
+        },
+
+        ottflix: function (view_id, start_currenttime, elementId, identifier) {
+            let totalDuration = false;
+            if (Array.isArray(identifier)) {
+                totalDuration = identifier.reduce((sum, item) => sum + (item.duration || 0), 0);
+            } else {
+                totalDuration = event.data.duration;
+            }
+
+            const identifiers = new Set(
+                (Array.isArray(identifier) ? identifier : [identifier])
+                    .filter(Boolean)
+                    .map(i => (typeof i === "string" ? i : i.identifier))
+                    .filter(Boolean)
+            );
+
+            /**
+             * Receive postMessage events from the OttFlix player iframe.
+             *
+             * @param {MessageEvent} event
+             */
+            function receiveMessage(event) {
+                if (!(event && event.data)) {
+                    return;
+                }
+
+                if (event.data.origem === "OTTFLIX-player") {
+                    if (identifiers.has(event.data.identifier)) {
+                        if (event.data.name === "progress") {
+                            if (totalDuration) {
+                                player_create._internal_saveprogress(event.data.currentTime, totalDuration);
+                            } else {
+                                player_create._internal_saveprogress(event.data.currentTime, event.data.duration);
+                            }
+                        }
+                    }
+                }
+            }
+
+            window.addEventListener("message", receiveMessage);
+        },
+
+        youtube: function (view_id, start_currenttime, elementId, videoid, playersize, showcontrols, autoplay) {
+            player_create._internal_view_id = view_id;
+
+            var playerVars = {
+                rel: 0,
+                controls: showcontrols,
+                autoplay: autoplay,
+                playsinline: 1,
+                start: start_currenttime ? start_currenttime : 0,
+            };
+
+            var player = null;
+
+            var showApiError = function() {
+                var html =
+                    `<div class="alert alert-danger">
+                        Error loading the YouTube iframe API.
+                     </div>`;
+                $("#supervideo_area_embed").html(html);
+            };
+
+            var initPlayer = function() {
+                if (!(window.YT && window.YT.Player)) {
+                    showApiError();
+                    return;
+                }
+
+                player = new window.YT.Player(elementId, {
+                    suggestedQuality: "large",
+                    videoId: videoid,
+                    width: "100%",
+                    playerVars: playerVars,
+                    events: {
+                        "onReady": function () {
+                            var sizes = playersize.split("x");
+
+                            if (sizes && sizes[1]) {
+                                player_create._internal_resize(sizes[0], sizes[1]);
+                            } else {
+                                player_create._internal_resize(16, 9);
+                            }
+
+                            document.addEventListener("setCurrentTime", function(event) {
+                                player.seekTo(event.detail.goCurrentTime);
+                            });
+                        },
+                        "onStateChange": function () {
+                            // State change handler placeholder.
+                        }
+                    }
+                });
+            };
+
+            player_create._youtube_when_ready(initPlayer);
+
+            window.setTimeout(function() {
+                if (!player && !(window.YT && window.YT.Player)) {
+                    showApiError();
+                }
+            }, 8000);
+
+            window.setInterval(function () {
+                if (player && player.getCurrentTime !== undefined) {
+                    player_create._internal_saveprogress(player.getCurrentTime(), player.getDuration() - 1);
+                }
+            }, 150);
+        },
+
+        /**
+         * Recursively search for a <video> or <audio> element through shadow DOMs.
+         * This is needed because themes (e.g. moove) wrap the player inside
+         * Web Components (<video-player><video-skin>) with an open shadow root,
+         * making the native element invisible to normal querySelector calls.
+         *
+         * @param {ShadowRoot|Element} root
+         * @param {string} tag  'video' or 'audio'
+         * @returns {HTMLElement|null}
+         */
+        _find_media_in_shadow: function (root, tag) {
+            if (!root) {
+                return null;
+            }
+            // Check direct DOM first (non-shadow).
+            var direct = root.querySelector(tag);
+            if (direct) {
+                return direct;
+            }
+            // Recurse into every open shadow root attached to descendants.
+            var all = root.querySelectorAll('*');
+            for (var i = 0; i < all.length; i++) {
+                if (all[i].shadowRoot) {
+                    var found = player_create._find_media_in_shadow(all[i].shadowRoot, tag);
+                    if (found) {
+                        return found;
+                    }
+                }
+            }
+            return null;
+        },
+
+        /**
+         * Generic tracking starter once we have the native media element.
+         *
+         * @param {HTMLMediaElement} mediaEl
+         * @param {number} start_currenttime
+         */
+        _attach_tracking: function (mediaEl, start_currenttime) {
+            if (start_currenttime && mediaEl.readyState >= 1) {
+                mediaEl.currentTime = parseInt(start_currenttime);
+            }
+            mediaEl.addEventListener('loadedmetadata', function () {
+                if (start_currenttime) {
+                    mediaEl.currentTime = parseInt(start_currenttime);
+                }
+                if (mediaEl.tagName === 'VIDEO') {
+                    player_create._internal_resize(
+                        mediaEl.videoWidth || 16,
+                        mediaEl.videoHeight || 9
+                    );
+                }
+            });
+            document.addEventListener('setCurrentTime', function (event) {
+                mediaEl.currentTime = event.detail.goCurrentTime;
+            });
+            setInterval(function () {
+                player_create._internal_saveprogress(mediaEl.currentTime, mediaEl.duration);
+            }, 200);
+        },
+
+        /**
+         * Poll until the native media element is findable (handles shadow DOM,
+         * VideoJS wrapping, and Web Component player themes).
+         *
+         * @param {number}  view_id
+         * @param {number}  start_currenttime
+         * @param {string}  elementId  original id set on the <video>/<audio> tag by PHP
+         * @param {string}  tag        'video' or 'audio'
+         */
+        _wait_and_track: function (view_id, start_currenttime, elementId, tag) {
+            player_create._internal_view_id = view_id;
+
+            var attempts = 0;
+            var poll = setInterval(function () {
+                attempts++;
+
+                // Strategy 1 — VideoJS getPlayer() API (works when VJS is not replaced).
+                var vjsPlayer = (window.videojs && window.videojs.getPlayer) ?
+                               window.videojs.getPlayer(elementId) : null;
+                if (vjsPlayer && typeof vjsPlayer.currentTime === 'function') {
+                    clearInterval(poll);
+                    vjsPlayer.ready(function () {
+                        if (start_currenttime) {
+                            vjsPlayer.currentTime(parseInt(start_currenttime));
+                        }
+                    });
+                    document.addEventListener('setCurrentTime', function (event) {
+                        vjsPlayer.currentTime(event.detail.goCurrentTime);
+                    });
+                    setInterval(function () {
+                        player_create._internal_saveprogress(
+                            vjsPlayer.currentTime(),
+                            vjsPlayer.duration()
+                        );
+                    }, 200);
+                    return;
+                }
+
+                // Strategy 2 — Shadow DOM search inside the map-visualization's
+                // parent container (both are siblings in the course section content).
+                // The moove theme wraps <video> inside <video-player><video-skin>
+                // Web Components with an open shadowRoot.
+                var mapEl  = document.getElementById('map-visualization');
+                var parent = mapEl ? (mapEl.parentElement || document.body) : document.body;
+                var mediaEl = player_create._find_media_in_shadow(parent, tag);
+                if (mediaEl) {
+                    clearInterval(poll);
+                    player_create._attach_tracking(mediaEl, start_currenttime);
+                    return;
+                }
+
+                // Strategy 3 — Full document shadow DOM search (last resort).
+                if (attempts > 60) {
+                    clearInterval(poll);
+                    var fallback = player_create._find_media_in_shadow(document.body, tag);
+                    if (fallback) {
+                        player_create._attach_tracking(fallback, start_currenttime);
+                    }
+                }
+            }, 150);
+        },
+
+        resource_audio: function (view_id, start_currenttime, elementId) {
+            player_create._wait_and_track(view_id, start_currenttime, elementId, 'audio');
+        },
+
+        resource_video: function (view_id, start_currenttime, elementId) {
+            player_create._wait_and_track(view_id, start_currenttime, elementId, 'video');
+        },
+
+        vimeo: function (view_id, start_currenttime, vimeoid, elementId) {
+            player_create._internal_view_id = view_id;
+
+            const iframe = document.getElementById(elementId);
+            /* global Vimeo */
+            const player = new Vimeo.Player(iframe);
+
+            if (start_currenttime) {
+                player.setCurrentTime(start_currenttime);
+            }
+
+            document.addEventListener("setCurrentTime", function (event) {
+                player.setCurrentTime(event.detail.goCurrentTime);
+            });
+
+            Promise.all([player.getVideoWidth(), player.getVideoHeight()]).then(function (dimensions) {
+                const width = dimensions[0];
+                const height = dimensions[1];
+
+                player_create._internal_resize(width, height);
+            });
+
+            var duration = 0;
+            setInterval(function () {
+                if (duration > 1) {
+                    player.getCurrentTime().then(function (_currenttime) {
+                        _currenttime = parseInt(_currenttime);
+                        player_create._internal_saveprogress(_currenttime, duration);
+                    });
+                } else {
+                    player.getDuration().then(function (_duration) {
+                        duration = _duration;
+                    });
+                }
+            }, 300);
+        },
+
+        drive: function (view_id, elementId, playersize) {
+            $("#map-visualization").hide();
+
+            player_create._internal_view_id = view_id;
+            player_create._internal_saveprogress(1, 1);
+
+            if (playersize == "4x3") {
+                player_create._internal_resize(4, 3);
+            } else if (playersize == "16x9") {
+                player_create._internal_resize(16, 9);
+            } else {
+                $("body").removeClass("distraction-free-mode");
+
+                player_create._internal_resize(100, 640);
+            }
+        },
+
+        embed: function (view_id, start_currenttime, elementId, playersize) {
+            player_create._internal_view_id = view_id;
+
+            if (playersize == "4x3") {
+                player_create._internal_resize(4, 3);
+            } else if (playersize == "16x9") {
+                player_create._internal_resize(16, 9);
+            } else {
+                player_create._internal_resize(16, 9);
+            }
+
+            var iframe = document.getElementById(elementId);
+
+            // Allow the progress map to seek inside the embedded player.
+            document.addEventListener("setCurrentTime", function (event) {
+                if (iframe && iframe.contentWindow) {
+                    iframe.contentWindow.postMessage({
+                        type: "player:seekTo",
+                        currentTime: event.detail.goCurrentTime
+                    }, "*");
+                }
+            });
+
+            // Listen for progress and dimension messages from embedded player iframe.
+            window.addEventListener("message", function (event) {
+                if (event.data && event.data.origem === "supervideo-embed") {
+                    if (event.data.name === "dimensions" && event.data.width && event.data.height) {
+                        player_create._internal_resize(event.data.width, event.data.height);
+                    }
+                    if (event.data.name === "progress") {
+                        var ct = event.data.currentTime;
+                        var dur = event.data.duration;
+
+                        if (dur > 0) {
+                            player_create._internal_saveprogress(ct, dur);
+                        }
+                    }
+                }
+            });
+        },
+
+        pandavideo: function (view_id, currenttime, elementId, size) {
+            player_create._internal_resize(size.width, size.height);
+
+            player_create._internal_view_id = view_id;
+
+            var duration = false;
+            window.addEventListener("message", (event) => {
+                const {data} = event;
+
+                if (data.message === 'panda_allData') {
+                    duration = data.playerData.duration;
+                } else if (data.message === 'panda_timeupdate') {
+                    if (duration) {
+                        player_create._internal_saveprogress(data.currentTime, duration);
+                    }
+                }
+            }, false);
+
+            const iframe = document.getElementById(elementId).contentWindow;
+            iframe.postMessage({type: 'currentTime', parameter: currenttime});
+        },
+
+        /**
+         * Attach an error handler to a media element that shows the
+         * appropriate error message div and hides the player area.
+         *
+         * @param {string} elementId
+         */
+        _error_load: function (elementId) {
+            /**
+             * Handle media element error events.
+             *
+             * @param {Event} e
+             */
+            function errorF(e) {
+                $(`#${elementId}, #map-visualization`).hide();
+                //$("body").removeClass("distraction-free-mode");
+
+                switch (e.target.error.code) {
+                    case e.target.error.MEDIA_ERR_ABORTED:
+                        $("#error_media_err_aborted").show();
+                        break;
+                    case e.target.error.MEDIA_ERR_NETWORK:
+                        $("#error_media_err_network").show();
+                        break;
+                    case e.target.error.MEDIA_ERR_DECODE:
+                        $("#error_media_err_decode").show();
+                        break;
+                    case e.target.error.MEDIA_ERR_SRC_NOT_SUPPORTED:
+                        $("#error_media_err_src_not_supported").show();
+                        break;
+                    default:
+                        $("#error_default").show();
+                        break;
+                }
+            }
+
+            var videoElem = document.getElementById(elementId);
+            videoElem.addEventListener("error", errorF);
+        },
+
+        _internal_resize__width: 0,
+        _internal_resize__height: 0,
+        /**
+         * Store resize dimensions and trigger a page re-layout.
+         *
+         * @param {number} width
+         * @param {number} height
+         */
+        _internal_resize: function (width, height) {
+            player_create._internal_resize__width = width;
+            player_create._internal_resize__height = height;
+
+            $(window).resize(player_create._internal_max_height__resizePage);
+            player_create._internal_max_height__resizePage();
+        },
+
+        _internal_max_height__resizePage: function () {
+
+            var windowHeight = $(window).height();
+            if ($("body").hasClass("distraction-free-mode")) {
+                var $supervideoArea = $("#supervideo_area_embed video,#supervideo_area_embed iframe");
+
+                $supervideoArea.css({
+                    "max-height": "inherit",
+                    "height": "inherit",
+                });
+
+                var removeHeight = 54 + 10; // $("#distraction-free-mode-header").height() + padding;
+                var $activity = $(".activity-navigation");
+                if ($activity.length && !$activity.is(":hidden")) {
+                    removeHeight += $activity.height();
+                }
+
+                var $map = $("#map-visualization");
+                if ($map.length && !$map.is(":hidden")) {
+                    removeHeight += 12;
+                }
+
+                var playerMaxHeight = windowHeight - removeHeight;
+                $("#supervideo_area_embed").css({
+                    "max-height": playerMaxHeight,
+                });
+                $supervideoArea.css({
+                    "max-height": playerMaxHeight,
+                    "height": playerMaxHeight,
+                });
+            } else {
+                if (document.querySelector("#supervideo_area_embed iframe")) {
+                    var $supervideo_area_embed = $("#supervideo_area_embed");
+
+                    var maxHeight = $(window).height() - $("#header").height();
+                    var width = $supervideo_area_embed.width();
+                    var height = (width * player_create._internal_resize__height) / player_create._internal_resize__width;
+
+                    if (height < maxHeight) {
+                        var ratio = (player_create._internal_resize__height / player_create._internal_resize__width) * 100;
+                        if (ratio > 10) {
+                            $supervideo_area_embed.css({
+                                paddingBottom: `${ratio}%`,
+                                width: "100%",
+                            });
+                        }
+                    } else {
+                        // var newWidth =
+                        //    (maxHeight * player_create._internal_resize__width)
+                        //    / player_create._internal_resize__height;
+                        $supervideo_area_embed.css({
+                            // width         : newWidth,
+                            // margin        : "0 auto",
+                            height: maxHeight,
+                            maxHeight: maxHeight,
+                            paddingBottom: "56.25%",
+                        });
+                    }
+                }
+            }
+        },
+
+        _internal_last_position_video: -1,
+        _internal_last_percent: -1,
+        _internal_assisted: [],
+        _internal_view_id: 0,
+        _internal_progress_length: 100,
+        _internal_sizenum: -1,
+        _internal_saveprogress: function (currenttime, duration) {
+
+            currenttime = Math.floor(currenttime);
+            duration = Math.floor(duration);
+
+            if (!duration) {
+                return 0;
+            }
+
+            // When near the end (within 1 second), treat as complete
+            if (duration - currenttime <= 1 && currenttime > 0) {
+                currenttime = duration;
+            }
+
+            if (duration && player_create._internal_assisted.length == 0) {
+                player_create._internal_progress_create(duration);
+            }
+
+            var video_position;
+            if (player_create._internal_progress_length < 100) {
+                video_position = currenttime;
+            } else {
+                video_position = parseInt(currenttime / duration * player_create._internal_progress_length);
+            }
+
+            if (video_position > player_create._internal_progress_length) {
+                video_position = player_create._internal_progress_length;
+            }
+            if (video_position < 0) {
+                video_position = 0;
+            }
+
+            if (player_create._internal_last_position_video == video_position) {
+                return;
+            }
+
+            // Do not fill skipped segments. A jump in currentTime can happen after seeking,
+            // so only the segment reached by this progress event is marked as watched.
+            if (video_position > 0 && video_position <= player_create._internal_progress_length) {
+                player_create._internal_assisted[video_position] = 1;
+            }
+            player_create._internal_last_position_video = video_position;
+
+            var percent = 0;
+            for (let j = 1; j <= player_create._internal_progress_length; j++) {
+                if (player_create._internal_assisted[j]) {
+                    percent++;
+                    $(`#map-visualization-${j}`).css({opacity: 1});
+                }
+            }
+
+            if (player_create._internal_progress_length < 100) {
+                percent = Math.floor(percent / player_create._internal_progress_length * 100);
+            }
+
+            if (player_create._internal_last_percent == percent) {
+                return;
+            }
+            player_create._internal_last_percent = percent;
+
+            if ($("body").hasClass("distraction-free-mode")) {
+                var $map = $("#map-visualization");
+                if ($map.length && !$map.is(":hidden")) {
+                    if (currenttime > (duration * .90)) {
+                        if (player_create._internal_sizenum != 1) {
+                            $(".activity-navigation").hide();
+                            $map.addClass("fixed-booton");
+                            player_create._internal_max_height__resizePage();
+                            player_create._internal_sizenum = 1;
+                        }
+                    } else {
+                        if (player_create._internal_sizenum != 2) {
+                            $(".activity-navigation").show();
+                            $map.removeClass("fixed-booton");
+                            player_create._internal_max_height__resizePage();
+                            player_create._internal_sizenum = 2;
+                        }
+                    }
+                } else {
+                    if (player_create._internal_sizenum != 3) {
+                        $(".activity-navigation").show();
+                        $map.removeClass("fixed-booton");
+                        player_create._internal_max_height__resizePage();
+                        player_create._internal_sizenum = 3;
+                    }
+                }
+            }
+
+            if (currenttime) {
+                Ajax.call([{
+                    methodname: "mod_supervideo_progress_save",
+                    args: {
+                        view_id: player_create._internal_view_id,
+                        currenttime: parseInt(currenttime),
+                        duration: parseInt(duration),
+                        percent: parseInt(percent),
+                        map: JSON.stringify(player_create._internal_assisted)
+                    }
+                }]);
+            }
+
+            if (percent >= 0) {
+                $("#your-map-view span").html(`${percent}%`);
+            }
+        },
+
+        _internal_progress_create: function (duration) {
+
+            var $map = $("#map-visualization .map");
+            if (!$map.length) {
+                return;
+            }
+
+            var supervideo_view_map = [];
+            try {
+                var map_json_base64 = $map.attr("data-map");
+                if (map_json_base64) {
+                    supervideo_view_map = JSON.parse(atob(map_json_base64));
+                }
+            } catch (e) {
+                supervideo_view_map = [];
+            }
+
+            if (Math.floor(duration) <= 100) {
+                player_create._internal_progress_length = Math.floor(duration);
+            }
+            for (let i = 1; i <= player_create._internal_progress_length; i++) {
+                if (typeof supervideo_view_map[i] != "undefined") {
+                    player_create._internal_assisted[i] = supervideo_view_map[i];
+                } else {
+                    player_create._internal_assisted[i] = 0;
+                }
+                var $map_item = $(`<div id="map-visualization-${i}">`);
+                $map.append($map_item);
+
+                // Map Clik
+                var mapTitle = Math.floor(duration / player_create._internal_progress_length * i);
+
+                var hours = Math.floor(mapTitle / 3600);
+                var minutes = (Math.floor(mapTitle / 60)) % 60;
+                var seconds = mapTitle % 60;
+
+                var tempo = minutes + ":" + seconds;
+                if (hours) {
+                    tempo = hours + ":" + minutes + ":" + seconds;
+                }
+                var $map_clique =
+                    $("<div></div>")
+                        .attr("title", tempo)
+                        .attr("data-currenttime", mapTitle)
+                        .click(function () {
+                            var _setCurrentTime = $(this).attr("data-currenttime");
+                            _setCurrentTime = parseInt(_setCurrentTime);
+
+                            var event = document.createEvent("CustomEvent");
+                            event.initCustomEvent("setCurrentTime", true, true, {goCurrentTime: _setCurrentTime});
+                            document.dispatchEvent(event);
+                        });
+                $("#map-visualization .clique").append($map_clique);
+            }
+        }
+    };
+    return player_create;
+});

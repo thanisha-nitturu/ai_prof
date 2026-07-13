@@ -1,0 +1,73 @@
+/* ==========================================
+   Placement Dashboard Full Width Layout
+   ========================================== */
+
+/* Root Moodle wrappers */
+body.placement-fullwidth #page-wrapper,
+body.placement-fullwidth #page,
+body.placement-fullwidth #page-content,
+body.placement-fullwidth #region-main-box,
+body.placement-fullwidth #region-main {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* Moove / Boost main content wrapper */
+@media (min-width: 768px) {
+    body.placement-fullwidth #page.drawers .main-inner,
+    body.placement-fullwidth .moove-container-fluid,
+    body.placement-fullwidth .container-fluid,
+    body.placement-fullwidth .container-sm,
+    body.placement-fullwidth .container-md,
+    body.placement-fullwidth .container-lg,
+    body.placement-fullwidth .container-xl,
+    body.placement-fullwidth .container-xxl {
+        width: 100% !important;
+        max-width: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+}
+
+/* Also override for all screen sizes */
+body.placement-fullwidth #page.drawers .main-inner,
+body.placement-fullwidth .container,
+body.placement-fullwidth .container-fluid,
+body.placement-fullwidth .header-maxwidth {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* Remove vertical spacing added by Moodle */
+body.placement-fullwidth #page-content,
+body.placement-fullwidth #region-main-box,
+body.placement-fullwidth #region-main,
+body.placement-fullwidth .main-inner {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+}
+
+/* React root */
+body.placement-fullwidth #placement-root {
+    width: 100%;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+}
+
+/* Remove Bootstrap utility spacing that may affect layout */
+body.placement-fullwidth .mt-3,
+body.placement-fullwidth .mt-4,
+body.placement-fullwidth .mb-3,
+body.placement-fullwidth .mb-4,
+body.placement-fullwidth .pt-3,
+body.placement-fullwidth .pt-4,
+body.placement-fullwidth .pb-3,
+body.placement-fullwidth .pb-4 {
+    margin: 0 !important;
+    padding: 0 !important;
+}

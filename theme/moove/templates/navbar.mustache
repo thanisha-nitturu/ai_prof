@@ -74,26 +74,13 @@
     
 
     {{#primarymoremenu}}
-        <div class="primary-navigation d-flex align-items-center w-100 px-2">
+        <div class="primary-navigation d-none d-md-flex align-items-center w-100 px-2">
             <div id="core-navigation-block" class="d-flex align-items-center">
                 {{> core/moremenu}}
             </div>
             
             <div id="right-navigation-block" class="ms-auto d-flex align-items-center pr-3">
-                {{! Playground - Moved to right side }}
-                <div id="custom-playground-container" class="nav-item d-none d-md-flex align-items-center">
-                    <a id="playground-nav-link" class="nav-link mx-1 px-3 py-1 rounded-pill transition-all" href="{{config.wwwroot}}/mod/codingplayground/all_playgrounds.php#/playgrounds" style="font-size: 16px; font-weight: 500;">
-                        Playground
-                    </a>
-                </div>
-
-                {{#is_siteadmin}}
-                <div id="custom-placement-container" class="nav-item d-none d-md-flex align-items-center">
-                    <a id="placement-nav-link" class="nav-link mx-1 px-3 py-1 rounded-pill transition-all" href="{{config.wwwroot}}/local/placement/index.php" style="font-size: 16px; font-weight: 500;">
-                        Placement
-                    </a>
-                </div>
-                {{/is_siteadmin}}
+                {{! Custom tools (Placement, Playground, Pathways) are teleported here dynamically by JS }}
             </div>
         </div>
     {{/primarymoremenu}}
@@ -123,12 +110,43 @@
 </nav>
 
 <style>
-    /* Combined base styles for the Right-Side Tools */
-    #playground-nav-link, 
-    #placement-nav-link, 
+    /* Truncate long breadcrumbs to a single line, shrinking only the last item */
+    .header-actions-container {
+        flex: 1 0 auto !important; /* Force Moodle to allocate more space to the right side */
+        min-width: 40%; /* Guarantee at least 40% of the screen width */
+        justify-content: flex-end;
+    }
+    .breadcrumb {
+        flex-wrap: nowrap !important;
+        overflow: hidden !important;
+        justify-content: flex-end;
+    }
+    .breadcrumb-item {
+        white-space: nowrap !important;
+        flex-shrink: 0 !important; /* Prevent parent items from shrinking */
+    }
+    .breadcrumb-item:last-child {
+        flex-shrink: 1 !important; /* Only allow the active/last item to shrink */
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        max-width: none !important; /* Remove artificial limits to use all new space */
+    }
+    .breadcrumb-item:last-child a,
+    .breadcrumb-item:last-child span {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: inline-block;
+        max-width: 100%;
+        vertical-align: bottom;
+    }
+
+    /* Combined base styles for the Right-Side Tools (Placement + Pathways).
+       Playground styles are now in mod/codingplayground/styles.css — loaded
+       automatically by Moodle without any theme change needed. */
+    #placement-nav-link,
     #right-navigation-block .nav-item .nav-link,
     .pathways-tool-link {
-        color: #74849a !important; 
+        color: #74849a !important;
         transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         text-decoration: none !important;
         font-size: 16px;
@@ -140,49 +158,45 @@
         padding-right: 20px !important;
         margin: 0 2px !important;
         border-radius: 8px !important;
-        height: 70px !important; /* Enforcing full height */
+        height: 70px !important;
         border: none !important;
         white-space: nowrap;
     }
 
-    #playground-nav-link:hover,
     #placement-nav-link:hover,
     .pathways-tool-link:hover {
         background-color: #f6f8f9ff;
-        color: #4b6bfb !important; /* Brand Blue */
-        transform: translateY(-2px); /* Subtle elevation lift */
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); /* Soft shadow for depth */
+        color: #4b6bfb !important;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
     }
 
-    #playground-nav-link:active,
     #placement-nav-link:active,
     #right-navigation-block .nav-item .nav-link:active,
     .pathways-tool-link:active {
-        border: 4px solid #5d7afaff !important; /* Blue border only on click */
+        border: 4px solid #5d7afaff !important;
     }
 
-    #playground-nav-link.active,
     #placement-nav-link.active,
     #right-navigation-block .nav-item .nav-link.active,
     .pathways-tool-link.active {
-        background-color: #f1f5f9; /* Active pill tint */
-        border-radius: 10px !important; /* Pill shape for selection */
+        background-color: #f1f5f9;
+        border-radius: 10px !important;
         color: #4b6bfb !important;
         font-weight: 700;
         position: relative;
-        height: 38px !important; /* Compact active height */
-        margin-top: 16px !important; /* Centering in the 70px nav area */
+        height: 38px !important;
+        margin-top: 16px !important;
         margin-bottom: 16px !important;
     }
 
-    /* Active underline indicator dash for both */
-    #playground-nav-link.active::after,
+    /* Active underline indicator dash for Placement + Pathways */
     #placement-nav-link.active::after,
     #right-navigation-block .nav-item .nav-link.active::after,
     .pathways-tool-link.active::after {
         content: "";
         position: absolute;
-        bottom: -16px; /* Offset to stay at bottom of nav */
+        bottom: -16px;
         left: 50%;
         transform: translateX(-50%);
         width: 32px;
@@ -200,119 +214,268 @@
     #right-navigation-block li::before {
         content: none !important;
     }
+
+    /* Hide custom tools while they are inside the core navigation block to prevent layout flashing/jumping */
+    #core-navigation-block li[data-key="placement"],
+    #core-navigation-block li[data-key="mod_codingplayground_playground"],
+    #core-navigation-block li:has(a[href*="local/pathway"]),
+    #core-navigation-block a[href*="local/pathway"] {
+        display: none !important;
+    }
+
+    /* Enforce Moodle core logo hiding on mobile (solves CSS conflicts with Playground app) */
+    @media (max-width: 767px) {
+        html body .navbar a.navbar-brand,
+        html body .navbar .navbar-brand {
+            display: none !important;
+        }
+    }
 </style>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        function migratePathways() {
+        function teleportCustomTools() {
+            {{^hide_3p}}
             const rightBlock = document.getElementById('right-navigation-block');
             if (!rightBlock) return;
 
-            // Deep Recovery: Check EVERY nav-link and dropdown-item on the page
+            let needsResize = false;
+
+            // 1. Teleport Placement
+            const placementLi = document.querySelector('#core-navigation-block li[data-key="placement"]');
+            if (placementLi) {
+                const link = placementLi.querySelector('a');
+                if (link) {
+                    link.id = 'placement-nav-link';
+                    link.className = 'nav-link';
+                }
+                rightBlock.appendChild(placementLi);
+                needsResize = true;
+            }
+
+            // 2. Teleport Playground
+            const playgroundLi = document.querySelector('#core-navigation-block li[data-key="mod_codingplayground_playground"]');
+            if (playgroundLi) {
+                const link = playgroundLi.querySelector('a');
+                if (link) {
+                    link.id = 'playground-nav-link';
+                    link.className = 'nav-link';
+                }
+                rightBlock.appendChild(playgroundLi);
+                needsResize = true;
+            }
+
+            // 3. Teleport Pathways (standard custom menu item)
             const allElements = document.querySelectorAll('.nav-link, .dropdown-item, .moremenu a');
             let pathwaysLink = null;
             
             allElements.forEach(el => {
                 const text = el.textContent?.trim().toLowerCase();
                 const isPathways = text === 'pathways' || el.href?.includes('local/pathway');
-                // Ensure we don't pick up the playground link itself or an already migrated link
-                if (isPathways && el.id !== 'playground-nav-link') {
+                if (isPathways && el.id !== 'playground-nav-link' && el.id !== 'placement-nav-link') {
                     pathwaysLink = el;
                 }
             });
 
             if (pathwaysLink) {
-                // Determine if it needs re-wrapping (if it's a dropdown link or missing its li)
                 let targetLi = pathwaysLink.closest('li.nav-item');
                 
                 if (!targetLi || pathwaysLink.classList.contains('dropdown-item')) {
-                    // Re-wrap orphaned or dropdown links into a clean nav-item structure
                     const newLi = document.createElement('li');
                     newLi.className = 'nav-item d-flex align-items-center';
-                    
-                    // Standardize the link class
                     pathwaysLink.className = 'nav-link pathways-tool-link';
                     newLi.appendChild(pathwaysLink);
                     targetLi = newLi;
                 }
 
-                // If it's not already in our tool zone, teleport it!
                 if (targetLi.parentElement !== rightBlock) {
                     pathwaysLink.classList.add('pathways-tool-link');
                     pathwaysLink.classList.remove('rounded-pill', 'rounded-circle', 'rounded', 'dropdown-item');
-                    // Prepend so it sits to the LEFT of Playground
+                    // Prepend to be positioned to the left of the other tools.
                     rightBlock.prepend(targetLi);
+                    needsResize = true;
                 }
             }
+
+            if (needsResize) {
+                window.dispatchEvent(new Event('resize'));
+            }
+            {{/hide_3p}}
+        }
+
+        function syncMobileDrawerItems() {
+            const drawerList = document.querySelector('#theme_boost-drawers-primary .list-group');
+            if (!drawerList) return;
+
+            {{^hide_3p}}
+            // Check if there is already a Placement link in the drawer.
+            let hasPlacement = false;
+            drawerList.querySelectorAll('a').forEach(a => {
+                if (a.href && a.href.includes('local/placement')) {
+                    hasPlacement = true;
+                    if (!a.id) {
+                        a.id = 'mobile-placement-link';
+                    }
+                }
+            });
+
+            // If not found, and user is admin, manually append it.
+            {{#is_siteadmin}}
+            if (!hasPlacement) {
+                const placementA = document.createElement('a');
+                placementA.id = 'mobile-placement-link';
+                placementA.href = '{{config.wwwroot}}/local/placement/index.php';
+                placementA.className = 'list-group-item list-group-item-action mobile-custom-nav-item';
+                placementA.textContent = 'Placement';
+                drawerList.appendChild(placementA);
+            }
+            {{/is_siteadmin}}
+
+            // Check if there is already a Playground link in the drawer.
+            let hasPlayground = false;
+            drawerList.querySelectorAll('a').forEach(a => {
+                if (a.href && a.href.includes('mod/codingplayground')) {
+                    hasPlayground = true;
+                    if (!a.id) {
+                        a.id = 'mobile-playground-link';
+                    }
+                }
+            });
+
+            // Check if there is already a Pathways link in the drawer.
+            let hasPathways = false;
+            drawerList.querySelectorAll('a').forEach(a => {
+                if (a.href && a.href.includes('local/pathway')) {
+                    hasPathways = true;
+                    if (!a.id) {
+                        a.id = 'mobile-pathways-link';
+                    }
+                }
+            });
+            {{/hide_3p}}
+        }
+
+        // Hide Pathways from the primary/core nav for blocked users.
+        function hidePathwaysFromNav() {
+            {{#hide_3p}}
+            let hiddenAny = false;
+            document.querySelectorAll('.nav-link, .dropdown-item, .moremenu a, li > a').forEach(function(el) {
+                var text = el.textContent ? el.textContent.trim().toLowerCase() : '';
+                var isPathways = text === 'pathways' || (el.href && el.href.includes('local/pathway'));
+                if (isPathways) {
+                    var li = el.closest('li');
+                    if (li && li.style.display !== 'none') {
+                        li.style.display = 'none';
+                        hiddenAny = true;
+                    } else if (!li && el.style.display !== 'none') {
+                        el.style.display = 'none';
+                        hiddenAny = true;
+                    }
+                }
+            });
+            if (hiddenAny) {
+                window.dispatchEvent(new Event('resize'));
+            }
+            {{/hide_3p}}
         }
 
         function highlightActiveTools() {
             const currentUrl = window.location.href;
             const currentHash = window.location.hash;
-            
-            const playgroundLink = document.getElementById('playground-nav-link');
             const placementLink = document.getElementById('placement-nav-link');
-            const pathwaysLink = document.querySelector('.pathways-tool-link');
+            const pathwaysLink  = document.querySelector('.pathways-tool-link');
+            const mobilePlacementLink = document.getElementById('mobile-placement-link');
+            const mobilePathwaysLink  = document.getElementById('mobile-pathways-link');
+
+            // Find the Playground link by its data-key (both main and mobile).
+            const playgroundNode = document.querySelector('[data-key="mod_codingplayground_playground"] > a');
+            const mobilePlaygroundLink = document.getElementById('mobile-playground-link');
 
             const isActivity = currentUrl.includes('view.php') || currentUrl.includes('?id=') || currentUrl.includes('&id=');
-            const isPlaygroundContext = (currentUrl.includes('mod/codingplayground/all_playgrounds.php') || currentHash.includes('playgrounds')) && !isActivity;
-            const isPlacementContext = currentUrl.includes('local/placement') && !isActivity;
-            const isPathwaysContext = currentUrl.includes('local/pathway');
+            const isPlaygroundContext = (currentUrl.includes('mod/codingplayground/index.php') || currentUrl.endsWith('mod/codingplayground/') || currentHash.includes('playgrounds')) && !isActivity;
+            const isPlacementContext  = currentUrl.includes('local/placement') && !isActivity;
+            const isPathwaysContext   = currentUrl.includes('local/pathway');
 
-            console.log('[DEBUG-NAV] URL:', currentUrl, 'Hash:', currentHash, 'isActivity:', isActivity, 'isPlayground:', isPlaygroundContext);
-
-            // Exclusive Highlighting Enforcement
+            // Exclusive Highlighting: strip Moodle's default active from standard nav items.
             if (isPlaygroundContext || isPlacementContext || isPathwaysContext) {
-                // Find all OTHER nav items that Moodle thinks are active
-                document.querySelectorAll('.navbar-nav .nav-link.active, .primary-navigation .nav-link.active').forEach(item => {
-                    if (item.id !== 'playground-nav-link' && item.id !== 'placement-nav-link' && !item.classList.contains('pathways-tool-link')) {
+                document.querySelectorAll(
+                    '.navbar-nav .nav-link.active, .primary-navigation .nav-link.active, ' +
+                    '.primary-navigation .dropdown-item.active, ' +
+                    '#theme_boost-drawers-primary .list-group-item.active'
+                ).forEach(function(item) {
+                    if (item.id !== 'placement-nav-link' &&
+                        !item.classList.contains('pathways-tool-link') &&
+                        item.id !== 'mobile-placement-link' &&
+                        item.id !== 'mobile-playground-link' &&
+                        !item.closest('[data-key="mod_codingplayground_playground"]')) {
                         item.classList.remove('active');
                         item.removeAttribute('aria-current');
                     }
                 });
             }
 
-            // Reset our tools before applying
-            if (playgroundLink) { playgroundLink.classList.remove('active'); playgroundLink.removeAttribute('aria-current'); }
-            if (placementLink) { placementLink.classList.remove('active'); placementLink.removeAttribute('aria-current'); }
-            if (pathwaysLink) { pathwaysLink.classList.remove('active'); pathwaysLink.removeAttribute('aria-current'); }
+            // Reset all custom tool links.
+            if (playgroundNode)      { playgroundNode.classList.remove('active');      playgroundNode.removeAttribute('aria-current'); }
+            if (placementLink)       { placementLink.classList.remove('active');       placementLink.removeAttribute('aria-current'); }
+            if (pathwaysLink)        { pathwaysLink.classList.remove('active');        pathwaysLink.removeAttribute('aria-current'); }
+            if (mobilePlacementLink) { mobilePlacementLink.classList.remove('active'); mobilePlacementLink.removeAttribute('aria-current'); }
+            if (mobilePathwaysLink)  { mobilePathwaysLink.classList.remove('active');  mobilePathwaysLink.removeAttribute('aria-current'); }
+            if (mobilePlaygroundLink){ mobilePlaygroundLink.classList.remove('active');mobilePlaygroundLink.removeAttribute('aria-current'); }
 
-            // Highlight Playground exclusively
+            // Highlight Playground.
             if (isPlaygroundContext) {
-                if (playgroundLink) {
-                    playgroundLink.classList.add('active');
-                    playgroundLink.setAttribute('aria-current', 'page');
+                if (playgroundNode) {
+                    playgroundNode.classList.add('active');
+                    playgroundNode.setAttribute('aria-current', 'page');
                 }
-            } 
-            // Highlight Placement exclusively
+                if (mobilePlaygroundLink) {
+                    mobilePlaygroundLink.classList.add('active');
+                    mobilePlaygroundLink.setAttribute('aria-current', 'page');
+                }
+            }
+            // Highlight Placement.
             else if (isPlacementContext) {
                 if (placementLink) {
                     placementLink.classList.add('active');
                     placementLink.setAttribute('aria-current', 'page');
                 }
+                if (mobilePlacementLink) {
+                    mobilePlacementLink.classList.add('active');
+                    mobilePlacementLink.setAttribute('aria-current', 'page');
+                }
             }
-            // Highlight Pathways exclusively
+            // Highlight Pathways.
             else if (isPathwaysContext) {
                 if (pathwaysLink) {
                     pathwaysLink.classList.add('active');
                     pathwaysLink.setAttribute('aria-current', 'page');
                 }
+                if (mobilePathwaysLink) {
+                    mobilePathwaysLink.classList.add('active');
+                    mobilePathwaysLink.setAttribute('aria-current', 'page');
+                }
             }
 
-            // EXTRA PROTECTION: If we are in an activity, ensure custom tools ARE NOT highlighted
+            // Extra protection: on any activity page, ensure tool links are NOT active.
             if (isActivity) {
-                if (playgroundLink) playgroundLink.classList.remove('active');
-                if (placementLink) placementLink.classList.remove('active');
+                if (playgroundNode)       playgroundNode.classList.remove('active');
+                if (placementLink)        placementLink.classList.remove('active');
+                if (mobilePlacementLink)  mobilePlacementLink.classList.remove('active');
+                if (mobilePlaygroundLink) mobilePlaygroundLink.classList.remove('active');
             }
         }
 
         // Initial run
-        migratePathways();
+        teleportCustomTools();
+        syncMobileDrawerItems();
+        hidePathwaysFromNav();
         highlightActiveTools();
         
         // Interval run for dynamic re-renders
         const syncInterval = setInterval(() => {
-            migratePathways();
+            teleportCustomTools();
+            syncMobileDrawerItems();
+            hidePathwaysFromNav();
             highlightActiveTools();
         }, 1000);
 

@@ -97,6 +97,58 @@ const notifyVideoJS = e => {
                 // Add Ogv.JS to the list of modules we require.
                 modulePromises.push(import('media_videojs/videojs-ogvjs-lazy'));
             }
+
+            // Override hotkeys to implement 10s seek and standard controls.
+            config.userActions = config.userActions || {};
+            config.userActions.hotkeys = function (event) {
+                const p = this;
+                const key = event.which || event.keyCode;
+
+                if (key === 32 || key === 75) { // Space or K
+                    event.preventDefault();
+                    if (p.paused()) {
+                        p.play();
+                    } else {
+                        p.pause();
+                    }
+                    return true; // TELL VIDEOJS WE HANDLED IT
+                } else if (key === 37) { // Left
+                    event.preventDefault();
+                    p.currentTime(Math.max(0, p.currentTime() - 10));
+                    return true;
+                } else if (key === 39) { // Right
+                    event.preventDefault();
+                    let dur = p.duration();
+                    if (!isFinite(dur) || isNaN(dur)) {
+                        dur = p.currentTime() + 100;
+                    }
+                    p.currentTime(Math.min(dur, p.currentTime() + 10));
+                    return true;
+                } else if (key === 38) { // Up
+                    event.preventDefault();
+                    p.volume(Math.min(1, p.volume() + 0.1));
+                    return true;
+                } else if (key === 40) { // Down
+                    event.preventDefault();
+                    p.volume(Math.max(0, p.volume() - 0.1));
+                    return true;
+                } else if (key === 77) { // M
+                    event.preventDefault();
+                    p.muted(!p.muted());
+                    return true;
+                } else if (key === 70) { // F
+                    event.preventDefault();
+                    if (p.isFullscreen()) {
+                        p.exitFullscreen();
+                    } else {
+                        p.requestFullscreen();
+                    }
+                    return true;
+                }
+                // Return false to let VideoJS handle any other keys
+                return false;
+            };
+
             Promise.all([langStrings, ...modulePromises])
                 .then(([langJson, videojs]) => {
                     if (firstLoad) {
@@ -109,6 +161,7 @@ const notifyVideoJS = e => {
                         '%c[media_videojs/loader] ✅ PATCHED v2 — audio track switcher active',
                         'background:#1a1a2e;color:#00ff99;font-weight:bold;padding:3px 8px;border-radius:4px'
                     );
+
 
 
                     // ── Seek Buttons (10s Forward/Backward) ──────────────────────────────

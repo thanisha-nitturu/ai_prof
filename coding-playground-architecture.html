@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Coding Playground — System Architecture</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:#080c18;color:#c8d6e5;min-height:100vh}
+.page{max-width:900px;margin:0 auto;padding:40px 20px 60px}
+
+/* Header */
+.header{text-align:center;margin-bottom:48px}
+.header h1{font-size:1.6rem;font-weight:900;color:#60a5fa;letter-spacing:-.5px;margin-bottom:4px}
+.header p{font-size:.7rem;color:#475569;font-weight:500;margin-bottom:16px}
+.header .badge{display:inline-block;font-size:.6rem;font-weight:700;background:#1e3a5f;color:#60a5fa;padding:6px 16px;border-radius:20px;border:1px solid #2563eb33;letter-spacing:1px}
+
+/* Architecture box */
+.arch-box{border:1px solid #1e293b;border-radius:16px;padding:32px 24px;margin-bottom:32px;position:relative;background:#0c1222}
+.arch-box .box-title{text-align:center;font-size:.6rem;font-weight:800;letter-spacing:4px;text-transform:uppercase;color:#475569;margin-bottom:28px}
+
+/* Block */
+.block{background:#111827;border:1px solid #1e293b;border-radius:14px;padding:16px 20px;text-align:center;position:relative;transition:border-color .2s,box-shadow .2s}
+.block:hover{border-color:#334155;box-shadow:0 4px 24px #0004}
+.block-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;font-size:1.3rem}
+.block h3{font-size:.82rem;font-weight:800;color:#f1f5f9;margin-bottom:2px}
+.block .mono{font-family:'JetBrains Mono',monospace;font-size:.6rem;color:#475569;margin-bottom:4px}
+.block p{font-size:.62rem;color:#64748b;line-height:1.5;max-width:260px;margin:0 auto}
+.block .port{display:inline-block;font-size:.5rem;font-weight:700;background:#14532d;color:#4ade80;padding:3px 10px;border-radius:10px;margin-top:8px;letter-spacing:.5px}
+.block .port-blue{background:#1e3a5f;color:#60a5fa}
+.block .port-orange{background:#451a03;color:#fbbf24}
+.block .port-pink{background:#500724;color:#f9a8d4}
+
+/* Colors for block icons */
+.bi-cyan{background:linear-gradient(135deg,#0891b2,#06b6d4)}
+.bi-green{background:linear-gradient(135deg,#059669,#10b981)}
+.bi-purple{background:linear-gradient(135deg,#7c3aed,#8b5cf6)}
+.bi-orange{background:linear-gradient(135deg,#d97706,#f59e0b)}
+.bi-pink{background:linear-gradient(135deg,#db2777,#ec4899)}
+.bi-red{background:linear-gradient(135deg,#dc2626,#ef4444)}
+.bi-blue{background:linear-gradient(135deg,#2563eb,#3b82f6)}
+.bi-teal{background:linear-gradient(135deg,#0d9488,#14b8a6)}
+
+/* Arrow connectors */
+.arrow{display:flex;flex-direction:column;align-items:center;padding:6px 0}
+.arrow-line{width:2px;height:24px;background:linear-gradient(180deg,#334155,#1e293b)}
+.arrow-head{width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:7px solid #334155}
+.arrow-label{font-size:.5rem;font-weight:700;color:#334155;letter-spacing:2px;text-transform:uppercase;margin-top:2px}
+
+/* Side-by-side */
+.row-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+.row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;align-items:start}
+.center-block{display:flex;justify-content:center}
+.side-arrow{display:flex;align-items:center;justify-content:center;gap:0}
+.side-arrow .h-line{width:32px;height:2px;background:#334155}
+.side-arrow .h-head{width:0;height:0;border-top:5px solid transparent;border-bottom:5px solid transparent;border-left:7px solid #334155}
+
+/* Section titles */
+.section{text-align:center;margin:36px 0 16px;font-size:.6rem;font-weight:800;letter-spacing:4px;text-transform:uppercase;color:#334155}
+.section span{background:#080c18;padding:0 16px;position:relative}
+
+/* Request Flow */
+.flow-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:20px}
+.flow-item{background:#111827;border:1px solid #1e293b;border-radius:12px;padding:14px 16px;position:relative}
+.flow-num{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:800;color:#fff;margin-bottom:8px}
+.flow-item h4{font-size:.72rem;font-weight:700;color:#e2e8f0;margin-bottom:4px}
+.flow-item p{font-size:.58rem;color:#64748b;line-height:1.5}
+
+/* Tech table */
+.tech-table{width:100%;border-collapse:collapse;margin-top:8px;font-size:.6rem}
+.tech-table th{text-align:left;font-weight:800;color:#475569;padding:8px 12px;border-bottom:1px solid #1e293b;text-transform:uppercase;letter-spacing:2px;font-size:.5rem}
+.tech-table td{padding:8px 12px;border-bottom:1px solid #111827;color:#94a3b8}
+.tech-table td:first-child{font-family:'JetBrains Mono',monospace;color:#60a5fa;font-weight:600;font-size:.58rem}
+.tech-table tr:hover td{background:#111827}
+
+/* Footer */
+footer{text-align:center;margin-top:40px;padding-top:20px;border-top:1px solid #111827;font-size:.52rem;color:#1e293b;font-weight:600;letter-spacing:2px}
+
+/* Dotted box label */
+.dotted-label{position:absolute;top:-10px;left:24px;font-size:.5rem;font-weight:700;background:#0c1222;padding:0 8px;color:#334155;letter-spacing:3px;text-transform:uppercase}
+
+@media(max-width:700px){
+  .row-2,.row-3,.flow-grid{grid-template-columns:1fr}
+  .page{padding:20px 12px 40px}
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+<!-- ===== HEADER ===== -->
+<div class="header">
+  <h1>Coding Playground v1.0 — Architecture</h1>
+  <p>Interactive Coding Assessment Platform — System Architecture & Request Flow</p>
+  <span class="badge">React + FastAPI + MongoDB + Judge0</span>
+</div>
+
+<!-- ===== SYSTEM ARCHITECTURE ===== -->
+<div class="arch-box">
+  <div class="box-title">System Architecture</div>
+
+  <!-- Client / Frontend -->
+  <div class="center-block">
+    <div class="block" style="min-width:280px">
+      <div class="block-icon bi-cyan">🖥️</div>
+      <h3>Client / Frontend</h3>
+      <div class="mono">React 18 + TypeScript + Vite</div>
+      <p>SPA with Monaco Editor, resizable panels, Shadcn UI. Supports Moodle embed via HashRouter</p>
+      <span class="port port-blue">Port 8080</span>
+    </div>
+  </div>
+
+  <div class="arrow"><div class="arrow-line"></div><div class="arrow-head"></div><div class="arrow-label">REST API Calls</div></div>
+
+  <!-- API Server Box -->
+  <div class="arch-box" style="margin:0 0 0 0;background:#0a0f1e">
+    <span class="dotted-label">🐳 Server Stack</span>
+
+    <div class="center-block">
+      <div class="block" style="min-width:300px">
+        <div class="block-icon bi-green">🚀</div>
+        <h3>FastAPI Server</h3>
+        <div class="mono">Python 3.9+ / Uvicorn ASGI</div>
+        <p>REST API — 25 endpoints across 8 routers. Handles auth, CRUD, code execution orchestration</p>
+        <span class="port">Port 8000</span>
+      </div>
+    </div>
+
+    <div class="arrow"><div class="arrow-line"></div><div class="arrow-head"></div><div class="arrow-label">Async I/O</div></div>
+
+    <!-- MongoDB + Judge0 side by side -->
+    <div class="row-2">
+      <div class="block">
+        <div class="block-icon bi-pink">🍃</div>
+        <h3>MongoDB</h3>
+        <div class="mono">Motor Async Driver</div>
+        <p>Document database — 7 collections: questions, courses, submissions, users, snippets, companies, daily_challenges</p>
+        <span class="port port-pink">Port 27017</span>
+      </div>
+      <div class="block">
+        <div class="block-icon bi-orange">⚡</div>
+        <h3>Judge0 CE</h3>
+        <div class="mono">v1.13.0 — Code Execution</div>
+        <p>Sandboxed execution engine — 35+ languages. Batch API with base64 encoding & async polling</p>
+        <span class="port port-orange">Port 2358</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="arrow"><div class="arrow-line"></div><div class="arrow-head"></div><div class="arrow-label">Moodle Plugin Embed</div></div>
+
+  <!-- Moodle -->
+  <div class="center-block">
+    <div class="block" style="min-width:280px">
+      <div class="block-icon bi-purple">🎓</div>
+      <h3>Moodle LMS</h3>
+      <div class="mono">devlearn.hitloop.com</div>
+      <p>Learning Management System — injects window.CODINGPLAYGROUND context. Auto user sync & course enrollment</p>
+      <span class="port" style="background:#3b0764;color:#c084fc">HTTPS 443</span>
+    </div>
+  </div>
+</div>
+
+<!-- ===== REQUEST FLOW ===== -->
+<div class="section"><span>🔄 Request Flow</span></div>
+
+<div class="flow-grid">
+  <div class="flow-item">
+    <div class="flow-num bi-cyan">1</div>
+    <h4>Write & Submit Code</h4>
+    <p>Student writes code in Monaco Editor and clicks Submit. Frontend sends POST to /api/v1/submissions/</p>
+  </div>
+  <div class="flow-item">
+    <div class="flow-num bi-green">2</div>
+    <h4>Fetch & Prepare</h4>
+    <p>Server fetches question + test cases from MongoDB. Encodes source code & stdin in base64 batches</p>
+  </div>
+  <div class="flow-item">
+    <div class="flow-num bi-orange">3</div>
+    <h4>Execute on Judge0</h4>
+    <p>Batch submit to Judge0 (up to 1000 cases/chunk). Retry with exponential backoff on overload</p>
+  </div>
+  <div class="flow-item">
+    <div class="flow-num bi-red">4</div>
+    <h4>Sandboxed Execution</h4>
+    <p>Judge0 runs code in isolate sandbox with CPU/memory limits. Returns stdout, stderr, status per case</p>
+  </div>
+  <div class="flow-item">
+    <div class="flow-num bi-pink">5</div>
+    <h4>Compare & Store</h4>
+    <p>Server parses output, compares with expected (lenient), determines AC/WA/TLE/RE. Saves to MongoDB</p>
+  </div>
+  <div class="flow-item">
+    <div class="flow-num bi-blue">6</div>
+    <h4>Display Results</h4>
+    <p>Frontend receives results. ConsolePane shows per-case status with input/expected/actual output</p>
+  </div>
+</div>
+
+<!-- ===== FRONTEND STRUCTURE ===== -->
+<div class="section"><span>🖥️ Frontend Structure (app/src/)</span></div>
+
+<div class="arch-box">
+  <table class="tech-table">
+    <tr><th>Module</th><th>Files</th><th>Purpose</th></tr>
+    <tr><td>pages/</td><td>7 pages + 3 teacher</td><td>Route-level views — workspace, login, courses, playgrounds, company questions</td></tr>
+    <tr><td>components/workspace/</td><td>6 components</td><td>CodeEditor (Monaco), ActionBar, ConsolePane, DescriptionPane, SubmissionsPane, TabIndicator</td></tr>
+    <tr><td>components/ui/</td><td>49 components</td><td>Shadcn/Radix UI library — button, dialog, card, tabs, toast, table, sidebar, etc.</td></tr>
+    <tr><td>components/modals/</td><td>1 component</td><td>CreateQuestionModal — full question builder with test case import</td></tr>
+    <tr><td>hooks/</td><td>5 hooks</td><td>useApi (TanStack Query), useMoodleContext, useLocalStorage, useMobile, useToast</td></tr>
+    <tr><td>lib/</td><td>2 files</td><td>api.ts (centralized HTTP client), utils.ts (cn class merger)</td></tr>
+    <tr><td>data/</td><td>2 files</td><td>TypeScript interfaces, boilerplate templates, mock data for dev</td></tr>
+    <tr><td>layouts/</td><td>1 file</td><td>TeacherLayout — top tab nav shell with role-based visibility</td></tr>
+  </table>
+</div>
+
+<!-- ===== BACKEND STRUCTURE ===== -->
+<div class="section"><span>⚙️ Backend API Endpoints (server/app/)</span></div>
+
+<div class="arch-box">
+  <table class="tech-table">
+    <tr><th>Router</th><th>Endpoints</th><th>Purpose</th></tr>
+    <tr><td>/api/v1/questions</td><td>GET, POST, PUT, DELETE</td><td>Coding questions CRUD — title, description, test cases, starter code, setup code</td></tr>
+    <tr><td>/api/v1/courses</td><td>GET, POST, PUT, DELETE</td><td>Course & module management with nested question references</td></tr>
+    <tr><td>/api/v1/submissions</td><td>GET, POST, POST /run, POST /playground/run</td><td>Code execution via Judge0 — batch submit, poll, compare, persist results</td></tr>
+    <tr><td>/api/v1/auth</td><td>POST /login, GET /me</td><td>bcrypt password auth, user profile retrieval</td></tr>
+    <tr><td>/api/v1/users</td><td>POST /sync-moodle</td><td>Moodle user auto-create, role update, course auto-enrollment</td></tr>
+    <tr><td>/api/v1/snippets</td><td>GET, POST, PUT, DELETE</td><td>User-owned free-form code snippets with timestamps</td></tr>
+    <tr><td>/api/v1/companies</td><td>GET, POST, PUT, DELETE</td><td>Company profiles (Google, Amazon, etc.) with linked questions</td></tr>
+    <tr><td>/api/v1/daily_challenges</td><td>GET, POST, DELETE</td><td>Daily coding challenge management</td></tr>
+  </table>
+</div>
+
+<!-- ===== TECH STACK ===== -->
+<div class="section"><span>🛠️ Technology Stack</span></div>
+
+<div class="arch-box">
+  <table class="tech-table">
+    <tr><th>Layer</th><th>Technology</th><th>Version</th><th>Role</th></tr>
+    <tr><td>Frontend</td><td>React + TypeScript</td><td>18.3</td><td>UI framework with type safety</td></tr>
+    <tr><td>Build</td><td>Vite + SWC</td><td>5.4</td><td>Dev server, HMR, production bundling</td></tr>
+    <tr><td>Styling</td><td>Tailwind CSS + Shadcn UI</td><td>3.4 / Radix</td><td>Utility-first CSS + accessible components</td></tr>
+    <tr><td>Editor</td><td>Monaco Editor</td><td>4.7</td><td>VS Code editor in browser (35+ langs)</td></tr>
+    <tr><td>State</td><td>TanStack Query</td><td>5.x</td><td>Server state, caching, mutations</td></tr>
+    <tr><td>Animation</td><td>Framer Motion</td><td>12.x</td><td>Page transitions, micro-animations</td></tr>
+    <tr><td>Backend</td><td>FastAPI + Uvicorn</td><td>Latest</td><td>Async REST API server</td></tr>
+    <tr><td>Database</td><td>MongoDB + Motor</td><td>7.x</td><td>Document store with async driver</td></tr>
+    <tr><td>Execution</td><td>Judge0 CE</td><td>1.13.0</td><td>Sandboxed code runner (isolate)</td></tr>
+    <tr><td>Auth</td><td>passlib + bcrypt</td><td>Latest</td><td>Password hashing & verification</td></tr>
+    <tr><td>Testing</td><td>Vitest + Playwright</td><td>3.x / 1.x</td><td>Unit + E2E testing</td></tr>
+    <tr><td>LMS</td><td>Moodle</td><td>4.x</td><td>Learning management system integration</td></tr>
+  </table>
+</div>
+
+<footer>Coding Playground v1.0 Architecture Diagram • Generated 2026-05-14 • devlearn.hitloop.com</footer>
+</div>
+</body>
+</html>

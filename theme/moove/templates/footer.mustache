@@ -33,125 +33,156 @@ along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 
 <footer id="page-footer">
-    <div class="moove-container-fluid footer-columns">
-        <div class="row">
-            <div class="col-md-4 column-left">
-                <div class="contact">
-                    <h3 class="footer-title">{{#str}}contactus, theme_moove{{/str}}</h3>
 
-                    <ul>
-                        {{#website}}
-                            <li>
-                                <a href="{{{website}}}" target="_blank" class="website btn btn-link">
-                                    <i class="fa fa-globe"></i>
-                                </a>
-                            </li>
-                        {{/website}}
-                        {{#mobile}}
-                            <li>
-                                <a href="tel:{{{mobile}}}" target="_blank" class="mobile btn btn-link">
-                                    <i class="fa fa-phone"></i>
-                                </a>
-                            </li>
-                        {{/mobile}}
-                        {{#mail}}
-                            <li>
-                                <a href="mailto:{{{mail}}}" target="_blank" class="mail btn btn-link">
-                                    <i class="fa fa-envelope"></i>
-                                </a>
-                            </li>
-                        {{/mail}}
+    <!-- ── Redesigned Main Footer ─────────────────────────── -->
+    <div class="moove-new-footer__main">
+        <div class="moove-new-footer__container">
+
+            <!-- Brand Column (left — wider) -->
+            <div class="moove-new-footer__brand">
+                <a href="https://aiprof.com" target="_blank" class="moove-new-footer__brand-name">
+                    <img src="{{config.wwwroot}}/theme/moove/pix/logo_ai_crop.gif" alt="{{{sitename}}}" class="moove-new-footer__brand-logo-gif" style="max-height: 48px; width: auto; display: block;" />
+                </a>
+                <p class="moove-new-footer__tagline">AI Prof Pvt. Ltd is an AI-powered learning <br>and hiring ecosystem connecting students, <br>universities, and companies across India. <br>Building India's AI-Ready Tech Workforce.</p>
+
+                <!-- Social icons sit under the tagline, left-aligned -->
+                <div class="moove-new-footer__social">
+                    {{#linkedin}}
+                    <a href="{{{linkedin}}}" target="_blank" class="moove-new-footer__social-icon" aria-label="LinkedIn">
+                        <i class="fa fa-linkedin" aria-hidden="true"></i>
+                    </a>
+                    {{/linkedin}}
+                    {{#website}}
+                    <a href="{{{website}}}" target="_blank" class="moove-new-footer__social-icon" aria-label="Website">
+                        <i class="fa fa-globe" aria-hidden="true"></i>
+                    </a>
+                    {{/website}}
+                    {{#mail}}
+                    <a href="mailto:{{{mail}}}" class="moove-new-footer__social-icon" aria-label="Email">
+                        <i class="fa fa-envelope" aria-hidden="true"></i>
+                    </a>
+                    {{/mail}}
+                    {{#facebook}}
+                    <a href="{{{facebook}}}" target="_blank" class="moove-new-footer__social-icon" aria-label="Facebook">
+                        <i class="fa fa-facebook" aria-hidden="true"></i>
+                    </a>
+                    {{/facebook}}
+                    {{#twitter}}
+                    <a href="{{{twitter}}}" target="_blank" class="moove-new-footer__social-icon" aria-label="Twitter">
+                        <i class="fa fa-twitter" aria-hidden="true"></i>
+                    </a>
+                    {{/twitter}}
+                    {{#instagram}}
+                    <a href="{{{instagram}}}" target="_blank" class="moove-new-footer__social-icon" aria-label="Instagram">
+                        <i class="fa fa-instagram" aria-hidden="true"></i>
+                    </a>
+                    {{/instagram}}
+                    {{#whatsapp}}
+                    <a href="https://api.whatsapp.com/send?phone={{{whatsapp}}}" target="_blank" class="moove-new-footer__social-icon" aria-label="WhatsApp">
+                        <i class="fa fa-whatsapp" aria-hidden="true"></i>
+                    </a>
+                    {{/whatsapp}}
+                    {{#telegram}}
+                    <a href="{{{telegram}}}" target="_blank" class="moove-new-footer__social-icon" aria-label="Telegram">
+                        <i class="fa fa-telegram" aria-hidden="true"></i>
+                    </a>
+                    {{/telegram}}
+                </div>
+            </div>
+
+            <!-- Navigation Columns -->
+            <div class="moove-new-footer__nav-group">
+
+                <!-- Platform -->
+                <div class="moove-new-footer__nav-col">
+                    <h4 class="moove-new-footer__nav-heading">PLATFORM</h4>
+                    <ul class="moove-new-footer__nav-list">
+                        <li>
+                            <a href="{{config.wwwroot}}/my/courses.php" class="moove-new-footer__nav-link">
+                                <i class="fa fa-book moove-new-footer__link-icon" aria-hidden="true"></i>My courses
+                            </a>
+                        </li>
+                        {{^hide_3p}}
+                        <li>
+                            <a href="{{config.wwwroot}}/my/pathways.php" class="moove-new-footer__nav-link">
+                                <i class="fa fa-map-marker moove-new-footer__link-icon" aria-hidden="true"></i>Pathways
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{config.wwwroot}}/mod/codingplayground/index.php" class="moove-new-footer__nav-link">
+                                <i class="fa fa-code moove-new-footer__link-icon" aria-hidden="true"></i>Playground
+                            </a>
+                        </li>
+                        {{/hide_3p}}
+                        {{#is_siteadmin}}
+                        <li>
+                            <a href="{{config.wwwroot}}/local/placement/index.php" class="moove-new-footer__nav-link">
+                                <i class="fa fa-briefcase moove-new-footer__link-icon" aria-hidden="true"></i>Placement
+                            </a>
+                        </li>
+                        {{/is_siteadmin}}
                     </ul>
                 </div>
 
-                <div class="socialnetworks">
-                    <h3 class="footer-title">{{#str}}followus, theme_moove{{/str}}</h3>
-
-                    <ul class="mb-0">
-                        {{#facebook}}
-                            <li>
-                                <a href="{{{facebook}}}" target="_blank" class="facebook btn btn-link btn-rounded">
-                                    <i class="fa fa-facebook"></i>
-                                </a>
-                            </li>
-                        {{/facebook}}
-
-                        {{#twitter}}
-                            <li>
-                                <a href="{{{twitter}}}" target="_blank" class="twitter btn btn-link btn-rounded">
-                                    <i class="fa fa-twitter"></i>
-                                </a>
-                            </li>
-                        {{/twitter}}
-
-                        {{#linkedin}}
-                            <li>
-                                <a href="{{{linkedin}}}" target="_blank" class="linkedin btn btn-link btn-rounded">
-                                    <i class="fa fa-linkedin"></i>
-                                </a>
-                            </li>
-                        {{/linkedin}}
-
-                        {{#youtube}}
-                            <li>
-                                <a href="{{{youtube}}}" target="_blank" class="youtube btn btn-link btn-rounded">
-                                    <i class="fa fa-youtube"></i>
-                                </a>
-                            </li>
-                        {{/youtube}}
-
-                        {{#instagram}}
-                            <li>
-                                <a href="{{{instagram}}}" target="_blank" class="instagram btn btn-link btn-rounded">
-                                    <i class="fa fa-instagram"></i>
-                                </a>
-                            </li>
-                        {{/instagram}}
-
-                        {{#whatsapp}}
-                            <li>
-                                <a href="https://api.whatsapp.com/send?phone={{{whatsapp}}}" target="_blank" class="whatsapp btn btn-link btn-rounded">
-                                <i class="fa fa-whatsapp"></i>
-                                </a>
-                            </li>
-                        {{/whatsapp}}
-
-                        {{#telegram}}
-                            <li>
-                                <a href="{{{telegram}}}" target="_blank" class="telegram btn btn-link btn-rounded">
-                                    <i class="fa fa-telegram"></i>
-                                </a>
-                            </li>
-                        {{/telegram}}
+                <!-- Support -->
+                <div class="moove-new-footer__nav-col">
+                    <h4 class="moove-new-footer__nav-heading">SUPPORT</h4>
+                    <ul class="moove-new-footer__nav-list">
+                        {{# output.supportemail }}
+                        <li class="moove-new-footer__support-email-item">
+                            <i class="fa fa-headphones moove-new-footer__link-icon" aria-hidden="true"></i>
+                            {{{ output.supportemail }}}
+                        </li>
+                        {{/ output.supportemail }}
+                        <li>
+                            <a href="https://aiprof.com/about" target="_blank" class="moove-new-footer__nav-link">
+                                <i class="fa fa-users moove-new-footer__link-icon" aria-hidden="true"></i>Leadership
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://aiprof.com/careers" target="_blank" class="moove-new-footer__nav-link">
+                                <i class="fa fa-briefcase moove-new-footer__link-icon" aria-hidden="true"></i>Careers
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://aiprof.com/legal/privacy" target="_blank" class="moove-new-footer__nav-link">
+                                <i class="fa fa-lock moove-new-footer__link-icon" aria-hidden="true"></i>Privacy policy
+                            </a>
+                        </li>
                     </ul>
                 </div>
+
             </div>
-            <div class="col-md-4 column-center">
-                {{# output.supportemail }}
-                    <div class="supportemail">{{{ output.supportemail }}}</div>
-                {{/ output.supportemail }}
-
-                {{{ output.login_info }}}
-
-
-                <div class="tool_usertours-resettourcontainer"></div>
-            </div>
-            
         </div>
     </div>
 
+    <!-- ── Bottom Bar ─────────────────────────────────────── -->
+    <div class="moove-new-footer__bottom">
+        <div class="moove-new-footer__container moove-new-footer__bottom-row">
+            <div class="moove-new-footer__copyright">
+                &copy; 2026 &middot; All rights are reserved - AI PROF PRIVATE LIMITED
+            </div>
+            <div class="moove-new-footer__login-status">
+                <span class="moove-new-footer__status-dot" aria-hidden="true"></span>
+                <span class="moove-new-footer__login-text">{{{ output.login_info }}}</span>
+                <div class="tool_usertours-resettourcontainer"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Debug section -->
     <div class="footer-content-debugging footer-dark bg-dark text-light">
         <div class="moove-container-fluid footer-dark-inner">
             {{{ output.debug_footer_html }}}
         </div>
     </div>
 
-    
-   
+
+
 
 <!-- Persistent Audio Player -->
 <div id="persistent-audio-player" style="display:none; position:fixed; bottom:0; left:0; right:0; background:#343a40; color:white; padding:10px; z-index:9999; border-top:2px solid #007bff;">
-  <div style="display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; max-width:1200px; margin:0 auto; gap:16px;">
+  <div style="display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; max-width:85%; margin:0 auto; gap:16px;">
     
     <!-- Podcast Title EXTREME LEFT -->
     <div style="flex: 1; min-width: 200px; max-width: 350px;">

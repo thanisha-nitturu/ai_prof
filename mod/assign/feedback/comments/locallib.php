@@ -147,7 +147,7 @@ class assign_feedback_comments extends assign_feedback_plugin {
      * @return boolean - True if the plugin supports quickgrading
      */
     public function supports_quickgrading() {
-        return true;
+        return false;
     }
 
     /**
@@ -438,10 +438,47 @@ class assign_feedback_comments extends assign_feedback_plugin {
                 ]
             );
 
-            // Show the view all link if the text has been shortened.
-            $short = shorten_text($text, 140);
-            $showviewlink = $short != $text;
-            return $short;
+            // If feedback is effectively empty, don't show the button
+            if (trim(strip_tags($text)) === '') {
+                return '';
+            }
+
+            global $PAGE;
+            $buttonid = 'feedback_btn_' . $grade->id;
+            $contentid = 'feedback_content_' . $grade->id;
+            
+            // Create the View Feedback button
+            $button = html_writer::tag('button', 'View', [
+                'id' => $buttonid,
+                'class' => 'btn btn-outline-primary btn-sm',
+                'type' => 'button',
+                'style' => 'white-space: nowrap;'
+            ]);
+            
+            // Create a hidden div containing the full feedback HTML
+            $content = html_writer::div($text, 'd-none', ['id' => $contentid]);
+
+            // Inject the AMD script to initialize the Moodle modal
+            $PAGE->requires->js_amd_inline("
+                require(['jquery', 'core/modal_factory'], function($, ModalFactory) {
+                    var modalPromise = ModalFactory.create({
+                        title: 'Overall Performance Summary',
+                        body: $('#$contentid').html(),
+                        large: true,
+                    });
+                    $('#$buttonid').on('click', function(e) {
+                        e.preventDefault();
+                        modalPromise.done(function(modal) {
+                            modal.show();
+                        });
+                    });
+                });
+            ");
+
+            // Disable the default Moodle 'view more' link since we have a modal
+            $showviewlink = false;
+            
+            return $button . $content;
         }
         return '';
     }

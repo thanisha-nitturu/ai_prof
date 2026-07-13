@@ -148,17 +148,18 @@ function local_reminders_cron_pre($currtime, $timewindowstart) {
         }
     }
 
-    $whereclause = '(timestart > '.$timewindowend.') AND (';
-    $flagor = false;
+    $params = ['timewindowend' => (int)$timewindowend];
+    $conditions = [];
+    $i = 0;
     foreach ($secondsaheads as $sahead) {
-        if ($flagor) {
-            $whereclause .= ' OR ';
-        }
-        $whereclause .= '(timestart - '.$sahead.' >= '.$timewindowstart.' AND '.
-                        'timestart - '.$sahead.' <= '.$timewindowend.')';
-        $flagor = true;
+        $conditions[] = "(timestart - :sahead{$i} >= :wstart{$i} AND timestart - :sahead{$i}alt <= :wend{$i})";
+        $params["sahead{$i}"] = (int)$sahead;
+        $params["sahead{$i}alt"] = (int)$sahead;
+        $params["wstart{$i}"] = (int)$timewindowstart;
+        $params["wend{$i}"] = (int)$timewindowend;
+        $i++;
     }
-    $whereclause .= ')';
+    $whereclause = '(timestart > :timewindowend) AND (' . implode(' OR ', $conditions) . ')';
 
     if (isset($CFG->local_reminders_filterevents)) {
         if ($CFG->local_reminders_filterevents == REMINDERS_SEND_ONLY_VISIBLE) {
@@ -168,7 +169,7 @@ function local_reminders_cron_pre($currtime, $timewindowstart) {
 
     mtrace("   [Local Reminder] Time window: ".userdate($timewindowstart)." to ".userdate($timewindowend));
 
-    $upcomingevents = $DB->get_records_select('event', $whereclause);
+    $upcomingevents = $DB->get_records_select('event', $whereclause, $params);
     if (!$upcomingevents) {
         mtrace("   [Local Reminder] No upcoming events. Aborting...");
 
@@ -631,10 +632,10 @@ function clean_local_reminders_logs() {
 
     $cutofftime = time() - REMINDERS_7DAYSBEFORE_INSECONDS;
     mtrace("  [Local Reminders][CLEAN] clean cutoff time: $cutofftime");
-    $recordcount = $DB->count_records_select(REMINDERS_CLEAN_TABLE, "time >= $cutofftime");
+    $recordcount = $DB->count_records_select(REMINDERS_CLEAN_TABLE, "time >= :cutofftime", ['cutofftime' => $cutofftime]);
     if ($recordcount > 0) {
         mtrace('  [Local Reminders][CLEAN] Cleaning can be executed now as there are newer records.');
-        $deletestatus = $DB->delete_records_select(REMINDERS_CLEAN_TABLE, "time < $cutofftime");
+        $deletestatus = $DB->delete_records_select(REMINDERS_CLEAN_TABLE, "time < :cutofftime", ['cutofftime' => $cutofftime]);
         mtrace('  [Local Reminders][CLEAN] Cleaning status: '.$deletestatus);
     } else {
         mtrace('  [Local Reminders][CLEAN] No records allow to clean since reminders cron has not bee executed for long time!');

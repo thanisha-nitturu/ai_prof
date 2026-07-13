@@ -621,8 +621,15 @@ class local_downloadcenter_factory {
                     $book->intro = str_replace('@@PLUGINFILE@@', 'data', $book->intro);
                     $content = '<a name="top"></a>';
                     $content .= $OUTPUT->heading(format_string($book->name, true, ['context' => $context]), 1);
+
+                    // Setup clean HTML options, gating 'noclean' under moodle/site:trustcontent capability (RISK_XSS check)
+                    $formatoptions = ['context' => $context];
+                    if (has_capability('moodle/site:trustcontent', $context)) {
+                        $formatoptions['noclean'] = true;
+                    }
+
                     $content .= '<p class="book_summary">' .
-                        format_text($book->intro, $book->introformat, ['noclean' => true, 'context' => $context])  .
+                        format_text($book->intro, $book->introformat, $formatoptions)  .
                         '</p>';
 
                     $toc = $bookrenderer->render_print_book_toc($chapters, $book, $cm);
@@ -651,7 +658,7 @@ class local_downloadcenter_factory {
                         $content .= format_text(
                             $chaptercontent,
                             $chapter->contentformat,
-                            ['noclean' => true, 'context' => $context]
+                            $formatoptions
                         );
                         $content .= '</div>';
                         $content .= '<a href="#toc">&uarr; ' . get_string('top', 'mod_book') . '</a>';
@@ -1127,10 +1134,11 @@ ul.indent {
   list-style-type: none;
 }
 
-
 </style>
 </body>
 CSS;
         return str_replace('</body>', $csscontent, $htmlcontent);
     }
 }
+
+

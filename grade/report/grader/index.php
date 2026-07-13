@@ -150,6 +150,34 @@ $actionbar = new \gradereport_grader\output\action_bar($context, $report, $numus
 print_grade_page_head($COURSE->id, 'report', 'grader', false, false, $buttons, true,
     null, null, null, $actionbar);
 
+// Inject custom CSS to reduce vertical space between header and main region, and adjust padding
+echo '<style>
+    header#page-header {
+        padding-bottom: 0 !important;
+        margin-bottom: 0 !important;
+    }
+    section#region-main {
+        padding-top: 0 !important;
+        margin-top: 0 !important;
+    }
+    #region-main .card-body {
+        padding-top: 0.3rem !important;
+    }
+    .tertiary-navigation {
+        padding-top: 0 !important;
+        padding-bottom: 0.5rem !important;
+    }
+    .tertiary-navigation .navitem {
+        margin-bottom: 0 !important;
+    }
+    #page-header .card {
+        margin-bottom: 0 !important;
+    }
+    #page-header .pb-3 {
+        padding-bottom: 0.5rem !important;
+    }
+</style>';
+
 // make sure separate group does not prevent view
 if ($report->currentgroup == -2) {
     echo $OUTPUT->heading(get_string("notingroup"));
@@ -180,6 +208,14 @@ $PAGE->requires->js_call_amd('gradereport_grader/stickycolspan', 'init');
 $PAGE->requires->js_call_amd('gradereport_grader/user', 'init', [$baseurl->out(false)]);
 $PAGE->requires->js_call_amd('gradereport_grader/feedback_modal', 'init');
 $PAGE->requires->js_call_amd('core_grades/gradebooksetup_forms', 'init');
+
+// Register AJAX grading module (prevents full page refresh when saving quick grades).
+$PAGE->requires->js_call_amd('gradereport_grader/ajax_grading', 'init', [[
+    'courseid'     => $courseid,
+    'sesskey'      => sesskey(),
+    'timepageload' => time(),
+    'saveurl'      => (new moodle_url('/grade/report/grader/save_grades.php'))->out(false),
+]]);
 
 // Final grades MUST be loaded after the processing.
 $report->load_users();
@@ -255,15 +291,13 @@ if (!empty($USER->editing) && $report->get_pref('quickgrading')) {
         'col-auto'
     );
 
-    $stickyfooter = new core\output\sticky_footer($footercontent);
-    echo $OUTPUT->render($stickyfooter);
+    echo html_writer::div($footercontent, 'row align-items-center mt-3 mb-5 px-3');
 
     echo '</div></form>';
 } else {
     echo $reporthtml;
 
-    $stickyfooter = new core\output\sticky_footer($footercontent);
-    echo $OUTPUT->render($stickyfooter);
+    echo html_writer::div($footercontent, 'row align-items-center mt-3 mb-5 px-3');
 }
 
 $event = \gradereport_grader\event\grade_report_viewed::create(

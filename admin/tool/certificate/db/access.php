@@ -27,7 +27,7 @@ defined('MOODLE_INTERNAL') || die();
 $capabilities = [
 
     'tool/certificate:manage' => [
-
+        'riskbitmask' => RISK_XSS | RISK_PERSONAL | RISK_CONFIG | RISK_DATALOSS,
         'captype' => 'write',
         'contextlevel' => CONTEXT_COURSE,
         'archetypes' => [
@@ -37,14 +37,14 @@ $capabilities = [
     ],
 
     'tool/certificate:image' => [
-
+        'riskbitmask' => RISK_XSS,
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
         'clonepermissionsfrom' => 'tool/certificate:imageforalltenants',
     ],
 
     'tool/certificate:issue' => [
-
+        'riskbitmask' => RISK_PERSONAL,
         'captype' => 'write',
         'contextlevel' => CONTEXT_COURSE,
         'archetypes' => [
@@ -55,6 +55,7 @@ $capabilities = [
     ],
 
     'tool/certificate:viewallcertificates' => [
+        'riskbitmask' => RISK_PERSONAL,
         'captype' => 'read',
         'contextlevel' => CONTEXT_COURSE,
         'archetypes' => [
@@ -65,6 +66,7 @@ $capabilities = [
     ],
 
     'tool/certificate:verify' => [
+        'riskbitmask' => 0,
         'captype' => 'read',
         'contextlevel' => CONTEXT_SYSTEM,
         'archetypes' => [

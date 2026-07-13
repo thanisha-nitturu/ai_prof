@@ -67,12 +67,11 @@
     }
 
 }}
-<div class="container-fluid tertiary-navigation full-width-bottom-border mb-2">
+<div class="mb-3 px-0">
+    <h2 style="margin-left: 0; padding-left: 0;">{{#str}}gradeitem:submissions, mod_assign{{/str}}</h2>
+</div>
+<div class="container-fluid tertiary-navigation pt-0">
     <div class="d-flex">
-        <div class="navitem">
-            <h2>{{#str}}gradeitem:submissions, mod_assign{{/str}}</h2>
-        </div>
-        <div class="navitem-divider d-none d-sm-flex"></div>
         {{#userselector}}
             <div class="navitem">
                 {{>core/comboboxsearch}}
@@ -86,7 +85,7 @@
             <div class="navitem-divider d-none d-sm-flex"></div>
         {{/groupselector}}
         {{#initialselector}}
-            <div class="navitem d-flex flex-column align-self-center">
+            <div class="navitem d-flex flex-column align-self-center name-filter-container">
                 {{>core/comboboxsearch}}
             </div>
             <div class="navitem-divider"></div>
@@ -98,7 +97,11 @@
             <div class="navitem-divider d-none d-sm-flex"></div>
             {{#js}}
                 document.querySelector('#{{baseid}}').addEventListener('change', function(e) {
-                    window.location.href = e.target.value;
+                    if (typeof window.updateGradingTable === 'function') {
+                        window.updateGradingTable(e.target.value);
+                    } else {
+                        window.location.href = e.target.value;
+                    }
                 });
             {{/js}}
         {{/statusselector}}
@@ -108,12 +111,6 @@
             </div>
             <div class="navitem-divider d-none d-sm-flex"></div>
         {{/extrafiltersdropdown}}
-        {{#pagereset}}
-            <div class="navitem align-self-center">
-                <a href="{{{.}}}" class="btn btn-link">{{#str}}clearall, core{{/str}}</a>
-            </div>
-            <div class="navitem-divider"></div>
-        {{/pagereset}}
         {{#graderurl}}
         <div class="navitem ms-sm-auto align-self-center">
             <a class="btn btn-primary" href="{{graderurl}}">{{#str}}gradeverb, core{{/str}}</a>
@@ -121,42 +118,54 @@
         {{/graderurl}}
     </div>
 </div>
-<div class="container-fluid tertiary-navigation pt-0">
-    <div class="d-flex flex-wrap gap-2 pb-2">
-        {{#quickgrading}}
-            <div class="navitem m-0 ms-auto">
-                <div class="form-check align-self-center">
-                    <input class="form-check-input" type="checkbox" id="quickgrading-{{uniqid}}" {{#enabled}}checked{{/enabled}}/>
-                    <label class="form-check-label" for="quickgrading-{{uniqid}}" >{{#str}}quickgrading, mod_assign{{/str}}</label>
+<div class="container-fluid tertiary-navigation mb-0 pb-0" style="border-bottom: none !important; margin-bottom: 0 !important; padding-bottom: 0 !important;">
+    <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center w-100">
+        <div class="d-flex gap-2">
+            {{#quickgrading}}
+                <div class="navitem m-0">
+                    <div class="form-check align-self-center">
+                        <input class="form-check-input" type="checkbox" id="quickgrading-{{uniqid}}" {{#enabled}}checked{{/enabled}}/>
+                        <label class="form-check-label" for="quickgrading-{{uniqid}}" >{{#str}}quickgrading, mod_assign{{/str}}</label>
+                    </div>
                 </div>
-            </div>
-            <div class="navitem-divider m-0"></div>
-            {{#js}}
-                document.querySelector('#quickgrading-{{uniqid}}').addEventListener('change', function(e) {
-                    var url = new URL('{{{baseurl}}}');
-                    url.searchParams.set('quickgrading', e.target.checked ? 1 : 0);
-                    window.location.href = url;
-                });
-            {{/js}}
-        {{/quickgrading}}
-        {{#downloadasfolders}}
-            <div class="navitem m-0">
-                <div class="form-check align-self-center">
-                    <input class="form-check-input" type="checkbox" id="downloadasfolders-{{uniqid}}" {{#enabled}}checked{{/enabled}}/>
-                    <label class="form-check-label" for="downloadasfolders-{{uniqid}}">{{#str}}downloadasfolders, mod_assign{{/str}}</label>
+                <div class="navitem-divider m-0"></div>
+                {{#js}}
+                    document.querySelector('#quickgrading-{{uniqid}}').addEventListener('change', function(e) {
+                        var url = new URL('{{{baseurl}}}');
+                        url.searchParams.set('quickgrading', e.target.checked ? 1 : 0);
+                        if (typeof window.updateGradingTable === 'function') {
+                            window.updateGradingTable(url.toString());
+                        } else {
+                            window.location.href = url;
+                        }
+                    });
+                {{/js}}
+            {{/quickgrading}}
+            {{#downloadasfolders}}
+                <div class="navitem m-0">
+                    <div class="form-check align-self-center">
+                        <input class="form-check-input" type="checkbox" id="downloadasfolders-{{uniqid}}" {{#enabled}}checked{{/enabled}}/>
+                        <label class="form-check-label" for="downloadasfolders-{{uniqid}}">{{#str}}downloadasfolders, mod_assign{{/str}}</label>
+                    </div>
                 </div>
-            </div>
-            <div class="navitem-divider m-0"></div>
-            {{#js}}
-                document.querySelector('#downloadasfolders-{{uniqid}}').addEventListener('change', function(e) {
-                    var url = new URL('{{{baseurl}}}');
-                    url.searchParams.set('downloadasfolders', e.target.checked ? 1 : 0);
-                    window.location.href = url;
-                });
-            {{/js}}
-        {{/downloadasfolders}}
-        {{#actions}}
-            <div class="navitem m-0">{{{actions}}}</div>
-        {{/actions}}
+                <div class="navitem-divider m-0"></div>
+                {{#js}}
+                    document.querySelector('#downloadasfolders-{{uniqid}}').addEventListener('change', function(e) {
+                        var url = new URL('{{{baseurl}}}');
+                        url.searchParams.set('downloadasfolders', e.target.checked ? 1 : 0);
+                        if (typeof window.updateGradingTable === 'function') {
+                            window.updateGradingTable(url.toString());
+                        } else {
+                            window.location.href = url;
+                        }
+                    });
+                {{/js}}
+            {{/downloadasfolders}}
+            {{#actions}}
+                <div class="navitem m-0">{{{actions}}}</div>
+            {{/actions}}
+        </div>
+        <div>
+        </div>
     </div>
 </div>

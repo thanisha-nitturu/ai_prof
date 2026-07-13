@@ -700,8 +700,8 @@ $string['emaildisplayno'] = 'Hidden';
 $string['emaildisplayyes'] = 'Visible to everyone';
 $string['emailenable'] = 'This email address is enabled';
 $string['emailenableclick'] = 'Click here to re-enable all email being sent to this address';
-$string['emailexists'] = 'This email address is already registered.';
-$string['emailexistssignuphint'] = 'Perhaps you created an account in the past? {$a}';
+$string['emailexists'] = 'If you do not have an account, your registration will be processed.';
+$string['emailexistssignuphint'] = 'If you already have an account, please log in. {$a}';
 $string['emailexistshintlink'] = 'Recover forgotten username or password';
 $string['emailformat'] = 'Email format';
 $string['emailcharset'] = 'Email charset';
@@ -727,7 +727,7 @@ line at the top of your web browser window.
 If you need help, please contact the site administrator,
 {$a->admin}';
 $string['emailpasswordconfirmationsubject'] = '{$a}: Change password confirmation';
-$string['emailpasswordconfirmmaybesent'] = '<p>If you supplied a correct username or unique email address then an email should have been sent to you.</p>
+$string['emailpasswordconfirmmaybesent'] = '<p>If that email exists, a reset link has been sent.</p>
    <p>It contains easy instructions to confirm and complete this password change.
 If you continue to have difficulty, please contact the site administrator.</p>';
 $string['emailpasswordconfirmnoemail'] = '<p>The user account you specified does not have a recorded email address.</p>

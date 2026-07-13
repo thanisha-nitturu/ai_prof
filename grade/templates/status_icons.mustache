@@ -29,7 +29,7 @@
 <div class="text-muted {{classes}}">
     {{#hidden}}{{#pix}}i/show, moodle, {{#str}} hidden, grades {{/str}}{{/pix}}{{/hidden}}
     {{#locked}}{{#pix}}i/lock, moodle, {{#str}} locked, grades {{/str}}{{/pix}}{{/locked}}
-    {{#overridden}}{{#pix}}i/overriden_grade, moodle, {{#str}} overridden, grades {{/str}}{{/pix}}{{/overridden}}
+    {{! Overridden icon removed to keep cells clean and remove the legacy pencil icon }}
     {{#excluded}}{{#pix}}i/excluded, moodle, {{#str}} excluded, grades {{/str}}{{/pix}}{{/excluded}}
-    {{#feedback}}{{#pix}}i/asterisk, moodle, {{#str}} feedbackprovided, grades {{/str}}{{/pix}}{{/feedback}}
+    {{#feedback}}<span class="feedback-icon">{{#pix}}i/asterisk, moodle, {{#str}} feedbackprovided, grades {{/str}}{{/pix}}</span>{{/feedback}}
 </div>

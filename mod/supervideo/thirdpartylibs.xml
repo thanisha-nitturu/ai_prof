@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<libraries>
+    <library>
+        <location>vendor/kapture</location>
+        <name>PDF JS</name>
+        <version>3.1</version>
+        <license>Kraus License</license>
+        <licenseversion></licenseversion>
+    </library>
+    <library>
+        <location>amd/src/player_render.js</location>
+        <name>Plyr</name>
+        <version>3.x</version>
+        <license>MIT</license>
+        <licenseversion></licenseversion>
+    </library>
+</libraries>

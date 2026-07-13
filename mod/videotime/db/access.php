@@ -47,6 +47,7 @@ $capabilities = [
     ],
 
     'mod/videotime:view_report' => [
+        'riskbitmask' => RISK_PERSONAL,
         'captype' => 'read',
         'contextlevel' => CONTEXT_MODULE,
         'archetypes' => [

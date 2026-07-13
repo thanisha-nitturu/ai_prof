@@ -1,0 +1,253 @@
+#page-mod-supervideo-mod {
+    .form-filetypes-descriptions {
+        margin-top: -20px;
+
+        .list-unstyled {
+            display: flex;
+            gap: 10px;
+
+            li {
+                font-size: 0;
+
+                small {
+                    font-size: 15px;
+                }
+            }
+        }
+    }
+
+    .filemanager.fm-noitems {
+        .filemanager-container {
+            min-height: 100px;
+
+            .fm-empty-container {
+                padding-top: 51px;
+
+                .dndupload-arrow {
+                    height: 54px;
+
+                    i {
+                        font-size: 44px;
+                    }
+                }
+            }
+        }
+    }
+}
+
+#supervideoheading {
+    display: flex;
+    align-items: center;
+
+    .supervideoheading-title {
+        width: 100%;
+    }
+
+    .supervideo-report-link {
+        font-size: 16px;
+        font-weight: 400;
+        padding-top: 4px;
+        display: inline-block;
+    }
+}
+
+body {
+    #supervideo_area_embed {
+        position: relative;
+        z-index: 1;
+        width: 100% !important;
+        overflow: hidden !important;
+
+        .logo {
+            position: absolute;
+            height: 40px;
+            background: #ffffff;
+            right: 2px;
+            top: 2px;
+            z-index: 2
+        }
+
+        iframe:not(.h5p-iframe) {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            border: none;
+        }
+    }
+}
+
+#supervideo_area_embed[dir="ltr"],
+.mod-supervideo-mobile[dir="ltr"],
+body.body-df .app[dir="ltr"] .video-wrap {
+    direction: ltr !important;
+    unicode-bidi: isolate;
+}
+
+#supervideo_area_embed[dir="ltr"] .plyr,
+#supervideo_area_embed[dir="ltr"] .plyr__controls,
+#supervideo_area_embed[dir="ltr"] .plyr__controls *,
+#supervideo_area_embed[dir="ltr"] .plyr__progress,
+#supervideo_area_embed[dir="ltr"] .plyr__progress *,
+#supervideo_area_embed[dir="ltr"] .plyr__volume,
+#supervideo_area_embed[dir="ltr"] .plyr__volume *,
+#supervideo_area_embed[dir="ltr"] .plyr__menu,
+#supervideo_area_embed[dir="ltr"] .plyr__menu *,
+body.body-df .app[dir="ltr"] .plyr,
+body.body-df .app[dir="ltr"] .plyr__controls,
+body.body-df .app[dir="ltr"] .plyr__controls *,
+body.body-df .app[dir="ltr"] .plyr__progress,
+body.body-df .app[dir="ltr"] .plyr__progress *,
+body.body-df .app[dir="ltr"] .plyr__volume,
+body.body-df .app[dir="ltr"] .plyr__volume *,
+body.body-df .app[dir="ltr"] .plyr__menu,
+body.body-df .app[dir="ltr"] .plyr__menu * {
+    direction: ltr !important;
+}
+
+#supervideo_area_embed[dir="ltr"] .plyr__menu__container,
+body.body-df .app[dir="ltr"] .plyr__menu__container {
+    text-align: left !important;
+}
+
+#page-mod-supervideo-report table.flexible .header .commands {
+    display: none;
+}
+
+#map-visualization {
+    margin: 5px 0 5px;
+    background: rgba(206, 206, 206, 0.5);
+    padding: 1px;
+    width: 100%;
+    position: relative;
+    transition: all ease 0.3s;
+    z-index: 9999;
+
+    .map,
+    .clique {
+        display: flex;
+        width: 100%;
+        position: absolute;
+        top: 0;
+        bottom: 0;
+
+        div {
+            height: 100%;
+            background: #205eff;
+            width: 100%;
+            opacity: 0;
+            transition: opacity 200ms;
+        }
+    }
+
+    .clique {
+        z-index: 3;
+
+        div {
+            cursor: pointer;
+            background: rgba(0, 0, 0, 0);
+
+            &:hover {
+                background: rgba(0, 0, 0, 0.2);
+                opacity: 1;
+            }
+        }
+    }
+
+    #your-map-view {
+        margin: -3px 0 !important;
+        padding-bottom: 0;
+        font-size: 8px;
+        position: relative;
+        z-index: 2;
+        color: #000000;
+        text-align: center;
+        transition: all ease 0.3s;
+
+        span {
+            font-weight: 700;
+        }
+
+        @media (max-width: 750px) {
+            font-size: 15px;
+            margin: 3px 0 !important;
+        }
+    }
+
+    &:hover {
+        margin-top: -10px;
+
+        #your-map-view {
+            font-size: 15px;
+            margin: 3px 0 !important;
+        }
+    }
+
+    &.report {
+        display: flex;
+        width: 100%;
+        margin: 6px 0;
+        height: 20px;
+
+        div {
+            opacity: 0;
+            background: #e60076;
+            width: 100%;
+            height: 19px;
+        }
+    }
+}
+
+#fitem_id_completionpercent .felement {
+    align-items: center !important;
+
+    &::after {
+        content: ' %';
+        margin-left: 6px;
+        font-size: 1.1em;
+    }
+}
+
+#page-mod-supervideo-view {
+    #page.drawers div[role="main"] {
+        background: rgba(0, 0, 0, 0);
+        padding: 0;
+        border-radius: 0;
+        box-shadow: none;
+    }
+
+    .activity-description {
+        iframe {
+            width: 96% !important;
+        }
+    }
+}
+
+@import "styles/player";
+
+.plyr--video {
+    width: 100%;
+}
+
+.plyr__control {
+    margin: 0;
+    text-shadow: none;
+    -webkit-text-shadow: none;
+    box-shadow: none;
+    -webkit-box-shadow: none;
+    appearance: none;
+    -webkit-appearance: none;
+}
+
+.plyr--full-ui.plyr--video .plyr__control--overlaid {
+    zoom: 1.4;
+}
+
+@media (max-width: 750px) {
+    .plyr__volume {
+        display: none !important;
+    }
+}
+
+@import "styles/freemode";

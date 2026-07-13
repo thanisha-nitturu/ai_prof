@@ -4,13 +4,17 @@
 }
 
 #page.drawers {
-    padding: 0 15px;
+    padding: 0 !important;
     height: initial;
+    display: flex;
+    flex-direction: column;
+    min-height: calc(100vh - 70px);
 
     .main-inner {
         margin-top: 0;
         margin-bottom: 2rem;
         padding: 1.5rem;
+        flex: 1 0 auto;
     }
 
     &.show-drawer-left {
@@ -69,6 +73,7 @@ body.has-secondarynavigation {
     #page,
     #page.drawers {
         margin-top: 130px;
+        min-height: calc(100vh - 130px);
     }
 
     .drawer-toggles .drawer-toggler {

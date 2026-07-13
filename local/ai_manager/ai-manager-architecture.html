@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Manager — Architecture Block Diagram</title>
+<meta name="description" content="Interactive architecture block diagram for the local_ai_manager Moodle plugin">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0a0e1a;--surface:#111827;--card:#1a2235;--border:#2d3a52;--accent:#6366f1;--accent2:#8b5cf6;--green:#10b981;--blue:#3b82f6;--orange:#f59e0b;--pink:#ec4899;--cyan:#06b6d4;--red:#ef4444;--text:#e2e8f0;--muted:#94a3b8}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+.glow{position:fixed;top:-200px;left:50%;transform:translateX(-50%);width:800px;height:800px;background:radial-gradient(circle,rgba(99,102,241,.08) 0%,transparent 70%);pointer-events:none;z-index:0}
+.header{text-align:center;padding:40px 20px 24px;position:relative;z-index:1}
+.header h1{font-size:2.2rem;font-weight:800;background:linear-gradient(135deg,#6366f1,#8b5cf6,#ec4899);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:6px}
+.header p{color:var(--muted);font-size:.95rem}
+.badge{display:inline-block;padding:4px 12px;border-radius:20px;font-size:.7rem;font-weight:600;margin:4px;text-transform:uppercase;letter-spacing:.5px}
+.badge-p{background:rgba(99,102,241,.15);color:#818cf8;border:1px solid rgba(99,102,241,.3)}
+.badge-g{background:rgba(16,185,129,.15);color:#34d399;border:1px solid rgba(16,185,129,.3)}
+.wrap{max-width:1200px;margin:0 auto;padding:20px;position:relative;z-index:1}
+
+/* LAYER BLOCKS */
+.layer{border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:20px;position:relative;background:var(--surface);transition:border-color .3s}
+.layer:hover{border-color:rgba(99,102,241,.4)}
+.layer-label{position:absolute;top:-12px;left:20px;background:var(--bg);padding:0 10px;font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted)}
+.layer-row{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+
+/* BLOCKS */
+.block{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 18px;text-align:center;min-width:120px;flex:1;max-width:200px;transition:all .3s;cursor:default}
+.block:hover{transform:translateY(-3px);box-shadow:0 8px 25px rgba(99,102,241,.15)}
+.block h4{font-size:.8rem;font-weight:700;margin-bottom:3px}
+.block p{font-size:.65rem;color:var(--muted);line-height:1.3}
+.block .icon{font-size:1.3rem;margin-bottom:6px}
+
+/* Color accents */
+.b-purple{border-color:rgba(99,102,241,.4)}.b-purple:hover{border-color:#6366f1}
+.b-blue{border-color:rgba(59,130,246,.4)}.b-blue:hover{border-color:#3b82f6}
+.b-green{border-color:rgba(16,185,129,.4)}.b-green:hover{border-color:#10b981}
+.b-orange{border-color:rgba(245,158,11,.4)}.b-orange:hover{border-color:#f59e0b}
+.b-pink{border-color:rgba(236,72,153,.4)}.b-pink:hover{border-color:#ec4899}
+.b-cyan{border-color:rgba(6,182,212,.4)}.b-cyan:hover{border-color:#06b6d4}
+.b-red{border-color:rgba(239,68,68,.4)}.b-red:hover{border-color:#ef4444}
+
+/* ARROWS */
+.arrow-down{text-align:center;padding:8px 0;font-size:1.6rem;color:var(--accent);opacity:.6;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:.4}50%{opacity:1}}
+.arrow-label{text-align:center;font-size:.65rem;color:var(--muted);margin-top:-6px;margin-bottom:4px}
+
+/* FLOW PIPELINE */
+.pipeline{display:flex;align-items:stretch;gap:0;margin:0;flex-wrap:wrap;justify-content:center}
+.pipe-step{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 14px;text-align:center;flex:1;min-width:100px;max-width:160px;position:relative}
+.pipe-step h4{font-size:.72rem;font-weight:700;margin-bottom:2px}
+.pipe-step p{font-size:.6rem;color:var(--muted)}
+.pipe-arrow{display:flex;align-items:center;color:var(--accent);font-size:1.3rem;padding:0 4px;flex-shrink:0}
+
+/* DETAIL SECTION */
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:16px}
+@media(max-width:768px){.detail-grid{grid-template-columns:1fr}.pipeline{flex-direction:column;align-items:center}.pipe-arrow{transform:rotate(90deg)}}
+.detail-box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px}
+.detail-box h3{font-size:.85rem;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.chip-row{display:flex;flex-wrap:wrap;gap:6px}
+.chip{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:.68rem;font-weight:500;transition:all .2s}
+.chip:hover{border-color:var(--accent);background:rgba(99,102,241,.08)}
+
+/* DB TABLE */
+.db-t{width:100%;border-collapse:collapse;margin-top:8px}
+.db-t th{background:var(--card);color:var(--accent);font-size:.7rem;font-weight:600;padding:8px;text-align:left;border-bottom:2px solid var(--border)}
+.db-t td{padding:6px 8px;font-size:.7rem;border-bottom:1px solid var(--border);color:var(--muted)}
+.db-t tr:hover td{background:rgba(99,102,241,.04);color:var(--text)}
+.db-t .tname{color:#818cf8;font-weight:600}
+
+.footer{text-align:center;padding:30px 20px;color:var(--muted);font-size:.72rem;border-top:1px solid var(--border);margin-top:30px}
+.sec-title{font-size:.95rem;font-weight:700;color:var(--accent);margin:24px 0 12px;display:flex;align-items:center;gap:6px}
+
+/* Connector lines via pseudo-elements */
+.connector-line{position:relative}
+.connector-line::after{content:'';position:absolute;bottom:-20px;left:50%;width:2px;height:20px;background:linear-gradient(to bottom,var(--accent),transparent)}
+</style>
+</head>
+<body>
+<div class="glow"></div>
+
+<div class="header">
+  <h1>🧠 local_ai_manager</h1>
+  <p>Moodle AI Gateway — Runtime Architecture Block Diagram</p>
+  <div style="margin-top:10px">
+    <span class="badge badge-p">v2.5 Stable</span>
+    <span class="badge badge-g">Moodle 5.0–5.01</span>
+  </div>
+</div>
+
+<div class="wrap">
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- LAYER 1: FRONTEND CONSUMERS                -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="layer">
+  <span class="layer-label" style="color:#818cf8">Layer 1 — Frontend Consumers</span>
+  <div class="layer-row">
+    <div class="block b-purple"><div class="icon">🖥️</div><h4>block_ai_chat</h4><p>Sidebar chat block</p></div>
+    <div class="block b-purple"><div class="icon">✏️</div><h4>tiny_ai</h4><p>TinyMCE editor plugin</p></div>
+    <div class="block b-purple"><div class="icon">📝</div><h4>Atto AI</h4><p>Atto editor plugin</p></div>
+    <div class="block b-purple"><div class="icon">🧩</div><h4>Any Moodle Plugin</h4><p>Custom integrations</p></div>
+  </div>
+</div>
+
+<div class="arrow-down">⬇</div>
+<div class="arrow-label">AJAX / Web Service calls</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- LAYER 2: WEB SERVICE API GATEWAY           -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="layer">
+  <span class="layer-label" style="color:#60a5fa">Layer 2 — Web Service API Gateway</span>
+  <div class="layer-row">
+    <div class="block b-blue"><div class="icon">💬</div><h4>submit_query</h4><p>Primary AI endpoint</p></div>
+    <div class="block b-blue"><div class="icon">⚙️</div><h4>get_ai_config</h4><p>User config data</p></div>
+    <div class="block b-blue"><div class="icon">📊</div><h4>get_user_quota</h4><p>Quota info</p></div>
+    <div class="block b-blue"><div class="icon">🎛️</div><h4>get_purpose_options</h4><p>Available options</p></div>
+    <div class="block b-blue"><div class="icon">📜</div><h4>get_prompts</h4><p>History log</p></div>
+  </div>
+</div>
+
+<div class="arrow-down">⬇</div>
+<div class="arrow-label">Instantiates Manager with purpose</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- LAYER 3: ORCHESTRATION ENGINE              -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="layer" style="border-color:rgba(139,92,246,.3)">
+  <span class="layer-label" style="color:#c084fc">Layer 3 — Orchestration Engine (manager.php)</span>
+
+  <p style="font-size:.75rem;color:var(--muted);margin-bottom:14px;text-align:center">The Manager's <code>perform_request()</code> runs this security pipeline before any AI call:</p>
+
+  <div class="pipeline">
+    <div class="pipe-step b-red"><h4>🔒 Capability</h4><p>has_capability check</p></div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-step b-orange"><h4>🏢 Tenant</h4><p>is_tenant_enabled</p></div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-step b-red"><h4>🚫 User Lock</h4><p>is_locked check</p></div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-step b-cyan"><h4>🔌 Resolve</h4><p>Factory→connector</p></div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-step b-green"><h4>✅ Confirm</h4><p>User confirmed?</p></div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-step b-pink"><h4>🪝 Hook</h4><p>Custom restriction</p></div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-step b-orange"><h4>📊 Quota</h4><p>Usage ≤ max?</p></div>
+  </div>
+
+  <div class="arrow-down">⬇</div>
+  <div class="arrow-label">All checks pass → Format prompt → Execute</div>
+
+  <div class="detail-grid">
+    <div class="detail-box">
+      <h3 style="color:#c084fc">🏭 connector_factory</h3>
+      <p style="font-size:.7rem;color:var(--muted);margin-bottom:6px">Resolves: Purpose → Connector → Instance by user role</p>
+      <div class="chip-row">
+        <span class="chip">get_connector_by_purpose()</span>
+        <span class="chip">get_connector_instance_by_id()</span>
+        <span class="chip">get_purpose_by_purpose_string()</span>
+      </div>
+    </div>
+    <div class="detail-box">
+      <h3 style="color:#fbbf24">⚙️ config_manager</h3>
+      <p style="font-size:.7rem;color:var(--muted);margin-bottom:6px">Per-tenant config: purpose→tool mapping, quotas, enable state</p>
+      <div class="chip-row">
+        <span class="chip">get_purpose_config()</span>
+        <span class="chip">get_max_requests()</span>
+        <span class="chip">is_tenant_enabled()</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="arrow-down">⬇</div>
+<div class="arrow-label">Purpose formats prompt → Connector builds request payload</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- LAYER 4: PURPOSE + CONNECTOR               -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="layer">
+  <span class="layer-label" style="color:#f472b6">Layer 4 — Purpose Router + AI Connectors</span>
+
+  <div class="detail-grid">
+    <div class="detail-box" style="border-color:rgba(236,72,153,.2)">
+      <h3 style="color:#f472b6">🎯 Purpose Subplugins (aipurpose_*)</h3>
+      <p style="font-size:.7rem;color:var(--muted);margin-bottom:8px">Each purpose defines prompt formatting, output rendering, and supported options</p>
+      <div class="layer-row" style="gap:8px">
+        <div class="block b-pink" style="min-width:90px;max-width:120px;padding:8px"><h4>💬 chat</h4><p>Multi-turn</p></div>
+        <div class="block b-pink" style="min-width:90px;max-width:120px;padding:8px"><h4>📝 single</h4><p>One-shot</p></div>
+        <div class="block b-pink" style="min-width:90px;max-width:120px;padding:8px"><h4>📋 feedback</h4><p>Student AI</p></div>
+        <div class="block b-pink" style="min-width:90px;max-width:120px;padding:8px"><h4>🎨 imggen</h4><p>Images</p></div>
+        <div class="block b-pink" style="min-width:90px;max-width:120px;padding:8px"><h4>🔊 tts</h4><p>Speech</p></div>
+        <div class="block b-pink" style="min-width:90px;max-width:120px;padding:8px"><h4>🌍 translate</h4><p>Languages</p></div>
+        <div class="block b-pink" style="min-width:90px;max-width:120px;padding:8px"><h4>🤖 agent</h4><p>Tool calls</p></div>
+      </div>
+    </div>
+
+    <div class="detail-box" style="border-color:rgba(245,158,11,.2)">
+      <h3 style="color:#fbbf24">🔌 Tool Connectors (aitool_*)</h3>
+      <p style="font-size:.7rem;color:var(--muted);margin-bottom:8px">Each connector: get_prompt_data() → make_request() → execute_prompt_completion()</p>
+      <div class="layer-row" style="gap:8px">
+        <div class="block b-orange" style="min-width:90px;max-width:120px;padding:8px"><h4>💬 ChatGPT</h4><p>OpenAI text</p></div>
+        <div class="block b-orange" style="min-width:90px;max-width:120px;padding:8px"><h4>✨ Gemini</h4><p>Google text</p></div>
+        <div class="block b-orange" style="min-width:90px;max-width:120px;padding:8px"><h4>🎨 DALL-E</h4><p>OpenAI img</p></div>
+        <div class="block b-orange" style="min-width:90px;max-width:120px;padding:8px"><h4>🖼️ Imagen</h4><p>Google img</p></div>
+        <div class="block b-orange" style="min-width:90px;max-width:120px;padding:8px"><h4>🦙 Ollama</h4><p>Self-hosted</p></div>
+        <div class="block b-orange" style="min-width:90px;max-width:120px;padding:8px"><h4>🔊 TTS</h4><p>Speech APIs</p></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="arrow-down">⬇</div>
+<div class="arrow-label">HTTP POST via Guzzle (base_connector.make_request)</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- LAYER 5: EXTERNAL AI PROVIDERS             -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="layer" style="background:linear-gradient(135deg,rgba(16,185,129,.05),rgba(6,182,212,.05))">
+  <span class="layer-label" style="color:#34d399">Layer 5 — External AI Providers</span>
+  <div class="layer-row">
+    <div class="block b-green"><div class="icon">🟢</div><h4>OpenAI API</h4><p>GPT / DALL-E / TTS</p></div>
+    <div class="block b-cyan"><div class="icon">🔵</div><h4>Google AI</h4><p>Gemini / Imagen / TTS</p></div>
+    <div class="block b-green"><div class="icon">☁️</div><h4>Google Vertex AI</h4><p>Enterprise (OAuth JWT)</p></div>
+    <div class="block b-cyan"><div class="icon">☁️</div><h4>Azure OpenAI</h4><p>Enterprise endpoint</p></div>
+    <div class="block b-green"><div class="icon">🦙</div><h4>Ollama (local)</h4><p>Self-hosted LLM</p></div>
+    <div class="block b-cyan"><div class="icon">📚</div><h4>Telli</h4><p>Educational AI</p></div>
+  </div>
+</div>
+
+<div class="arrow-down">⬇</div>
+<div class="arrow-label">Response flows back through connector → purpose → manager → log + events</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- LAYER 6: DATA & OBSERVABILITY              -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="layer">
+  <span class="layer-label" style="color:#22d3ee">Layer 6 — Data Persistence & Observability</span>
+
+  <div class="detail-grid">
+    <div class="detail-box">
+      <h3 style="color:#22d3ee">🗄️ Database Schema (5 tables)</h3>
+      <table class="db-t">
+        <thead><tr><th>Table</th><th>Role</th></tr></thead>
+        <tbody>
+          <tr><td class="tname">ai_manager_instance</td><td>AI tool instances (endpoint, apikey, model)</td></tr>
+          <tr><td class="tname">ai_manager_config</td><td>Per-tenant key-value config</td></tr>
+          <tr><td class="tname">ai_manager_request_log</td><td>Full audit trail of all requests</td></tr>
+          <tr><td class="tname">ai_manager_userinfo</td><td>Per-user role, lock, scope, confirmed</td></tr>
+          <tr><td class="tname">ai_manager_userusage</td><td>Per-user per-purpose usage counters</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="detail-box">
+      <h3 style="color:#34d399">📡 Events, Hooks & Tasks</h3>
+      <div style="margin-bottom:10px">
+        <p style="font-size:.72rem;font-weight:600;color:#34d399;margin-bottom:4px">Events (fired by Manager)</p>
+        <div class="chip-row">
+          <span class="chip">✅ get_ai_response_succeeded</span>
+          <span class="chip">❌ get_ai_response_failed</span>
+        </div>
+      </div>
+      <div style="margin-bottom:10px">
+        <p style="font-size:.72rem;font-weight:600;color:#fbbf24;margin-bottom:4px">Hooks (extension points)</p>
+        <div class="chip-row">
+          <span class="chip">additional_user_restriction</span>
+          <span class="chip">custom_tenant</span>
+          <span class="chip">purpose_usage</span>
+          <span class="chip">userinfo_extend</span>
+        </div>
+      </div>
+      <div>
+        <p style="font-size:.72rem;font-weight:600;color:#f472b6;margin-bottom:4px">Scheduled Tasks</p>
+        <div class="chip-row">
+          <span class="chip">⏰ reset_user_usage</span>
+          <span class="chip">🧹 data_wiper (GDPR)</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- CROSS-CUTTING: SECURITY & UI               -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="sec-title"><span>🛡️</span> Cross-Cutting Concerns</div>
+
+<div class="detail-grid">
+  <div class="detail-box" style="border-color:rgba(239,68,68,.2)">
+    <h3 style="color:#f87171">🔐 Security & Access Control</h3>
+    <p style="font-size:.7rem;color:var(--muted);margin-bottom:8px">Multi-layer security: Moodle capabilities + tenant isolation + user roles + hooks</p>
+    <div class="chip-row">
+      <span class="chip">access_manager</span>
+      <span class="chip">userinfo (role/lock/scope)</span>
+      <span class="chip">tenant isolation</span>
+      <span class="chip">11 capabilities</span>
+      <span class="chip">confirm_ai_usage flow</span>
+    </div>
+  </div>
+
+  <div class="detail-box" style="border-color:rgba(6,182,212,.2)">
+    <h3 style="color:#22d3ee">🖼️ UI Layer (Mustache + AMD JS)</h3>
+    <p style="font-size:.7rem;color:var(--muted);margin-bottom:8px">Server-rendered templates + client-side AJAX modules</p>
+    <div class="chip-row">
+      <span class="chip">19 Mustache templates</span>
+      <span class="chip">14 AMD JS modules</span>
+      <span class="chip">7 Moodle forms</span>
+      <span class="chip">make_request.js</span>
+      <span class="chip">config.js</span>
+    </div>
+  </div>
+</div>
+
+</div><!-- /wrap -->
+
+<div class="footer">
+  <p>local_ai_manager v2.5 — ISB Bayern, 2024 — Architecture Block Diagram</p>
+  <p style="margin-top:6px">Generated 2026-05-14 • Share this URL with your team</p>
+</div>
+
+</body>
+</html>

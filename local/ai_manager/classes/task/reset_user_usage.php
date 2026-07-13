@@ -60,6 +60,17 @@ class reset_user_usage extends \core\task\scheduled_task {
     public function execute(): void {
         global $DB;
         $tenantfield = get_config('local_ai_manager', 'tenantcolumn');
+        if (empty($tenantfield)) {
+            $tenantfield = 'institution';
+        }
+
+        // Dynamically verify if the configured field is a valid column in the {user} table.
+        // This prevents SQL injection while remaining fully future-proof.
+        $usercolumns = $DB->get_columns('user');
+        if (!array_key_exists($tenantfield, $usercolumns)) {
+            throw new \coding_exception('Invalid tenantcolumn configured in local_ai_manager: ' . $tenantfield);
+        }
+
         $tenants = $DB->get_fieldset_sql("SELECT DISTINCT " . $tenantfield
                 . " FROM {local_ai_manager_userusage} uu LEFT JOIN {user} u ON uu.userid = u.id");
         if (empty($tenants)) {

@@ -67,4 +67,20 @@ $functions = [
         'ajax'        => true,                             // Allow calling via AJAX if needed
         'capabilities'=> 'mod/quiz:view',                  // Permission required to see the quiz
     ],
+    'local_create_assignment' => [
+        'classname'   => 'local_create_sections_external',
+        'methodname'  => 'create_assignment',
+        'classpath'   => 'local/my_webservices/externallib.php',
+        'description' => 'Creates an assignment activity in a course section with an HTML description.',
+        'type'        => 'write',
+        'capabilities'=> 'moodle/course:manageactivities',
+    ],
+    'local_update_assignment' => [
+        'classname'   => 'local_create_sections_external',
+        'methodname'  => 'update_assignment',
+        'classpath'   => 'local/my_webservices/externallib.php',
+        'description' => 'Updates an existing assignment title and/or HTML description by its course module ID.',
+        'type'        => 'write',
+        'capabilities'=> 'moodle/course:manageactivities',
+    ],
 ];

@@ -4717,6 +4717,9 @@ class assign {
     protected function view_grading_page() {
         global $CFG, $PAGE;
 
+        // Force a full-width layout so the grading table uses all available screen space.
+        $PAGE->set_pagelayout('report');
+
         // Ensure that the 'Submissions' navigation node is highlighted as 'active' in the secondary navigation.
         $PAGE->set_secondary_active_tab('mod_assign_submissions');
 

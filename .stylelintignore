@@ -126,6 +126,11 @@ mod/jupyternotebook/github/psr/cache/
 mod/jupyternotebook/github/psr/http-message/
 mod/jupyternotebook/github/ralouphie/getallheaders/
 mod/jupyternotebook/github/symfony/options-resolver/
+mod/supervideo/vendor/kapture/
+mod/supervideo/amd/src/player_render.js
+mod/videolesson/resources/plyr/
+mod/videolesson/resources/hls.min.js
+mod/videolesson/resources/bowser.min.js
 mod/videotime/amd/src/player.js
 mod/videotime/appjs/player.js
 mod/vpl/thirdpartylibs/noVNC/

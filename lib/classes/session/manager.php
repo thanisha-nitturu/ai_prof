@@ -385,13 +385,12 @@ class manager {
             'domain' => $CFG->sessioncookiedomain,
             'secure' => $cookiesecure,
             'httponly' => $CFG->cookiehttponly,
+            'samesite' => 'Lax',
         ];
-
-        if (self::should_use_samesite_none()) {
-            // If $samesite is empty, we don't want there to be any SameSite attribute.
-            $sessionoptions['samesite'] = 'None';
-        }
-
+        // if (self::should_use_samesite_none()) {
+        //     // If $samesite is empty, we don't want there to be any SameSite attribute.
+        //     $sessionoptions['samesite'] = 'None';
+        // }
         session_set_cookie_params($sessionoptions);
 
         ini_set('session.use_trans_sid', '0');

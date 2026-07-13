@@ -1,177 +1,303 @@
+// ============================================================
+// Moove Theme – Footer (Fully Polished v2)
+// Brand-blue top border · #205eff headings · blue social boxes
+// Icons on links · social under logo · wider brand col · login dot
+// ============================================================
+
+// ── Design Tokens ────────────────────────────────────────────
+$footer-bg: linear-gradient(135deg, #0a0e1a 0%, #0d1b3e 50%, #0a1628 100%);
+$footer-bottom-bg: #060c18;
+$footer-brand-accent: #205eff; // Brand blue
+$footer-divider-color: rgba(255, 255, 255, 0.12);
+$footer-text: #ffffff;
+$footer-text-muted: #ffffff;
+$footer-brand-color: #ffffff;
+$footer-heading-color: #205eff; // Pop blue for PLATFORM / SUPPORT
+$footer-link-color: #ffffff;
+$footer-link-hover: #ffffff;
+$footer-icon-bg: #205eff; // Filled brand-blue boxes
+$footer-icon-border: rgba(32, 94, 255, 0.5);
+$footer-icon-hover-bg: #1a50e8;
+$footer-max-width: 1200px;
+$footer-padding-h: 40px;
+$footer-login-dot: #22c55e; // Green "online" dot
+
+// ── Base ─────────────────────────────────────────────────────
 #page-footer {
-    background-color: #282829;
-    color: #fff;
+    background: $footer-bg;
+    color: $footer-text;
+    border-top: 3px solid $footer-brand-accent;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Inter', sans-serif;
 
-    a:not(.btn) {
-        color: #fff;
+    a {
+        color: $footer-link-color;
+        text-decoration: none;
+
+        &:hover {
+            color: $footer-link-hover;
+            text-decoration: none;
+        }
     }
 
-    .contactsitesupport {
-        border: 1px solid #fff;
-        color: #fff;
+    // ── Main top section ──────────────────────────────────────
+    .moove-new-footer__main {
+        padding: 30px 0 40px;
+        border-bottom: 1px solid $footer-divider-color;
     }
 
-    .popover.footer .popover-body .footer-section {
-        color: #1d2125;
+    .moove-new-footer__container {
+        max-width: 85%;
+        margin: 0 auto;
+        padding: 0 15px;
+        display: flex;
+        align-items: flex-start;
+        gap: 40px;
+    }
 
+    // ── ➅ Wider brand column ──────────────────────────────────
+    .moove-new-footer__brand {
+        flex: 0 0 320px;
+        max-width: 320px;
+    }
+
+    .moove-new-footer__brand-name {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 1.35rem;
+        font-weight: 700;
+        color: $footer-brand-color !important;
+        text-decoration: none !important;
+        letter-spacing: -0.02em;
+        margin-bottom: 12px;
+        transition: opacity 0.2s ease;
+
+        &:hover {
+            opacity: 0.85;
+            color: $footer-brand-color !important;
+        }
+    }
+
+    // Blue status dot after brand name
+    .moove-new-footer__brand-dot {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        background-color: $footer-brand-accent;
+        border-radius: 50%;
+        flex-shrink: 0;
+        margin-left: 2px;
+    }
+
+    .moove-new-footer__tagline {
+        font-size: 0.875rem;
+        line-height: 1.7;
+        color: $footer-text;
+        margin: 0 0 20px;
+    }
+
+    // ── ➄ Social icons under logo ─────────────────────────────
+    .moove-new-footer__social {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    // ── ➂ Social icon boxes: 32px, brand-blue bg + border ─────
+    .moove-new-footer__social-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        background-color: $footer-icon-bg;
+        border: 1px solid $footer-icon-border;
+        border-radius: 7px;
+        color: #ffffff !important;
+        text-decoration: none !important;
+        font-size: 0.8rem;
+        transition: background-color 0.2s ease,
+            transform 0.15s ease,
+            box-shadow 0.2s ease;
+
+        &:hover {
+            background-color: $footer-icon-hover-bg;
+            color: #ffffff !important;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(32, 94, 255, 0.35);
+        }
+
+        .fa {
+            line-height: 1;
+        }
+    }
+
+    // ── Navigation group ──────────────────────────────────────
+    .moove-new-footer__nav-group {
+        flex: 1;
+        display: flex;
+        justify-content: flex-end;
+        gap: 64px;
+    }
+
+    .moove-new-footer__nav-col {
+        min-width: 145px;
+    }
+
+    // ── ➁ Blue column headings ────────────────────────────────
+    .moove-new-footer__nav-heading {
+        font-size: 0.68rem;
+        font-weight: 700;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        color: $footer-heading-color; // #205eff — pops against dark bg
+        margin: 0 0 18px;
+        padding: 0;
+        line-height: 1;
+        border: none;
+        background: none;
+    }
+
+    .moove-new-footer__nav-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+
+        li {
+            margin-bottom: 11px;
+            padding: 0;
+            display: flex;
+            align-items: baseline;
+        }
+    }
+
+    // ── ➃ Link icons ──────────────────────────────────────────
+    .moove-new-footer__link-icon {
+        font-size: 0.78rem;
+        color: $footer-brand-accent;
+        margin-right: 10px; // ← increased gap between icon and text
+        flex-shrink: 0;
+        position: relative;
+        top: 1px;
+        opacity: 0.9;
+        transition: opacity 0.15s ease;
+    }
+
+    .moove-new-footer__nav-link {
+        display: inline-flex;
+        align-items: center;
+        color: $footer-link-color !important;
+        font-size: 0.9rem;
+        text-decoration: none !important;
+        transition: color 0.18s ease;
+
+        &:hover {
+            color: $footer-link-hover !important;
+
+            .moove-new-footer__link-icon {
+                opacity: 1;
+            }
+        }
+    }
+
+    // Support email row: icon sits beside the Moodle-rendered <a>
+    .moove-new-footer__support-email-item {
+        display: flex !important;
+        align-items: baseline;
+
+        .moove-new-footer__link-icon {
+            flex-shrink: 0;
+        }
+
+        // Style the Moodle-generated support email link
+        a,
+        .contactsitesupport {
+            color: $footer-link-color !important;
+            font-size: 0.9rem;
+            text-decoration: none !important;
+            font-weight: normal;
+            border: none !important;
+            background: none !important;
+            padding: 0 !important;
+            display: inline-flex;
+            align-items: center;
+
+            // Hide Moodle's default icon since we provide our own blue headset icon
+            .icon,
+            i.icon {
+                display: none !important;
+            }
+
+            &:hover {
+                color: $footer-link-hover !important;
+                background: none !important;
+            }
+        }
+    }
+
+    // ── Bottom bar ────────────────────────────────────────────
+    .moove-new-footer__bottom {
+        background-color: $footer-bottom-bg;
+        padding: 14px 0;
+    }
+
+    .moove-new-footer__bottom-row {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        padding-top: 0;
+        padding-bottom: 0;
+    }
+
+    .moove-new-footer__copyright {
+        font-size: 0.8rem;
+        color: $footer-text-muted;
+        line-height: 1;
+    }
+
+    // ── ➆ Login status: green dot + login info ────────────────
+    .moove-new-footer__login-status {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        font-size: 0.8rem;
+        color: $footer-text-muted;
+
+        // Strip Moodle's default link styling inside login_info
         a {
-            color: #1d2125;
-        }
-    }
+            color: rgba(255, 255, 255, 0.55) !important;
+            text-decoration: none !important;
 
-    .footer-columns {
-        padding: 15px;
-    }
-
-    .logo {
-        max-width: 50%;
-    }
-
-    h3.footer-title {
-        font-size: $h6-font-size;
-        line-height: 1.2;
-        font-weight: 500;
-    }
-
-    .socialnetworks,
-    .contact {
-        margin-top: .5rem;
-
-        ul {
-            padding-left: 0;
-
-            li {
-                display: inline;
-
-                a {
-                    text-decoration: none;
-                    color: #fff;
-                    width: 38px;
-                    height: 38px;
-
-                    &.btn-rounded {
-                        border-radius: 50%;
-                    }
-
-                    &.website {
-                        background-color: $brand-primary;
-                        &:hover {
-                            background-color: darken($brand-primary, 20%);
-                        }
-                    }
-
-                    &.mobile {
-                        background-color: $brand-primary;
-                        &:hover {
-                            background-color: darken($brand-primary, 20%);
-                        }
-                    }
-
-                    &.mail {
-                        background-color: $brand-primary;
-                        &:hover {
-                            background-color: darken($brand-primary, 20%);
-                        }
-                    }
-
-                    &.facebook {
-                        background-color: $facebook-color;
-                        &:hover {
-                            background-color: darken($facebook-color, 20%);
-                        }
-                    }
-
-                    &.twitter {
-                        background-color: $twitter-color;
-                        &:hover {
-                            background-color: darken($twitter-color, 20%);
-                        }
-                    }
-
-                    &.linkedin {
-                        background-color: $linkedin-color;
-                        &:hover {
-                            background-color: darken($linkedin-color, 20%);
-                        }
-                    }
-
-                    &.youtube {
-                        background-color: $youtube-color;
-                        &:hover {
-                            background-color: darken($youtube-color, 20%);
-                        }
-                    }
-
-                    &.instagram {
-                        background-color: $instagram-color;
-                        &:hover {
-                            background-color: darken($instagram-color, 20%);
-                        }
-                    }
-
-                    &.whatsapp {
-                        background-color: $whatsapp-color;
-                        &:hover {
-                            background-color: darken($whatsapp-color, 20%);
-                        }
-                    }
-
-                    &.telegram {
-                        background-color: $telegram-color;
-
-                        &:hover {
-                            background-color: darken($telegram-color, 20%);
-                        }
-
-                        .fa {
-                            margin-left: -1px;
-                        }
-                    }
-                }
+            &:hover {
+                color: rgba(255, 255, 255, 0.85) !important;
             }
         }
     }
 
-    .supportemail,
-    .logininfo,
-    .tool_dataprivacy{
-        margin: .5rem 0;
+    .moove-new-footer__status-dot {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background-color: $footer-login-dot;
+        flex-shrink: 0;
+        box-shadow: 0 0 6px rgba(34, 197, 94, 0.6);
+        animation: footerStatusPulse 2.5s ease-in-out infinite;
     }
 
-    .column-center {
-        text-align: center;
+    .moove-new-footer__login-text {
+        line-height: 1;
     }
 
-    .column-right {
-        text-align: right;
-
-        .stores {
-            a {
-                display: block;
-            }
-
-            img {
-                max-width: 160px;
-            }
+    // ── Debugging section ─────────────────────────────────────
+    .footer-content-debugging {
+        .footer-dark-inner:empty {
+            display: none;
         }
     }
 
-    .copyright {
-        background-color: $moodle-color;
-        text-align: center;
-        min-height: inherit;
-        color: #fff;
-        margin-bottom: 0;
-
-        .madeby {
-            padding: .5rem 0;
-
-            p {
-                margin-bottom: 0;
-            }
-        }
-    }
-
+    // ── Moodle popover compat buttons ─────────────────────────
     .btn-footer-popover {
         bottom: 1rem;
     }
@@ -181,17 +307,64 @@
     }
 }
 
-@include media-breakpoint-down(sm) {
+// ── Green pulse animation ─────────────────────────────────────
+@keyframes footerStatusPulse {
+
+    0%,
+    100% {
+        opacity: 1;
+        box-shadow: 0 0 6px rgba(34, 197, 94, 0.6);
+    }
+
+    50% {
+        opacity: 0.7;
+        box-shadow: 0 0 10px rgba(34, 197, 94, 0.9);
+    }
+}
+
+// ── Responsive ───────────────────────────────────────────────
+@include media-breakpoint-down(md) {
     #page-footer {
-        .column-right,
-        .column-left {
-            text-align: center;
+        .moove-new-footer__container {
+            max-width: 95%;
+            flex-direction: column;
+            gap: 32px;
+            padding: 0 24px;
         }
 
-        .column-center,
-        .column-right {
-            margin-top: 1rem;
+        .moove-new-footer__brand {
+            flex: none;
+            max-width: 100%;
+        }
+
+        .moove-new-footer__nav-group {
+            justify-content: flex-start;
+            gap: 40px;
+            width: 100%;
+        }
+
+        .moove-new-footer__bottom-row {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
         }
     }
 }
 
+@include media-breakpoint-down(sm) {
+    #page-footer {
+        .moove-new-footer__nav-group {
+            flex-direction: column;
+            gap: 28px;
+        }
+
+        .moove-new-footer__bottom-row {
+            align-items: center;
+            text-align: center;
+        }
+
+        .moove-new-footer__login-status {
+            justify-content: center;
+        }
+    }
+}
